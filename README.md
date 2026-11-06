@@ -73,3 +73,41 @@ Put it behind HTTPS (e.g. Caddy or nginx + Let's Encrypt).
 ### Getting the data
 - Browser: open `/admin`, log in as `admin`, click **Download responses.csv**.
 - Server: copy `data/responses.csv` (it is git-ignored, so it is never pushed to GitHub).
+
+---
+
+# Golden Corral survey (`/gc`)
+
+USA gen pop, n=500, ~15 min, expected IR ~70%. Lives in the same app as the India survey.
+
+- Survey link for the panel: `https://<your-domain>/gc?rid={panel_id}`
+- Fieldwork dashboard: `https://<your-domain>/admin/gc` (completes vs quota, incidence, screen-out reasons, median LOI)
+- Data: **Download gc_responses.csv** on that page, or `gc_responses.csv` on the volume.
+
+## Screening
+| Question | Rule |
+|---|---|
+| S1 ZIP | Must be one of the 7,581 ZIPs within 10 miles of the 353 Golden Corral stores (`gc_zips.json`, from the client file). Checked again on the server at submission. |
+| S2 Age | Under 18 → terminate |
+| S3 Gender | Recorded for quotas |
+| S4 Household income | $75,000–$99,999 or $100,000–$149,999 → terminate; "Prefer not to say" → terminate |
+| S5 Industry | Market research/advertising or restaurant/food service → terminate |
+
+## Main questionnaire (10)
+Q1 unaided buffet awareness (open, 3 boxes) · Q2 brand funnel grid (10 brands, randomized) ·
+Q3 Golden Corral frequency (P12M visitors) · Q4 who they went with (P12M) · Q5 attribute ratings (P12M) ·
+Q6 recommend 0–10 (ever visited) · Q7 visit intent next 3 months (aware) · Q8 barriers (aware, not visited P12M) ·
+Q9 motivators (aware) · Q10 attitude grid (all) with attention check · D1 children in household · D2 Hispanic origin.
+The brand is not shown until Q2, so Q1 is truly unaided.
+
+## Status values in the data
+`complete`, `terminated` (screen-out), `quality` (failed the Q10 attention check), `overquota`.
+Flags for review: speeders (< 150 s), straight-lining in Q5/Q10, gibberish in Q1.
+Each row also carries `gc_store_numbers` / `gc_store_locations` for the respondent's ZIP.
+
+## Settings (Railway → Variables)
+- `GC_QUOTA` (default 500): the survey closes once this many completes are in.
+- `GC_REDIRECT_COMPLETE`, `GC_REDIRECT_TERMINATE`, `GC_REDIRECT_OVERQUOTA`, `GC_REDIRECT_QUALITY`:
+  panel return links, use `{rid}` where the respondent id goes.
+- `GC_REQUIRE_RID=1` to block entry without a panel id.
+- Uses the same `ADMIN_PASSWORD` as the India survey.

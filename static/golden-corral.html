@@ -1,0 +1,456 @@
+<title>Dining Out Survey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a reading column; grids stack row by row so they work on phones. */
+:root {
+  --bg: #f6f4f1;
+  --surface: #ffffff;
+  --ink: #1f1c1a;
+  --muted: #645d57;
+  --line: #ddd6cf;
+  --accent: #6b3f1d;        /* roasted brown */
+  --accent-soft: #f1e7de;
+  --focus: #c4862a;
+  --bad: #b23a32;
+  --font-display: "Source Serif 4", Georgia, serif;
+  --font-body: "Libre Franklin", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171412; --surface: #211d1a; --ink: #eee8e2; --muted: #a99f96; --line: #3a332e;
+    --accent: #e0a874; --accent-soft: #3a2a1e; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171412; --surface: #211d1a; --ink: #eee8e2; --muted: #a99f96; --line: #3a332e;
+  --accent: #e0a874; --accent-soft: #3a2a1e; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px;
+}
+.wrap { max-width: 720px; margin: 0 auto; }
+header.top { padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.brandname { font-family: var(--font-display); font-weight: 600; font-size: 19px; display: block; }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 20px; }
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4.6vw, 34px); line-height: 1.18; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(21px, 3.6vw, 25px); line-height: 1.3; margin: 0 0 18px; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -8px 0 16px; }
+.options { display: grid; gap: 8px; }
+.opt { position: relative; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.opt:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.opt input[type=radio], .opt input[type=checkbox], .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--line); font: 500 13px var(--font-mono); color: var(--muted); border-radius: 6px; margin-top: 1px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .key { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.opt.dis { opacity: .45; }
+.opt:focus-within, .chip:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+input[type=text], input[type=tel] { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+input[type=text]:focus, input[type=tel]:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+input.zip { max-width: 200px; font-family: var(--font-mono); font-size: 22px; letter-spacing: .12em; }
+.boxes { display: grid; gap: 8px; margin-bottom: 12px; }
+.boxes label { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 10px; font: 500 13px var(--font-mono); color: var(--muted); }
+.dk { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--muted); cursor: pointer; }
+.grid { display: grid; gap: 14px; }
+.grow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.grow.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.grow .rl { font-weight: 600; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; font-size: 14.5px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; background: var(--bg); line-height: 1.3; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 4px; }
+.scale .chip { text-align: center; padding: 10px 0; font-family: var(--font-mono); border-radius: 8px; }
+.ends { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.btn { font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+@media (max-width: 520px) { .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">QuestionLab · Online survey</span>
+    <span class="brandname">Dining Out Survey</span>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ================= Questionnaire =================
+   Screener: S1 ZIP (client list), S2 age 18+, S3 gender, S4 income (exclude $75,000–$149,999), S5 industry.
+   Main (10): Q1 unaided, Q2 brand funnel, Q3 GC frequency, Q4 GC party, Q5 GC ratings, Q6 NPS,
+   Q7 visit intent, Q8 barriers, Q9 motivators, Q10 attitudes (with attention check).
+   Classification: D1 children, D2 Hispanic origin.                                                    */
+const L = s => s.split("|").map((label, i) => ({ code: String.fromCharCode(65 + i), label }));
+const R = s => s.split("|").map((label, i) => ({ code: "r" + (i + 1), label }));
+const GC = a => a.q2_r1;                                   // Golden Corral funnel code
+const gcAware = a => !!GC(a) && GC(a) !== "A";
+const gcEver = a => ["C", "D", "E"].includes(GC(a));
+const gc12m = a => ["D", "E"].includes(GC(a));
+const AGREE = L("Strongly agree|Somewhat agree|Neither agree nor disagree|Somewhat disagree|Strongly disagree");
+const TRAP_ROW = "r8", TRAP_ANSWER = "D";
+
+const QUESTIONS = [
+  { id: "s1", section: "Screener", type: "zip", text: "What is your 5-digit ZIP code?" },
+  { id: "s2", section: "Screener", type: "single", text: "Which of the following best describes your age?",
+    options: L("Under 18|18–24|25–34|35–44|45–54|55–64|65 or older"),
+    terminate: a => a.s2 === "A" ? "S2: under 18" : null },
+  { id: "s3", section: "Screener", type: "single", text: "How do you describe your gender?",
+    options: L("Man|Woman|Non-binary or another gender|Prefer not to say") },
+  { id: "s4", section: "Screener", type: "single", text: "What was your total annual household income before taxes last year?",
+    options: L("Less than $25,000|$25,000 – $49,999|$50,000 – $74,999|$75,000 – $99,999|$100,000 – $149,999|$150,000 – $199,999|$200,000 or more|Prefer not to say"),
+    terminate: a => ["D", "E"].includes(a.s4) ? "S4: income $75,000–$149,999 (excluded)" : a.s4 === "H" ? "S4: income not provided" : null },
+  { id: "s5", section: "Screener", type: "multi", text: "Do you or does anyone in your household work in any of the following industries?",
+    hint: "Select all that apply.",
+    options: L("Market research, advertising or marketing|Restaurant or food service|Food or beverage manufacturing|Banking or financial services|Healthcare|None of these"),
+    exclusive: ["F"], randomize: true, anchor: ["F"],
+    terminate: a => (a.s5 || []).some(c => c === "A" || c === "B") ? "S5: sensitive industry" : null },
+
+  { id: "q1", section: "Dining out", type: "open", boxes: 3, dk: "I can't think of any",
+    text: "When you think of buffet-style restaurants, which restaurant names come to mind?",
+    hint: "Type up to three names, one per box." },
+  { id: "q2", section: "Dining out", type: "grid", text: "For each of these restaurants, which statement best describes you?",
+    rows: R("Golden Corral|Cracker Barrel|Texas Roadhouse|Applebee's|Olive Garden|IHOP|Denny's|CiCi's Pizza|Pizza Ranch|A local Chinese or Asian buffet"),
+    cols: L("Never heard of it|Heard of it, never visited|Visited, but over a year ago|Visited in the past 4–12 months|Visited in the past 3 months"),
+    randomize: true },
+  { id: "q3", section: "Golden Corral", type: "single", show: gc12m,
+    text: "About how many times have you eaten at Golden Corral in the past 12 months?",
+    options: L("Once|2 to 3 times|4 to 6 times|7 to 11 times|12 times or more") },
+  { id: "q4", section: "Golden Corral", type: "multi", show: gc12m,
+    text: "On your most recent visit to Golden Corral, who was with you?", hint: "Select all that apply.",
+    options: L("No one, I went alone|Spouse or partner|Children under 18|Other adult family members|Friends|Coworkers|A church, club or community group"),
+    exclusive: ["A"] },
+  { id: "q5", section: "Golden Corral", type: "grid", show: gc12m,
+    text: "Based on your visits in the past 12 months, how would you rate Golden Corral on each of the following?",
+    rows: R("Variety of food|Taste and quality of food|Freshness of food|Cleanliness of the buffet and dining area|Value for the money|Friendliness of staff|Atmosphere|Options for kids|Healthier choices|Overall experience"),
+    cols: L("Excellent|Very good|Good|Fair|Poor"), randomize: true, anchor: ["r10"] },
+  { id: "q6", section: "Golden Corral", type: "nps", show: gcEver,
+    text: "How likely are you to recommend Golden Corral to a friend or family member?",
+    ends: ["0 = Not at all likely", "10 = Extremely likely"] },
+  { id: "q7", section: "Golden Corral", type: "single", show: gcAware,
+    text: "How likely are you to eat at Golden Corral in the next 3 months?",
+    options: L("Definitely will|Probably will|Might or might not|Probably will not|Definitely will not") },
+  { id: "q8", section: "Golden Corral", type: "multi", max: 3, show: a => ["B", "C"].includes(GC(a)),
+    text: "Which of these are the main reasons you have not eaten at Golden Corral in the past 12 months?", hint: "Select up to 3.",
+    options: L("No location close enough to me|I prefer other restaurants|Prices are too high|Concerns about food quality|Concerns about cleanliness or hygiene|I don't like buffets|It doesn't fit my diet or health goals|Too crowded or long waits|I eat out less in general these days|It's not a good fit for who I eat with|Some other reason|No particular reason"),
+    exclusive: ["L"], other: "K", otherPrompt: "Please specify", randomize: true, anchor: ["K", "L"] },
+  { id: "q9", section: "Golden Corral", type: "multi", max: 3, show: gcAware,
+    text: "Which of these would most encourage you to eat at Golden Corral more often?", hint: "Select up to 3.",
+    options: L("Lower prices or more deals|Weekday or early-bird specials|Kids eat free or kids' discounts|Senior discounts|Healthier menu options|New or rotating menu items|Takeout or to-go boxes|A rewards or loyalty program|Visible cleanliness and food-safety practices|Catering for events|Something else|Nothing would encourage me"),
+    exclusive: ["L"], other: "K", otherPrompt: "Please specify", randomize: true, anchor: ["K", "L"] },
+  { id: "q10", section: "Dining out", type: "grid",
+    text: "How much do you agree or disagree with each statement?",
+    rows: R("All-you-can-eat buffets are good value for money|I eat out less often than a year ago because of prices|I like restaurants where I can try many different dishes|Cleanliness matters more to me at a buffet than at other restaurants|I check for deals or coupons before choosing where to eat|Eating out is mainly a family occasion for me|I am trying to eat healthier when I eat out|For quality control, please select \"Somewhat disagree\" for this row"),
+    cols: AGREE, randomize: true,
+    terminate: a => a["q10_" + TRAP_ROW] && a["q10_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q10)" : null },
+
+  { id: "d1", section: "About you", type: "single", text: "Are there any children under 18 living in your household?",
+    options: L("Yes|No|Prefer not to say") },
+  { id: "d2", section: "About you", type: "single", text: "Are you of Hispanic, Latino or Spanish origin?",
+    options: L("Yes|No|Prefer not to say") },
+];
+const TYPE_LABEL = { single: "Select one", multi: "Select all that apply", grid: "One answer per row", open: "Type your answer", nps: "0–10 scale", zip: "Screener" };
+const SPEEDER_SECONDS = 150;
+const MSG = {
+  terminated: ["Thank you for your interest", "Unfortunately, based on your answers you don't qualify for this survey. We appreciate your time."],
+  quality: ["Thank you", "Unfortunately we can't accept this response. We appreciate your time."],
+  overquota: ["Thank you for your interest", "We have already received all the responses we need for this survey. We appreciate your time."],
+  complete: ["Thank you", "Your answers have been recorded. We appreciate your time and opinions."],
+};
+
+/* ================= State ================= */
+const S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {} };
+const server = window.SURVEY_SERVER;
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const visible = q => !q.show || q.show(S.a);
+const qText = q => typeof q.text === "function" ? q.text(S.a) : q.text;
+const shuffle = arr => { const x = arr.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; };
+function ordered(q, list) {               // randomized once per respondent, anchors kept at the end
+  if (!q.randomize) return list;
+  if (!S.order[q.id]) {
+    const anchor = q.anchor || [];
+    S.order[q.id] = [...shuffle(list.filter(o => !anchor.includes(o.code))), ...list.filter(o => anchor.includes(o.code))].map(o => o.code);
+  }
+  return S.order[q.id].map(c => list.find(o => o.code === c));
+}
+
+/* ================= Rendering ================= */
+function renderIntro() {
+  const m = $("survey"); m.replaceChildren(
+    el("h1", { text: "Tell us about eating out" }),
+    el("p", { class: "lead", text: "We'd like to hear about the restaurants you know and visit. There are no right or wrong answers; we're interested in your own experiences and opinions." }),
+    el("dl", { class: "facts" },
+      el("div", {}, el("dt", { text: "Time needed" }), el("dd", { text: "About 15 minutes" })),
+      el("div", {}, el("dt", { text: "Your answers" }), el("dd", { text: "Confidential" }))),
+    el("p", { class: "small", text: "Your answers are combined with others' and used for research purposes only. Please answer every question honestly and carefully." }),
+    el("div", { class: "actions" }, el("span"), el("button", { class: "btn", type: "button", id: "start-btn", text: "Start", onclick: () => { S.startedAt = new Date(); go(0, 1); } })));
+}
+
+function go(i, dir) {             // move to the next visible question in direction dir
+  while (i >= 0 && i < QUESTIONS.length && !visible(QUESTIONS[i])) i += dir;
+  if (i < 0) { renderIntro(); return; }
+  if (i >= QUESTIONS.length) { finish("complete", ""); return; }
+  S.idx = i; renderQuestion(); window.scrollTo({ top: 0 });
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[S.idx];
+  const pct = Math.round((S.idx / QUESTIONS.length) * 100);
+  const m = $("survey"); m.replaceChildren();
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  m.append(
+    el("div", { class: "progress" }, el("div", { class: "meta" }, el("span", { text: q.section }), el("span", { text: pct + "%" })), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` }))),
+    el("div", { class: "qhead" }, el("span", { class: "qcode", text: q.id.toUpperCase() }), el("span", { class: "qtype", text: TYPE_LABEL[q.type] + (q.max ? ` · up to ${q.max}` : "") })),
+    el("h2", { class: "qtext", id: "qtext", text: qText(q) }));
+  if (q.hint) m.append(el("p", { class: "hint", text: q.hint }));
+  const body = { single: renderOptions, multi: renderOptions, grid: renderGrid, open: renderOpen, nps: renderNps, zip: renderZip }[q.type](q, err);
+  m.append(body, err, el("div", { class: "actions" },
+    el("button", { class: "btn ghost", type: "button", text: "Back", onclick: () => go(S.idx - 1, -1) }),
+    el("button", { class: "btn", type: "button", id: "next-btn", text: "Next", onclick: () => advance(err) })));
+}
+
+function renderOptions(q, err) {
+  const multi = q.type === "multi";
+  const box = el("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => S.a[q.id] || (multi ? [] : null);
+  const paint = () => {
+    const v = cur();
+    box.querySelectorAll(".opt").forEach(row => {
+      const on = multi ? v.includes(row.dataset.code) : v === row.dataset.code;
+      row.classList.toggle("sel", on); row.querySelector("input").checked = on;
+      row.classList.toggle("dis", !!(multi && q.max && v.length >= q.max && !on));
+      const o = row.querySelector(".other-in"); if (o) o.hidden = !on;
+    });
+  };
+  for (const o of ordered(q, q.options)) {
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id: `${q.id}-${o.code}`, value: o.code });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}`, for: input.id, "data-code": o.code }, input, el("span", { class: "key", text: multi ? "" : "" }), el("span", { text: o.label }));
+    if (q.other === o.code) {
+      const t = el("input", { type: "text", class: "other-in", id: `${q.id}-other`, maxlength: "200", placeholder: q.otherPrompt, value: S.other[q.id] || "" });
+      t.addEventListener("input", () => { S.other[q.id] = t.value; });
+      t.addEventListener("click", e => e.stopPropagation());
+      label.append(el("span"), t);
+    }
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) S.a[q.id] = o.code;
+      else {
+        let v = cur().slice();
+        if (input.checked) {
+          if ((q.exclusive || []).includes(o.code)) v = [o.code];
+          else {
+            v = v.filter(c => !(q.exclusive || []).includes(c));
+            if (q.max && v.length >= q.max) { input.checked = false; err.textContent = `You can select up to ${q.max}.`; return; }
+            v.push(o.code);
+          }
+        } else v = v.filter(c => c !== o.code);
+        S.a[q.id] = v;
+      }
+      paint();
+    });
+    box.append(label);
+  }
+  paint();
+  return box;
+}
+
+function renderGrid(q, err) {
+  const g = el("div", { class: "grid" });
+  for (const r of ordered(q, q.rows)) {
+    const key = `${q.id}_${r.code}`;
+    const row = el("div", { class: "grow", role: "radiogroup", "aria-label": r.label });
+    const chips = el("div", { class: "chips" });
+    const paint = () => {
+      row.classList.toggle("done", !!S.a[key]);
+      chips.querySelectorAll(".chip").forEach(c => { const on = S.a[key] === c.dataset.code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; });
+    };
+    for (const c of q.cols) {
+      const input = el("input", { type: "radio", name: key, id: `${key}-${c.code}`, value: c.code });
+      input.addEventListener("change", () => { S.a[key] = c.code; err.textContent = ""; paint(); });
+      chips.append(el("label", { class: "chip", for: input.id, "data-code": c.code }, input, c.label));
+    }
+    row.append(el("div", { class: "rl", text: r.label }), chips);
+    paint(); g.append(row);
+  }
+  return g;
+}
+
+function renderOpen(q) {
+  const w = el("div");
+  const boxes = el("div", { class: "boxes" });
+  const ins = [];
+  for (let i = 1; i <= q.boxes; i++) {
+    const t = el("input", { type: "text", id: `${q.id}-${i}`, maxlength: "100", value: S.a[`${q.id}_${i}`] || "", "aria-label": `Answer ${i}` });
+    t.addEventListener("input", () => { S.a[`${q.id}_${i}`] = t.value; if (t.value.trim()) { S.a[`${q.id}_dk`] = false; dk.checked = false; } });
+    ins.push(t); boxes.append(el("label", {}, String(i), t));
+  }
+  const dk = el("input", { type: "checkbox", id: `${q.id}-dk` });
+  dk.checked = !!S.a[`${q.id}_dk`];
+  dk.addEventListener("change", () => { S.a[`${q.id}_dk`] = dk.checked; if (dk.checked) ins.forEach((t, i) => { t.value = ""; S.a[`${q.id}_${i + 1}`] = ""; }); });
+  w.append(boxes, el("label", { class: "dk", for: dk.id }, dk, q.dk));
+  return w;
+}
+
+function renderNps(q) {
+  const w = el("div");
+  const s = el("div", { class: "scale", role: "radiogroup", "aria-labelledby": "qtext" });
+  const paint = () => s.querySelectorAll(".chip").forEach(c => { const on = String(S.a[q.id]) === c.dataset.code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; });
+  for (let n = 0; n <= 10; n++) {
+    const input = el("input", { type: "radio", name: q.id, id: `${q.id}-${n}`, value: String(n) });
+    input.addEventListener("change", () => { S.a[q.id] = n; $("err").textContent = ""; paint(); });
+    s.append(el("label", { class: "chip", for: input.id, "data-code": String(n) }, input, String(n)));
+  }
+  paint();
+  w.append(s, el("div", { class: "ends" }, el("span", { text: q.ends[0] }), el("span", { text: q.ends[1] })));
+  return w;
+}
+
+function renderZip(q) {
+  const t = el("input", { type: "tel", class: "zip", id: "zip", inputmode: "numeric", maxlength: "5", autocomplete: "postal-code", value: S.a.s1 || "", "aria-labelledby": "qtext" });
+  t.addEventListener("input", () => { t.value = t.value.replace(/\D/g, "").slice(0, 5); S.a.s1 = t.value; });
+  t.addEventListener("keydown", e => { if (e.key === "Enter") $("next-btn").click(); });
+  setTimeout(() => t.focus(), 0);
+  return t;
+}
+
+/* ================= Validation & routing ================= */
+function validate(q) {
+  const a = S.a;
+  if (q.type === "zip") return /^\d{5}$/.test(a.s1 || "") ? "" : "Please enter a 5-digit ZIP code.";
+  if (q.type === "single") {
+    if (!a[q.id]) return "Please select an answer.";
+    if (q.other === a[q.id] && !(S.other[q.id] || "").trim()) return "Please specify your answer in the box.";
+  }
+  if (q.type === "multi") {
+    if (!(a[q.id] || []).length) return "Please select at least one answer.";
+    if (q.other && a[q.id].includes(q.other) && !(S.other[q.id] || "").trim()) return "Please specify your other answer in the box.";
+  }
+  if (q.type === "grid") {
+    const missing = q.rows.filter(r => !a[`${q.id}_${r.code}`]).length;
+    if (missing) return `Please answer every row (${missing} left).`;
+  }
+  if (q.type === "nps" && (a[q.id] === undefined || a[q.id] === null)) return "Please choose a number from 0 to 10.";
+  if (q.type === "open") {
+    const any = Array.from({ length: q.boxes }, (_, i) => (a[`${q.id}_${i + 1}`] || "").trim()).some(Boolean);
+    if (!any && !a[`${q.id}_dk`]) return "Please type at least one name, or tick the box if none come to mind.";
+  }
+  return "";
+}
+
+async function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  if (q.type === "zip" && server) {
+    const btn = $("next-btn"); btn.disabled = true; btn.textContent = "Checking…";
+    let res;
+    try { res = await (await fetch("api/gc/zip", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ zip: S.a.s1 }) })).json(); }
+    catch (e) { btn.disabled = false; btn.textContent = "Next"; err.textContent = "We couldn't check your ZIP code. Please try again."; return; }
+    if (res.quotaFull) { finish("overquota", "Quota full"); return; }
+    if (!res.eligible) { finish("terminated", "S1: ZIP not in target area"); return; }
+  }
+  const reason = q.terminate && q.terminate(S.a);
+  if (reason) { finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
+  go(S.idx + 1, 1);
+}
+
+/* ================= Data record ================= */
+const label = (list, code) => (list.find(o => o.code === code) || {}).label || "";
+function computeFlags(status, dur) {
+  const f = [], a = S.a;
+  if (status === "complete" && dur < SPEEDER_SECONDS) f.push(`Speeder: ${dur}s`);
+  const straight = (q, skip) => { const v = q.rows.filter(r => r.code !== skip).map(r => a[`${q.id}_${r.code}`]).filter(Boolean); return v.length > 3 && new Set(v).size === 1; };
+  const q5 = QUESTIONS.find(q => q.id === "q5"), q10 = QUESTIONS.find(q => q.id === "q10");
+  if (visible(q5) && straight(q5)) f.push("Straight-lined Q5");
+  if (status === "complete" && straight(q10, TRAP_ROW)) f.push("Straight-lined Q10");
+  const q1 = [1, 2, 3].map(i => (a[`q1_${i}`] || "").trim()).filter(Boolean);
+  if (q1.some(t => /(.)\1{3,}/.test(t) || /^[^aeiouy]{6,}$/i.test(t.replace(/\s/g, "")))) f.push("Q1 possible gibberish");
+  return f;
+}
+function buildRecord(status, reason) {
+  const now = new Date(), a = S.a;
+  const dur = Math.round((now - (S.startedAt || now)) / 1000);
+  const r = { status, terminate_reason: reason, flags: "", started_at: (S.startedAt || now).toISOString(), completed_at: now.toISOString(), duration_sec: dur };
+  for (const q of QUESTIONS) {
+    const shown = visible(q);
+    if (q.type === "zip") { r.s1_zip = a.s1 || ""; continue; }
+    if (q.type === "single") { r[q.id] = shown ? a[q.id] || "" : ""; r[q.id + "_label"] = shown ? label(q.options, a[q.id]) : ""; }
+    if (q.type === "multi") { const v = shown ? a[q.id] || [] : []; r[q.id] = v.join(";"); r[q.id + "_label"] = v.map(c => label(q.options, c)).join("; "); }
+    if (q.type === "grid") for (const row of q.rows) { const v = shown ? a[`${q.id}_${row.code}`] || "" : ""; r[`${q.id}_${row.code}`] = v; r[`${q.id}_${row.code}_label`] = label(q.cols, v); }
+    if (q.type === "nps") r[q.id] = shown && a[q.id] !== undefined ? a[q.id] : "";
+    if (q.type === "open") { for (let i = 1; i <= q.boxes; i++) r[`${q.id}_${i}`] = (a[`${q.id}_${i}`] || "").trim(); r[`${q.id}_dk`] = a[`${q.id}_dk`] ? 1 : ""; }
+    if (q.other) r[q.id + "_other"] = shown && [].concat(a[q.id] || []).includes(q.other) ? (S.other[q.id] || "").trim() : "";
+  }
+  r.flags = computeFlags(status, dur).join(" | ");
+  return r;
+}
+
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  if (server) {
+    rec.rid = server.rid || "";
+    try {
+      const r = await fetch("api/gc/responses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      if (!r.ok && r.status !== 409) throw new Error(String(r.status));
+      res = await r.json().catch(() => ({}));
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
+      const e2 = $("err"); if (e2) e2.textContent = "Your answers couldn't be saved. Check your connection and try again.";
+      return;
+    }
+  } else console.log("Preview record (not saved):", rec);
+  S.done = true;
+  const [h, p] = MSG[res.status || status] || MSG.terminated;
+  $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: h }), el("p", { class: "lead", text: p }));
+  if (res.redirect) setTimeout(() => { location.href = res.redirect; }, 2000);
+}
+
+if (!server) { $("banner").textContent = "Preview: answers are not saved and every ZIP code is accepted."; $("banner").hidden = false; }
+if (server && server.closed) { $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: MSG.overquota[0] }), el("p", { class: "lead", text: MSG.overquota[1] })); if (server.redirect) setTimeout(() => { location.href = server.redirect; }, 2000); }
+else renderIntro();
+})();
+</script>

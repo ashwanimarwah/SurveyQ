@@ -1,0 +1,19 @@
+ * Serving Flask app 'app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8771
+ * Running on http://192.0.2.2:8771
+Press CTRL+C to quit
+127.0.0.1 - - [06/Nov/2026 14:21:09] "GET /gc?rid=B1 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:10] "POST /api/gc/zip HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:15] "POST /api/gc/responses HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:16] "GET /gc?rid=B2 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:17] "POST /api/gc/zip HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:21] "POST /api/gc/responses HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:22] "GET /gc?rid=B3 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:23] "POST /api/gc/zip HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:28] "POST /api/gc/responses HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:28] "GET /gc?rid=SHOT HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:34] "GET /gc?rid=SHOT1 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Nov/2026 14:21:35] "POST /api/gc/zip HTTP/1.1" 200 -

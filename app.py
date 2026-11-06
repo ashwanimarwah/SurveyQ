@@ -219,5 +219,9 @@ def export_csv():
                     headers={"Content-Disposition": f'attachment; filename="school-education-survey-{stamp}.csv"'})
 
 
+from golden_corral import bp as golden_corral_bp  # noqa: E402  (Golden Corral survey at /gc)
+app.register_blueprint(golden_corral_bp)
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8000")))
