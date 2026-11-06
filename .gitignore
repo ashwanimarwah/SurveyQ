@@ -1,0 +1,9 @@
+# Survey responses: never commit respondent data
+data/
+*.csv
+*.lock
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/

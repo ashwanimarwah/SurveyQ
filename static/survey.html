@@ -1,0 +1,649 @@
+<title>India School Education Survey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a narrow reading column; a results ledger for editors below the same header. */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --ink: #17242b;
+  --muted: #5a6a70;
+  --line: #d8dfdd;
+  --board: #1d4a3f;        /* blackboard green: primary accent */
+  --board-soft: #e2eeea;
+  --chalk: #c98a1b;         /* chalk-yellow highlight */
+  --ok: #2f7a4f;
+  --warn: #a8640c;
+  --bad: #b23a32;
+  --warn-soft: #fbf0dc;
+  --bad-soft: #f8e4e2;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-body: "Mukta", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1719; --surface: #172224; --ink: #e5ece9; --muted: #98a9a6; --line: #2a3a3c;
+    --board: #7cc4ad; --board-soft: #1d3330; --chalk: #e3b04f;
+    --ok: #6cc28f; --warn: #e3a34a; --bad: #ec7d74; --warn-soft: #33281a; --bad-soft: #3a2220;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1719; --surface: #172224; --ink: #e5ece9; --muted: #98a9a6; --line: #2a3a3c;
+  --board: #7cc4ad; --board-soft: #1d3330; --chalk: #e3b04f;
+  --ok: #6cc28f; --warn: #e3a34a; --bad: #ec7d74; --warn-soft: #33281a; --bad-soft: #3a2220;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+.wrap { max-width: 720px; margin: 0 auto; }
+.wrap.wide { max-width: 1100px; }
+header.top {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px;
+}
+.brand { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.brand .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.brand .name { font-family: var(--font-display); font-weight: 650; font-size: 19px; }
+nav.tabs { display: flex; gap: 4px; }
+nav.tabs button {
+  font: 500 15px var(--font-body); color: var(--muted); background: none; border: 1px solid transparent;
+  border-radius: 999px; padding: 4px 14px; cursor: pointer;
+}
+nav.tabs button[aria-current="page"] { color: var(--board); border-color: var(--board); background: var(--board-soft); }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--warn-soft); color: var(--ink); margin-bottom: 20px; border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent); }
+
+/* progress */
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); letter-spacing: .03em; }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--board); width: 0; transition: width .3s ease; }
+
+/* question */
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--board); background: var(--board-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); letter-spacing: .03em; }
+h1, h2 { font-family: var(--font-display); font-weight: 650; text-wrap: balance; letter-spacing: -.005em; }
+h1 { font-size: clamp(26px, 4.6vw, 34px); line-height: 1.18; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(21px, 3.6vw, 26px); line-height: 1.28; margin: 0 0 20px; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -10px 0 16px; }
+
+.options { display: grid; gap: 8px; }
+.opt {
+  display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;
+  padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  cursor: pointer; transition: border-color .12s, background .12s;
+}
+.opt:hover { border-color: color-mix(in srgb, var(--board) 50%, var(--line)); }
+.opt { position: relative; }
+.opt input[type=radio], .opt input[type=checkbox] { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key {
+  width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--line);
+  font: 500 13px var(--font-mono); color: var(--muted); border-radius: 6px; margin-top: 1px;
+}
+.opt.multi .key { border-radius: 6px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--board); background: var(--board-soft); }
+.opt.sel .key { background: var(--board); border-color: var(--board); color: var(--surface); }
+.opt.dis { opacity: .45; cursor: not-allowed; }
+.opt:focus-within { outline: 2px solid var(--chalk); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+
+input[type=text], textarea, select {
+  width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px;
+}
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--chalk); outline-offset: 1px; border-color: var(--board); }
+textarea { min-height: 150px; resize: vertical; line-height: 1.5; }
+.counter { display: flex; justify-content: space-between; gap: 12px; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; flex-wrap: wrap; }
+.example { font-size: 15px; color: var(--muted); border-left: 3px solid var(--chalk); padding: 2px 0 2px 12px; margin: 0 0 16px; }
+
+.statelist { margin-top: 8px; max-height: 340px; overflow-y: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.statelist button {
+  display: flex; justify-content: space-between; gap: 8px; width: 100%; text-align: left; font: 400 16px var(--font-body); color: var(--ink);
+  background: none; border: 0; border-bottom: 1px solid var(--line); padding: 9px 14px; cursor: pointer;
+}
+.statelist button:last-child { border-bottom: 0; }
+.statelist button:hover, .statelist button:focus-visible { background: var(--board-soft); outline: none; }
+.statelist button.sel { background: var(--board-soft); color: var(--board); font-weight: 600; }
+.statelist .grp { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.picked { margin-top: 10px; font-size: 15px; color: var(--muted); }
+.picked b { color: var(--board); }
+
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+.btn {
+  font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--board); background: var(--board); color: var(--surface);
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible, nav.tabs button:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--chalk); border-radius: 2px; margin-bottom: 18px; }
+
+/* results */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 22px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; }
+.tile .k { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.tile .v { font-family: var(--font-display); font-size: 30px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 24px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; min-width: 0; }
+.panel h3 { font-family: var(--font-display); font-size: 17px; margin: 0 0 10px; font-weight: 650; }
+.hbar { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 4px 10px; align-items: center; font-size: 14px; margin-bottom: 7px; }
+.hbar .lab { min-width: 0; overflow-wrap: anywhere; }
+.hbar .n { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+.hbar .track { grid-column: 1 / -1; height: 6px; background: var(--board-soft); border-radius: 3px; overflow: hidden; }
+.hbar .track i { display: block; height: 100%; background: var(--board); }
+.toolbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 12px; }
+.toolbar select { width: auto; font-size: 15px; padding: 6px 10px; }
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 860px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 500; position: sticky; top: 0; background: var(--surface); }
+td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.q4 { max-width: 320px; }
+.pill { display: inline-block; font: 500 12px var(--font-mono); padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.complete { background: var(--board-soft); color: var(--ok); }
+.pill.terminated { background: var(--bad-soft); color: var(--bad); }
+.flag { display: block; font-size: 12.5px; color: var(--warn); line-height: 1.35; margin-bottom: 3px; }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap" id="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">QuestionLab · Online quantitative</span>
+      <span class="name">School Education in India</span>
+    </div>
+    <nav class="tabs" id="tabs" hidden>
+      <button type="button" id="tab-survey" aria-current="page">Survey</button>
+      <button type="button" id="tab-results">Responses <span id="tab-count"></span></button>
+    </nav>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+  <section id="results" hidden></section>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------------- Questionnaire definition ---------------- */
+const STATES = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal"];
+const UTS = ["Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu","Delhi (NCT)","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"];
+const L = s => s.split("|").map((label, i) => ({ code: String.fromCharCode(65 + i), label }));
+
+const QUESTIONS = [
+  { id: "q1", section: 1, type: "single", text: "Are you currently working in the education sector in India?",
+    options: L("Yes|No"), terminate: ["B"] },
+  { id: "q2", section: 1, type: "state", text: "In which Indian State or Union Territory do you primarily work?" },
+  { id: "q3", section: 1, type: "single", text: "What is your current professional role in the education sector?",
+    options: L("School teacher / subject teacher|Principal / headmaster / headmistress|Academic coordinator / academic administrator|School management / owner / trustee|Government education department / policymaker|Education consultant / trainer|NGO / nonprofit education professional|EdTech professional / education service provider|Other education-related role"),
+    other: "I", otherPrompt: "Please describe your role" },
+  { id: "q4", section: 1, type: "open", min: 30, max: 500,
+    text: "Please briefly describe one key responsibility you handle in your current role and one challenge you commonly encounter in school education.",
+    hint: "2–4 sentences. At least 30 characters, at most 500.",
+    example: "I coordinate academic planning for Classes 6–10, monitor curriculum completion and review student performance. One challenge is addressing learning gaps while ensuring the syllabus is completed on time." },
+  { id: "q5", section: 1, type: "single", text: "Which type of educational institution or organisation do you primarily work with?",
+    options: L("Government school|Government-aided school|Private unaided school|Central government school (e.g., Kendriya Vidyalaya / Jawahar Navodaya Vidyalaya)|International / alternative curriculum school|Education NGO / nonprofit organisation|Education department / regulatory body|EdTech / education services organisation|Other"),
+    other: "I", otherPrompt: "Please specify" },
+  { id: "q6", section: 2, type: "multi", text: "Which school education levels are you directly involved with in your current role?",
+    hint: "Select all class bands that apply.",
+    options: L("Primary — Classes 1–5|Upper primary / middle school — Classes 6–8|Secondary — Classes 9–10|Senior secondary — Classes 11–12|Multiple levels across the school system|Not directly involved in school-level education"),
+    exclusive: ["E", "F"], terminate: ["F"] },
+  { id: "q7", section: 2, type: "single", text: s => `How would you rate the overall quality of school education in ${s.q2 || "your state"}?`,
+    options: L("Excellent|Good|Average|Poor|Very poor|Not sure / unable to assess") },
+  { id: "q8", section: 2, type: "single", text: "How adequate is the infrastructure available in the schools you work with?",
+    options: L("Fully adequate — classrooms, sanitation, drinking water, electricity and learning facilities|Mostly adequate, with a few gaps|Moderately adequate, with several gaps|Inadequate, with significant gaps|Severely inadequate|Not sure / not applicable") },
+  { id: "q9", section: 2, type: "single", text: "How would you assess the availability of qualified and adequately trained teachers in the schools you work with?",
+    options: L("Very good — sufficient qualified teachers with regular training|Good — minor staffing or training gaps|Average — noticeable gaps in staffing or training|Poor — significant teacher shortages or training gaps|Very poor — severe shortages or inadequate training|Not sure / unable to assess") },
+  { id: "q10", section: 2, type: "multi", max: 3, text: "What are the most significant challenges affecting the quality of school education in your state?",
+    hint: "Select up to 3.",
+    options: L("Shortage of qualified teachers|Inadequate teacher training and professional development|Poor school infrastructure and facilities|Limited access to digital learning tools and internet connectivity|High student absenteeism and dropout rates|Learning gaps in foundational literacy and numeracy|Examination pressure and rote-learning practices|Socioeconomic barriers and affordability|Limited career guidance and vocational education|Language barriers and curriculum relevance|Unequal access between rural and urban schools|Other challenges|No major challenges|Not sure"),
+    exclusive: ["M", "N"], other: "L", otherPrompt: "Please specify the other challenge" },
+  { id: "q11", section: 2, type: "single", text: "To what extent are digital learning tools and technology being effectively used in the schools you work with?",
+    options: L("Very effectively — integrated into regular teaching and learning|Fairly effectively — used regularly in selected subjects or activities|Moderately — used occasionally|Minimally — limited to a few classrooms or activities|Not used at all|Not sure / not applicable") },
+  { id: "q12", section: 2, type: "single", text: "Which one improvement should be prioritised most to improve school education in your state over the next three years?",
+    options: L("Recruiting more qualified teachers|Improving teacher training and teaching quality|Upgrading school infrastructure and basic facilities|Strengthening foundational literacy, numeracy and learning outcomes|Improving access to digital learning and technology|Reducing dropout rates and improving student attendance|Making curriculum and assessments more practical and skill-oriented|Strengthening vocational education and career counselling|Improving funding, governance and accountability|Reducing rural–urban and socioeconomic disparities|Other|Not sure"),
+    other: "K", otherPrompt: "Please specify" },
+];
+const SECTION_NAMES = { 1: "Screening & demographics", 2: "Education system assessment" };
+const TYPE_LABEL = { single: "Single select", multi: "Multiple select", state: "Searchable list", open: "Open-ended · required" };
+const SPEEDER_SECONDS = 120;
+const TERMINATION_MSG = "Thank you for your interest in this survey. Unfortunately, based on your responses, you do not currently meet the eligibility criteria for this study. We appreciate your time and participation.";
+
+const CSV_COLUMNS = ["respondent_id","status","terminate_reason","flags","started_at","completed_at","duration_sec",
+  "q1","q1_label","q2","q3","q3_label","q3_other","q4","q5","q5_label","q5_other","q6","q6_label",
+  "q7","q7_label","q8","q8_label","q9","q9_label","q10","q10_label","q10_other","q11","q11_label","q12","q12_label","q12_other","source"];
+
+/* ---------------- State ---------------- */
+const S = { answers: {}, other: {}, idx: -1, startedAt: null, done: false };
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const qText = q => typeof q.text === "function" ? q.text(S.answers) : q.text;
+const labelOf = (q, code) => (q.options.find(o => o.code === code) || {}).label || "";
+
+/* ---------------- Storage backends ---------------- */
+const Backend = {
+  mode: "preview", db: null, user: null, uid: null, isAdmin: false, downloads: null,
+
+  async init() {
+    if (window.SURVEY_SERVER) { this.mode = "server"; return { canTake: true }; }
+    if (!window.claude || typeof window.claude.use !== "function") {
+      return { canTake: true, note: "Preview mode: answers on this page are not being saved." };
+    }
+    const [db, user] = await Promise.all([claude.use("db"), claude.use("user")]);
+    this.user = user;
+    this.isAdmin = user ? await user.canEdit() : false;
+    if (!db || !user) return { canTake: false, note: "Please sign in to Claude to take this survey. Your answers are saved to your account so each person responds once." };
+    this.db = db;
+    this.uid = await user.id();
+    if (!this.uid) return { canTake: false, note: "We couldn't identify your account on this page, so your answers can't be saved. Ask the survey owner to share it with you as a Contributor." };
+    this.mode = "claude";
+    try {
+      const snap = await db.doc("responses/" + this.uid).get();
+      if (snap.exists) return { canTake: false, already: snap.data() };
+    } catch (e) { /* treat as no prior response */ }
+    return { canTake: true };
+  },
+
+  async save(record) {
+    if (this.mode === "server") {
+      record.rid = window.SURVEY_SERVER.rid || "";
+      const r = await fetch("api/responses", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(record) });
+      if (r.status === 409) return { duplicate: true };
+      if (!r.ok) throw new Error("Server returned " + r.status);
+      return r.json().catch(() => ({}));
+    }
+    if (this.mode === "claude") {
+      record.respondent_id = this.uid;
+      try { await this.db.doc("responses/" + this.uid).set(record); }
+      catch (e) {
+        if (e && e.code === "unavailable") { await new Promise(r => setTimeout(r, 600 + Math.random() * 800)); await this.db.doc("responses/" + this.uid).set(record); }
+        else throw e;
+      }
+      return {};
+    }
+    console.log("Preview record (not saved):", record);
+    return {};
+  },
+};
+
+/* ---------------- Survey flow ---------------- */
+function progress(i) {
+  const q = QUESTIONS[i];
+  const pct = Math.round((i / QUESTIONS.length) * 100);
+  return el("div", { class: "progress" },
+    el("div", { class: "meta" }, el("span", { text: `Section ${q.section} · ${SECTION_NAMES[q.section]}` }), el("span", { text: `${i + 1} / ${QUESTIONS.length}` })),
+    el("div", { class: "bar" }, el("i", { style: `width:${pct}%` })));
+}
+
+function renderIntro(info) {
+  const m = $("survey"); m.replaceChildren();
+  m.append(
+    el("h1", { text: "Primary, Secondary & Senior Secondary Education in India" }),
+    el("p", { class: "lead", text: "We want to understand the current state of school education across India: infrastructure, teaching quality, curriculum delivery, digital learning, student participation, key challenges and the improvements that matter most." }),
+    el("dl", { class: "facts" },
+      el("div", {}, el("dt", { text: "Questions" }), el("dd", { text: "12" })),
+      el("div", {}, el("dt", { text: "Time needed" }), el("dd", { text: "8–10 minutes" })),
+      el("div", {}, el("dt", { text: "Geography" }), el("dd", { text: "All States / UTs" }))),
+    el("p", { class: "small", text: "This survey is for professionals working in Indian school education: teachers, principals, academic coordinators, administrators, consultants, government, NGO and EdTech professionals. Your answers are confidential and reported only in aggregate." }),
+  );
+  if (info.already) {
+    m.append(el("div", { class: "endmark" }), el("p", { text: info.already.status === "complete" ? "You've already completed this survey. Thank you for taking part." : "You've already taken part in this survey. Thank you for your time." }));
+    return;
+  }
+  const start = el("button", { class: "btn", type: "button", id: "start-btn", text: "Start the survey", onclick: () => { S.startedAt = new Date(); go(0); } });
+  if (!info.canTake) start.disabled = true;
+  m.append(el("div", { class: "actions" }, el("span"), start));
+}
+
+function go(i) { S.idx = i; renderQuestion(); window.scrollTo({ top: 0 }); }
+
+function renderQuestion() {
+  const q = QUESTIONS[S.idx];
+  const m = $("survey"); m.replaceChildren();
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  m.append(progress(S.idx),
+    el("div", { class: "qhead" }, el("span", { class: "qcode", text: q.id.toUpperCase() }), el("span", { class: "qtype", text: TYPE_LABEL[q.type] + (q.max ? ` · up to ${q.max}` : "") })),
+    el("h2", { class: "qtext", id: "qtext", text: qText(q) }));
+  if (q.hint) m.append(el("p", { class: "hint", text: q.hint }));
+
+  if (q.type === "single" || q.type === "multi") m.append(renderOptions(q, err));
+  else if (q.type === "state") m.append(renderState(q));
+  else if (q.type === "open") m.append(renderOpen(q));
+
+  const back = el("button", { class: "btn ghost", type: "button", text: "Back", onclick: () => S.idx === 0 ? renderIntro({ canTake: true }) : go(S.idx - 1) });
+  const next = el("button", { class: "btn", type: "button", id: "next-btn", text: S.idx === QUESTIONS.length - 1 ? "Submit" : "Next", onclick: () => advance(err) });
+  m.append(err, el("div", { class: "actions" }, back, next));
+}
+
+function renderOptions(q, err) {
+  const multi = q.type === "multi";
+  const box = el("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => S.answers[q.id] || (multi ? [] : null);
+  const paint = () => {
+    const v = cur();
+    box.querySelectorAll(".opt").forEach(row => {
+      const code = row.dataset.code;
+      const on = multi ? v.includes(code) : v === code;
+      row.classList.toggle("sel", on);
+      row.querySelector("input").checked = on;
+      const atMax = multi && q.max && v.length >= q.max && !on;
+      row.classList.toggle("dis", !!atMax);
+      const o = row.querySelector(".other-in"); if (o) o.hidden = !on;
+    });
+  };
+  for (const o of q.options) {
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id: `${q.id}-${o.code}`, value: o.code });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}`, for: `${q.id}-${o.code}`, "data-code": o.code },
+      input, el("span", { class: "key", text: o.code }), el("span", { text: o.label }));
+    if (q.other === o.code) {
+      const t = el("input", { type: "text", class: "other-in", id: `${q.id}-other`, maxlength: "200", placeholder: q.otherPrompt, value: S.other[q.id] || "" });
+      t.addEventListener("input", () => { S.other[q.id] = t.value; });
+      t.addEventListener("click", e => e.stopPropagation());
+      label.append(el("span"), t);
+    }
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) { S.answers[q.id] = o.code; }
+      else {
+        let v = cur().slice();
+        if (input.checked) {
+          if ((q.exclusive || []).includes(o.code)) v = [o.code];
+          else {
+            v = v.filter(c => !(q.exclusive || []).includes(c));
+            if (q.max && v.length >= q.max) { input.checked = false; err.textContent = `You can select up to ${q.max} options.`; return; }
+            v.push(o.code);
+          }
+        } else v = v.filter(c => c !== o.code);
+        S.answers[q.id] = v;
+      }
+      paint();
+      if (q.other === o.code && input.checked) setTimeout(() => $(`${q.id}-other`)?.focus(), 0);
+    });
+    box.append(label);
+  }
+  paint();
+  return box;
+}
+
+function renderState(q) {
+  const wrap = el("div");
+  const search = el("input", { type: "text", id: "state-search", placeholder: "Type to search States and UTs", autocomplete: "off", "aria-label": "Search States and Union Territories" });
+  const list = el("div", { class: "statelist", role: "listbox", "aria-labelledby": "qtext" });
+  const picked = el("div", { class: "picked" });
+  const paint = () => {
+    const f = search.value.trim().toLowerCase();
+    list.replaceChildren();
+    const add = (name, grp) => {
+      if (f && !name.toLowerCase().includes(f)) return;
+      list.append(el("button", { type: "button", role: "option", class: S.answers.q2 === name ? "sel" : "", "aria-selected": S.answers.q2 === name ? "true" : "false",
+        onclick: () => { S.answers.q2 = name; $("err").textContent = ""; paint(); } }, el("span", { text: name }), el("span", { class: "grp", text: grp })));
+    };
+    STATES.forEach(s => add(s, "State")); UTS.forEach(s => add(s, "UT"));
+    if (!list.children.length) list.append(el("div", { class: "empty", text: "No State or UT matches that search." }));
+    picked.replaceChildren(...(S.answers.q2 ? [document.createTextNode("Selected: "), el("b", { text: S.answers.q2 })] : [document.createTextNode("Nothing selected yet.")]));
+  };
+  search.addEventListener("input", paint);
+  search.addEventListener("keydown", e => { if (e.key === "Enter") { const b = list.querySelector("button"); if (b) b.click(); } });
+  paint();
+  wrap.append(search, list, picked);
+  return wrap;
+}
+
+function renderOpen(q) {
+  const wrap = el("div");
+  if (q.example) wrap.append(el("p", { class: "example", text: "Example: " + q.example }));
+  const ta = el("textarea", { id: "q4-text", maxlength: String(q.max), "aria-labelledby": "qtext" });
+  ta.value = S.answers[q.id] || "";
+  const count = el("span");
+  const need = el("span");
+  const upd = () => {
+    S.answers[q.id] = ta.value;
+    const n = ta.value.trim().length;
+    count.textContent = `${ta.value.length} / ${q.max}`;
+    need.textContent = n < q.min ? `${q.min - n} more characters needed` : "Length looks good";
+  };
+  ta.addEventListener("input", upd); upd();
+  wrap.append(ta, el("div", { class: "counter" }, need, count));
+  return wrap;
+}
+
+function validate(q) {
+  const v = S.answers[q.id];
+  if (q.type === "single") {
+    if (!v) return "Please select an answer to continue.";
+    if (q.other === v && !(S.other[q.id] || "").trim()) return "Please tell us a little more in the box under your answer.";
+  } else if (q.type === "multi") {
+    if (!v || !v.length) return "Please select at least one option.";
+    if (q.other && v.includes(q.other) && !(S.other[q.id] || "").trim()) return "Please specify your other answer in the box provided.";
+  } else if (q.type === "state") {
+    if (!v) return "Please choose the State or Union Territory where you primarily work.";
+  } else if (q.type === "open") {
+    const t = (v || "").trim();
+    if (!t) return "This question is required.";
+    if (t.length < q.min) return `Please write at least ${q.min} characters so we understand your role.`;
+  }
+  return "";
+}
+
+function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  const v = S.answers[q.id];
+  if (q.terminate && [].concat(v).some(c => q.terminate.includes(c))) {
+    const reason = q.id === "q1" ? "Q1: not working in education sector" : "Q6: not directly involved in school-level education";
+    finish("terminated", reason); return;
+  }
+  if (S.idx < QUESTIONS.length - 1) go(S.idx + 1);
+  else finish("complete", "");
+}
+
+/* ---------------- Quality flags ---------------- */
+const EDU_WORDS = /(school|student|pupil|child|teach|class|curricul|syllab|learn|exam|board|principal|parent|train|educat|academ|subject|attend|dropout|literac|numerac|lesson|grade|cbse|icse|ncert|kvs|navodaya|ngo|edtech|policy|admission|assessment|result|marks|staff|infrastructure)/i;
+function computeFlags(status, durationSec) {
+  const a = S.answers, f = [];
+  if (a.q3 === "I") f.push("Q3 other role: review eligibility");
+  const t = (a.q4 || "").trim();
+  if (t) {
+    const words = t.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+    const uniq = new Set(words).size;
+    if (t.length < 60 || uniq < 8) f.push("Q4 short or generic: review");
+    if (/(.)\1{4,}/.test(t) || (words.length && words.filter(w => w.length > 25).length > 0)) f.push("Q4 possible nonsense text");
+    if (!EDU_WORDS.test(t)) f.push("Q4 may be unrelated to school education");
+  }
+  if (["F", "G", "H", "I"].includes(a.q5)) f.push("Q5 non-school organisation: confirm relevance");
+  if (["A", "B", "C"].includes(a.q3) && ["F", "G", "H"].includes(a.q5)) f.push("Role vs organisation mismatch (school role, non-school org)");
+  if (a.q3 === "E" && ["C", "E", "H"].includes(a.q5)) f.push("Role vs organisation mismatch (government role, private org)");
+  if (status === "complete") {
+    if (durationSec < SPEEDER_SECONDS) f.push(`Speeder: completed in ${durationSec}s`);
+    if (["q7", "q8", "q9", "q11"].every(k => a[k] === "F")) f.push("Not sure on all rating questions");
+  }
+  return f;
+}
+
+function buildRecord(status, reason) {
+  const now = new Date();
+  const dur = Math.round((now - (S.startedAt || now)) / 1000);
+  const r = { status, terminate_reason: reason, started_at: (S.startedAt || now).toISOString(), completed_at: now.toISOString(), duration_sec: dur, source: Backend.mode };
+  for (const q of QUESTIONS) {
+    const v = S.answers[q.id];
+    if (q.type === "state" || q.type === "open") { r[q.id] = v ? String(v).trim() : ""; continue; }
+    if (q.type === "multi") { const arr = v || []; r[q.id] = arr.join(";"); r[q.id + "_label"] = arr.map(c => labelOf(q, c)).join("; "); }
+    else { r[q.id] = v || ""; r[q.id + "_label"] = v ? labelOf(q, v) : ""; }
+    if (q.other) r[q.id + "_other"] = [].concat(v || []).includes(q.other) ? (S.other[q.id] || "").trim() : "";
+  }
+  r.flags = computeFlags(status, dur).join(" | ");
+  return r;
+}
+
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  try { res = await Backend.save(rec); }
+  catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
+    $("err").textContent = "Your answers couldn't be saved. Check your connection and press Try again.";
+    console.error(e); return;
+  }
+  S.done = true;
+  const m = $("survey"); m.replaceChildren();
+  if (status === "complete") {
+    m.append(el("div", { class: "endmark" }), el("h1", { text: "Thank you" }),
+      el("p", { class: "lead", text: "Your responses have been recorded. We appreciate the time you've given to help us understand school education in India." }));
+  } else {
+    m.append(el("div", { class: "endmark" }), el("h1", { text: "Thank you for your interest" }), el("p", { class: "lead", text: TERMINATION_MSG }));
+  }
+  if (res && res.redirect) setTimeout(() => { location.href = res.redirect; }, 2500);
+  if (Backend.mode === "claude" && Backend.isAdmin) refreshTabs();
+}
+
+/* ---------------- Results (editors only, Claude-hosted) ---------------- */
+let rows = [], filter = "all", unsub = null;
+function startResults() {
+  if (unsub || !Backend.db) return;
+  const box = $("results");
+  box.replaceChildren(el("div", { class: "empty", text: "Loading responses…" }));
+  let timer = setTimeout(() => { if (!rows.length) box.replaceChildren(el("div", { class: "empty", text: "Responses can't be reached yet. They'll appear here once the connection returns." })); }, 10000);
+  unsub = Backend.db.collection("responses").onSnapshot(snap => {
+    if (!snap.metadata.fromCache) { clearTimeout(timer); timer = null; }
+    rows = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(b.completed_at).localeCompare(String(a.completed_at)));
+    $("tab-count").textContent = `(${rows.length})`;
+    renderResults();
+  }, e => {
+    clearTimeout(timer);
+    box.replaceChildren(el("div", { class: "empty", text: e.code === "revoked" ? "Responses are no longer available on this page." : "Responses couldn't be loaded. Reload the page to try again." }));
+  });
+}
+
+function countBy(list, key, q, multi) {
+  const c = {};
+  for (const r of list) for (const code of (multi ? String(r[key] || "").split(";") : [r[key]])) if (code) c[code] = (c[code] || 0) + 1;
+  return q.options.map(o => ({ label: o.label, n: c[o.code] || 0 })).filter(x => x.n).sort((a, b) => b.n - a.n);
+}
+function barPanel(title, items, base) {
+  const p = el("div", { class: "panel" }, el("h3", { text: title }));
+  if (!items.length) { p.append(el("div", { class: "small", text: "No completed responses yet." })); return p; }
+  const max = Math.max(...items.map(i => i.n));
+  for (const it of items.slice(0, 8)) p.append(el("div", { class: "hbar" }, el("span", { class: "lab", text: it.label }), el("span", { class: "n", text: base ? `${Math.round(it.n / base * 100)}%` : it.n }), el("span", { class: "track" }, el("i", { style: `width:${(it.n / max) * 100}%` }))));
+  return p;
+}
+
+function renderResults() {
+  const box = $("results");
+  const comp = rows.filter(r => r.status === "complete");
+  const term = rows.filter(r => r.status === "terminated");
+  const flagged = rows.filter(r => r.flags);
+  const durs = comp.map(r => r.duration_sec).filter(n => typeof n === "number").sort((a, b) => a - b);
+  const med = durs.length ? durs[Math.floor(durs.length / 2)] : null;
+  const fmt = s => s == null ? "—" : `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`;
+  const q = id => QUESTIONS.find(x => x.id === id);
+
+  const exportBtn = el("button", { class: "btn", type: "button", id: "export-btn", text: "Export CSV", onclick: exportCsv });
+  if (!rows.length) exportBtn.disabled = true;
+  const sel = el("select", { id: "status-filter", "aria-label": "Filter responses" },
+    ...[["all", "All responses"], ["complete", "Completes"], ["terminated", "Terminated"], ["flagged", "Flagged for review"]].map(([v, t]) => el("option", { value: v, text: t, selected: filter === v })));
+  sel.addEventListener("change", () => { filter = sel.value; renderResults(); });
+
+  const shown = rows.filter(r => filter === "all" || (filter === "flagged" ? r.flags : r.status === filter));
+  const table = el("table", {},
+    el("thead", {}, el("tr", {}, ...["Submitted", "Status", "State / UT", "Role", "Organisation", "Q4 response", "LOI", "Flags"].map(h => el("th", { text: h })))),
+    el("tbody", {}, ...(shown.length ? shown.map(r => el("tr", {},
+      el("td", { class: "num", text: r.completed_at ? new Date(r.completed_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "" }),
+      el("td", {}, el("span", { class: `pill ${r.status}`, text: r.status }), r.terminate_reason ? el("div", { class: "small", text: r.terminate_reason }) : null),
+      el("td", { text: r.q2 || "—" }),
+      el("td", { text: (r.q3_label || "—") + (r.q3_other ? ` (${r.q3_other})` : "") }),
+      el("td", { text: (r.q5_label || "—") + (r.q5_other ? ` (${r.q5_other})` : "") }),
+      el("td", { class: "q4", text: r.q4 || "—" }),
+      el("td", { class: "num", text: fmt(r.duration_sec) }),
+      el("td", {}, ...(r.flags ? r.flags.split(" | ").map(f => el("span", { class: "flag", text: f })) : [el("span", { class: "small", text: "—" })]))
+    )) : [el("tr", {}, el("td", { colspan: "8", class: "empty", text: rows.length ? "No responses match this filter." : "No responses yet. Share this page with respondents as Contributors; each submission appears here live." }))])));
+
+  box.replaceChildren(
+    el("div", { class: "tiles" },
+      ...[["Completes", comp.length], ["Terminated", term.length], ["Flagged for review", flagged.length], ["Median LOI", fmt(med)]].map(([k, v]) => el("div", { class: "tile" }, el("div", { class: "k", text: k }), el("div", { class: "v", text: v })))),
+    el("div", { class: "cols" },
+      barPanel("Top challenges (Q10, % of completes)", countBy(comp, "q10", q("q10"), true), comp.length),
+      barPanel("Priority improvement (Q12)", countBy(comp, "q12", q("q12"), false)),
+      barPanel("Quality rating in own state (Q7)", countBy(comp, "q7", q("q7"), false)),
+      barPanel("Respondents by role (Q3)", countBy(comp, "q3", q("q3"), false))),
+    el("div", { class: "toolbar" }, sel, exportBtn),
+    el("div", { class: "tablebox" }, table),
+    el("p", { class: "small", id: "export-msg" }));
+}
+
+function toCsv(list) {
+  const esc = v => { const s = v == null ? "" : String(v); return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  return "﻿" + [CSV_COLUMNS.join(","), ...list.map(r => CSV_COLUMNS.map(c => esc(c === "respondent_id" ? (r.respondent_id || r.id) : r[c])).join(","))].join("\r\n");
+}
+async function exportCsv() {
+  const msg = $("export-msg");
+  if (!Backend.downloads) Backend.downloads = await claude.use("downloads");
+  if (!Backend.downloads) { msg.textContent = "Downloads aren't available in this view. Open the page in claude.ai to export."; return; }
+  try {
+    await Backend.downloads.save({ filename: `school-education-survey-${new Date().toISOString().slice(0, 10)}.csv`, data: toCsv(rows) });
+    msg.textContent = `Exported ${rows.length} responses.`;
+  } catch (e) {
+    msg.textContent = e && e.code === "declined" ? "Export cancelled." : "The export couldn't be saved here.";
+  }
+}
+
+/* ---------------- Tabs / boot ---------------- */
+function showView(v) {
+  const res = v === "results" && Backend.isAdmin && Backend.mode === "claude";
+  $("survey").hidden = res; $("results").hidden = !res;
+  $("wrap").classList.toggle("wide", res);
+  $("tab-survey").setAttribute("aria-current", res ? "false" : "page");
+  $("tab-results").setAttribute("aria-current", res ? "page" : "false");
+  if (res) startResults();
+}
+function refreshTabs() { $("tabs").hidden = !(Backend.isAdmin && Backend.mode === "claude"); }
+
+async function boot() {
+  renderIntro({ canTake: false });
+  const startBtn = $("start-btn"); if (startBtn) startBtn.textContent = "Loading…";
+  let info;
+  try { info = await Backend.init(); } catch (e) { console.error(e); info = { canTake: false, note: "The survey couldn't connect to its storage. Reload the page to try again." }; }
+  if (info.note) { $("banner").textContent = info.note; $("banner").hidden = false; }
+  renderIntro(info);
+  refreshTabs();
+  $("tab-survey").addEventListener("click", () => { location.hash = ""; showView("survey"); });
+  $("tab-results").addEventListener("click", () => { location.hash = "responses"; showView("results"); });
+  window.addEventListener("hashchange", () => showView(location.hash === "#responses" ? "results" : "survey"));
+  if (location.hash === "#responses") showView("results");
+  else if (Backend.isAdmin && Backend.mode === "claude") startResults();
+}
+boot();
+})();
+</script>
