@@ -39,7 +39,10 @@ except ImportError:  # Windows
 from flask import Flask, Response, abort, jsonify, request
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-RESPONSES_FILE = os.environ.get("RESPONSES_FILE", os.path.join(BASE, "data", "responses.csv"))
+# On Railway, attach a Volume: Railway sets RAILWAY_VOLUME_MOUNT_PATH and responses are kept there,
+# so they survive redeploys and restarts.
+_DEFAULT_DIR = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH") or os.path.join(BASE, "data")
+RESPONSES_FILE = os.environ.get("RESPONSES_FILE", os.path.join(_DEFAULT_DIR, "responses.csv"))
 LOCK_FILE = RESPONSES_FILE + ".lock"
 PAGE_PATH = os.path.join(BASE, "static", "survey.html")
 
@@ -108,6 +111,11 @@ def wrap_page(config):
         "body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>"
         "</head><body>" + body + "</body></html>"
     )
+
+
+@app.get("/healthz")
+def healthz():
+    return "ok"
 
 
 @app.get("/")

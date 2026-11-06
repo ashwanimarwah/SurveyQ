@@ -40,6 +40,16 @@ Edit `static/survey.html` to change wording; the questions are defined at the to
 
 ## Deploying from GitHub
 
+### Railway
+1. railway.com → New Project → Deploy from GitHub repo → choose **SurveyQ**. Railway detects Python from
+   `requirements.txt` and uses the start command in `railway.json`.
+2. **Add a Volume (required, or responses are lost on every redeploy):** right-click the service →
+   Attach Volume → mount path `/data`. The app writes to `/data/responses.csv` automatically.
+3. Service → Variables → add `ADMIN_PASSWORD` (and optionally `REDIRECT_COMPLETE`, `REDIRECT_TERMINATE`, `REQUIRE_RID`).
+4. Service → Settings → Networking → Generate Domain. Survey: `https://<domain>/?rid=TEST1`, admin: `/admin`.
+5. Every push to `main` redeploys automatically; the Volume keeps the responses.
+Keep a single replica: the CSV lives on one Volume, so don't scale to multiple instances.
+
 ### PythonAnywhere (simplest; storage is permanent)
 1. Open a Bash console on PythonAnywhere and run:
    `git clone https://github.com/ashwanimarwah/SurveyQ.git` then `pip install --user -r SurveyQ/requirements.txt`
