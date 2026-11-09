@@ -1,0 +1,458 @@
+<title>Zahlungsumfrage Handel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a reading column; grids stack row by row for phones. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --ink: #16191d;
+  --muted: #5b6370;
+  --line: #d9dde3;
+  --accent: #1f4e79;        /* ledger blue */
+  --accent-soft: #e3ecf5;
+  --focus: #d08c1c;
+  --bad: #b23a32;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+    --accent: #7fb1e0; --accent-soft: #1c2a3a; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+  --accent: #7fb1e0; --accent-soft: #1c2a3a; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+.wrap { max-width: 720px; margin: 0 auto; }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; }
+.brandname { font-family: var(--font-display); font-weight: 600; font-size: 19px; display: block; }
+.lang { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.lang button { font: 500 13px var(--font-mono); padding: 3px 10px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 20px; }
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4.6vw, 33px); line-height: 1.2; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(20px, 3.5vw, 24px); line-height: 1.32; margin: 0 0 18px; hyphens: auto; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -8px 0 16px; }
+.options { display: grid; gap: 8px; }
+.opt { position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.opt:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.opt input[type=radio], .opt input[type=checkbox], .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key { width: 22px; height: 22px; border: 1.5px solid var(--line); border-radius: 5px; margin-top: 2px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .key { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.opt.dis { opacity: .45; }
+.opt:focus-within, .chip:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+input[type=text], textarea { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+textarea { min-height: 130px; resize: vertical; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+.dk { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--muted); cursor: pointer; margin-top: 10px; }
+.counter { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; text-align: right; }
+.grid { display: grid; gap: 14px; }
+.grow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.grow.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.grow .rl { font-weight: 600; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; font-size: 14.5px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; background: var(--bg); line-height: 1.3; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.btn { font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible, .lang button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><span class="eyebrow" id="eyebrow"></span><span class="brandname" id="brandname"></span></div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="lang-de" aria-pressed="true">DE</button>
+      <button type="button" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* Data is stored with stable codes and English labels; respondents see German by default (?lang=en for English). */
+let LANG = new URLSearchParams(location.search).get("lang") === "en" ? "en" : "de";
+const t = x => (x && typeof x === "object" && !Array.isArray(x)) ? (x[LANG] ?? x.de) : x;
+const LL = (de, en) => { const d = de.split("|"), e = en.split("|"); return d.map((x, i) => ({ code: String.fromCharCode(65 + i), label: { de: x, en: e[i] } })); };
+const RR = (de, en) => LL(de, en).map((o, i) => ({ ...o, code: "r" + (i + 1) }));
+const T = (de, en) => ({ de, en });
+
+const AGREE = LL("Stimme voll zu|Stimme eher zu|Teils/teils|Stimme eher nicht zu|Stimme gar nicht zu",
+                 "Strongly agree|Somewhat agree|Neither|Somewhat disagree|Strongly disagree");
+const TRAP_ROW = "r7", TRAP_ANSWER = "D";
+const willAdopt = a => ["A", "B", "C"].includes(a.q7);
+
+const QUESTIONS = [
+  /* ---------- Screener ---------- */
+  { id: "s1", section: T("Screener", "Screener"), type: "single", text: T("Wie alt sind Sie?", "How old are you?"),
+    options: LL("Unter 18 Jahre|18–29 Jahre|30–39 Jahre|40–49 Jahre|50–59 Jahre|60–75 Jahre|Über 75 Jahre", "Under 18|18–29|30–39|40–49|50–59|60–75|Over 75"),
+    terminate: a => ["A", "G"].includes(a.s1) ? "S1: age outside 18-75" : null },
+  { id: "s2", section: T("Screener", "Screener"), type: "single", text: T("Welchem Geschlecht ordnen Sie sich zu?", "Which gender do you identify with?"),
+    options: LL("Männlich|Weiblich|Divers|Keine Angabe", "Male|Female|Diverse|Prefer not to say") },
+  { id: "s3", section: T("Screener", "Screener"), type: "single", text: T("In welchem Bundesland befindet sich Ihr Betrieb?", "In which German state is your business located?"),
+    options: LL("Baden-Württemberg|Bayern|Berlin|Brandenburg|Bremen|Hamburg|Hessen|Mecklenburg-Vorpommern|Niedersachsen|Nordrhein-Westfalen|Rheinland-Pfalz|Saarland|Sachsen|Sachsen-Anhalt|Schleswig-Holstein|Thüringen",
+                "Baden-Württemberg|Bavaria|Berlin|Brandenburg|Bremen|Hamburg|Hesse|Mecklenburg-Western Pomerania|Lower Saxony|North Rhine-Westphalia|Rhineland-Palatinate|Saarland|Saxony|Saxony-Anhalt|Schleswig-Holstein|Thuringia") },
+  { id: "s4", section: T("Screener", "Screener"), type: "single", text: T("Was ist Ihre derzeitige berufliche Situation?", "What is your current employment status?"),
+    options: LL("Angestellt in Vollzeit|Angestellt in Teilzeit|Selbstständig / Inhaber:in eines Unternehmens|Arbeitslos / arbeitsuchend|Im Ruhestand / Rente|Schüler:in, Student:in oder in Ausbildung|Hausfrau / Hausmann|Sonstiges",
+                "Employed full-time|Employed part-time|Self-employed / business owner|Unemployed / looking for work|Retired|School pupil, student or apprentice|Homemaker|Other"),
+    terminate: a => ["D", "E", "F", "G", "H"].includes(a.s4) ? "S4: not employed / self-employed" : null },
+  { id: "s5", section: T("Screener", "Screener"), type: "single", text: T("Welche Position haben Sie im Unternehmen?", "What is your position in the business?"),
+    options: LL("Inhaber:in / Mitinhaber:in|Geschäftsführer:in|Filial- oder Abteilungsleitung|Mitarbeiter:in|Sonstiges", "Owner / co-owner|Managing director|Store or department manager|Employee|Other") },
+  { id: "s6", section: T("Screener", "Screener"), type: "single", text: T("In welcher Branche ist das Unternehmen tätig, das Sie führen oder in dem Sie arbeiten?", "Which industry is the business you run or work for in?"),
+    options: LL("Lebensmittelhandel (z. B. Bäckerei, Metzgerei, Lebensmittelgeschäft)|Einzelhandel ohne Lebensmittel|Gastronomie (Restaurant, Café, Bar, Imbiss)|Kiosk / Späti|Friseur, Kosmetik, Nagelstudio|Handwerk|Gesundheit (z. B. Physiotherapie, Apotheke)|Kfz-Werkstatt / Kfz-Dienstleistungen|Hotel / Unterkunft|Marktstand / Wochenmarkt|Freizeit, Kultur, Sport|Sonstige Dienstleistungen|Marktforschung / Marketing|Werbung / PR|Sonstige Branche",
+                "Food retail (e.g. bakery, butcher, grocery)|Non-food retail|Hospitality (restaurant, café, bar, snack bar)|Kiosk / convenience store|Hairdresser, beauty, nail salon|Skilled trades (Handwerk)|Health (e.g. physiotherapy, pharmacy)|Car repair / automotive services|Hotel / accommodation|Market stall / weekly market|Leisure, culture, sport|Other services|Market research / marketing|Advertising / PR|Other industry"),
+    other: "O", otherPrompt: T("Bitte angeben", "Please specify"), randomize: true, anchor: ["O"],
+    terminate: a => ["M", "N"].includes(a.s6) ? "S6: excluded industry (MR/marketing/advertising/PR)" : null },
+  { id: "s7", section: T("Screener", "Screener"), type: "single", text: T("Wie viele Beschäftigte hat das Unternehmen insgesamt (einschließlich Ihnen)?", "How many people does the business employ in total (including you)?"),
+    options: LL("1 (nur ich)|2–9|10–49|50–99|100–249|250 oder mehr|Weiß nicht", "1 (just me)|2–9|10–49|50–99|100–249|250 or more|Don't know"),
+    terminate: a => ["E", "F", "G"].includes(a.s7) ? "S7: company size 100+ or unknown" : null },
+  { id: "s8", section: T("Screener", "Screener"), type: "single", text: T("Wer sind die Kund:innen Ihres Unternehmens?", "Who are your business's customers?"),
+    options: LL("Ausschließlich Privatpersonen / Endverbraucher:innen|Überwiegend Privatpersonen, einige Geschäftskunden|Etwa gleich viele Privat- und Geschäftskunden|Überwiegend Geschäftskunden|Ausschließlich Geschäftskunden",
+                "Only private individuals / end consumers|Mostly consumers, some business customers|About equal consumers and businesses|Mostly business customers|Only business customers"),
+    terminate: a => ["C", "D", "E"].includes(a.s8) ? "S8: does not sell mainly to consumers" : null },
+  { id: "s9", section: T("Screener", "Screener"), type: "single", text: T("Wo kaufen Ihre Kund:innen bei Ihnen ein?", "Where do customers buy from you?"),
+    options: LL("Nur in einem festen Geschäft / Standort|In einem festen Geschäft und zusätzlich online|An einem mobilen Stand (z. B. Markt, Foodtruck)|Nur online (kein physischer Standort)",
+                "Only at a fixed shop / location|At a fixed shop and also online|At a mobile stand (e.g. market, food truck)|Online only (no physical location)"),
+    terminate: a => a.s9 === "D" ? "S9: online-only business" : null },
+  { id: "s10", section: T("Screener", "Screener"), type: "single", text: T("Inwieweit sind Sie an der Entscheidung beteiligt, welche Zahlungsarten Ihr Unternehmen anbietet?", "How involved are you in deciding which payment methods your business offers?"),
+    options: LL("Ich entscheide allein|Ich entscheide gemeinsam mit anderen|Ich werde gefragt und habe Einfluss|Ich bin nicht beteiligt", "I decide alone|I decide jointly with others|I am consulted and have influence|I am not involved"),
+    terminate: a => a.s10 === "D" ? "S10: not involved in payment decisions" : null },
+  { id: "s11", section: T("Screener", "Screener"), type: "multi", text: T("Welche Zahlungsarten akzeptiert Ihr Unternehmen derzeit?", "Which payment methods does your business currently accept?"),
+    hint: T("Mehrfachnennung möglich.", "Select all that apply."),
+    options: LL("Bargeld|Girocard (EC-Karte)|Kreditkarte (z. B. Visa, Mastercard)|Mobiles Bezahlen (z. B. Apple Pay, Google Pay)|PayPal oder andere Online-Zahlungsdienste|Überweisung / Rechnung|Gutscheine oder Essensmarken|Sonstige",
+                "Cash|Girocard (EC card)|Credit card (e.g. Visa, Mastercard)|Mobile payments (e.g. Apple Pay, Google Pay)|PayPal or other online payment services|Bank transfer / invoice|Vouchers or meal vouchers|Other"),
+    randomize: true, anchor: ["A", "H"],
+    terminate: a => (a.s11 || []).join() !== "A" ? "S11: accepts payment methods other than cash" : null },
+
+  /* ---------- Main ---------- */
+  { id: "q1", section: T("Ihr Betrieb", "Your business"), type: "single", text: T("Seit wann gibt es Ihren Betrieb?", "How long has your business existed?"),
+    options: LL("Weniger als 1 Jahr|1–3 Jahre|4–10 Jahre|11–20 Jahre|Mehr als 20 Jahre", "Less than 1 year|1–3 years|4–10 years|11–20 years|More than 20 years") },
+  { id: "q2", section: T("Ihr Betrieb", "Your business"), type: "single", text: T("Wie hoch ist der durchschnittliche Betrag, den eine Kundin oder ein Kunde pro Einkauf bei Ihnen bezahlt?", "What is the average amount a customer pays per purchase?"),
+    options: LL("Unter 10 €|10–24 €|25–49 €|50–99 €|100 € oder mehr", "Under €10|€10–24|€25–49|€50–99|€100 or more") },
+  { id: "q3", section: T("Bargeld", "Cash"), type: "multi", max: 3, text: T("Was sind die wichtigsten Gründe, warum Ihr Betrieb nur Bargeld akzeptiert?", "What are the main reasons your business accepts cash only?"),
+    hint: T("Bitte wählen Sie bis zu 3 Gründe.", "Please select up to 3."),
+    options: LL("Transaktionsgebühren sind zu hoch|Kosten für ein Kartenterminal|Monatliche Grundgebühren|Meine Kund:innen zahlen lieber bar|Die Beträge sind zu klein|Geld kommt bei Kartenzahlung erst nach Tagen an|Zu viel Aufwand bei Einrichtung und Technik|Bedenken beim Datenschutz|Wenig Vertrauen in Zahlungsanbieter|Mit Bargeld habe ich einen besseren Überblick über meine Finanzen|Ich habe mich noch nicht damit beschäftigt|Anderer Grund",
+                "Transaction fees are too high|Cost of a card terminal|Monthly fixed fees|My customers prefer paying cash|Amounts are too small|Card payments take days to arrive|Too much setup and technical effort|Data protection concerns|Little trust in payment providers|Cash gives me a better overview of my finances|I haven't looked into it|Another reason"),
+    other: "L", otherPrompt: T("Bitte angeben", "Please specify"), randomize: true, anchor: ["K", "L"] },
+  { id: "q4", section: T("Bargeld", "Cash"), type: "single", text: T("Wie oft fragen Kund:innen, ob sie mit Karte oder digital bezahlen können?", "How often do customers ask whether they can pay by card or digitally?"),
+    options: LL("Täglich|Mehrmals pro Woche|Etwa einmal pro Woche|Etwa einmal pro Monat|Seltener|Nie", "Daily|Several times a week|About once a week|About once a month|Less often|Never") },
+  { id: "q5", section: T("Bargeld", "Cash"), type: "single", text: T("Haben Sie im letzten Monat Umsatz verloren, weil Kund:innen nicht mit Karte oder digital zahlen konnten?", "In the past month, have you lost sales because customers couldn't pay by card or digitally?"),
+    options: LL("Ja, häufig|Ja, gelegentlich|Selten|Nie|Weiß nicht", "Yes, often|Yes, occasionally|Rarely|Never|Don't know") },
+  { id: "q6", section: T("Bargeld", "Cash"), type: "grid", text: T("Inwieweit stimmen Sie den folgenden Aussagen zu?", "How much do you agree with the following statements?"),
+    rows: RR("Das Zählen und Abrechnen von Bargeld kostet viel Zeit|Bargeld zur Bank zu bringen ist umständlich oder teuer|Ich mache mir Sorgen wegen Diebstahl oder Überfall|Die Gebühren meiner Bank für Bargeldeinzahlungen steigen|Bargeld macht meine Buchhaltung einfacher|Kartenzahlung würde meinen Umsatz steigern|Zur Qualitätssicherung: Bitte wählen Sie hier „Stimme eher nicht zu“",
+             "Counting and reconciling cash takes a lot of time|Taking cash to the bank is inconvenient or expensive|I worry about theft or robbery|My bank's fees for cash deposits are rising|Cash makes my bookkeeping easier|Accepting cards would increase my sales|For quality control: please select \"Somewhat disagree\" here"),
+    cols: AGREE, randomize: true,
+    terminate: a => a["q6_" + TRAP_ROW] && a["q6_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q6)" : null },
+  { id: "q7", section: T("Zukunft", "Future"), type: "single", text: T("Wie wahrscheinlich ist es, dass Ihr Betrieb in den nächsten 12 Monaten Karten- oder digitale Zahlungen einführt?", "How likely is your business to start accepting card or digital payments in the next 12 months?"),
+    options: LL("Ganz sicher|Wahrscheinlich|Vielleicht|Eher nicht|Auf keinen Fall", "Definitely|Probably|Maybe|Probably not|Definitely not") },
+  { id: "q8", section: T("Zukunft", "Future"), type: "single", show: willAdopt,
+    text: T("Welche Lösung würden Sie am ehesten nutzen?", "Which solution would you be most likely to use?"),
+    options: LL("Mobiles Kartenlesegerät (z. B. SumUp, Zettle)|Klassisches Kartenterminal von Bank oder Zahlungsanbieter|Bezahlen per Smartphone ohne Zusatzgerät (Tap to Pay)|Kassensystem mit integrierter Kartenzahlung|QR-Code / Bezahl-App|Weiß noch nicht",
+                "Mobile card reader (e.g. SumUp, Zettle)|Classic card terminal from a bank or payment provider|Tap to Pay on a smartphone (no extra device)|Cash register system with built-in card payment|QR code / payment app|Don't know yet") },
+  { id: "q9", section: T("Zukunft", "Future"), type: "multi", max: 3, show: a => ["D", "E"].includes(a.q7),
+    text: T("Was sind die wichtigsten Gründe, keine Karten- oder digitalen Zahlungen einzuführen?", "What are the main reasons for not introducing card or digital payments?"),
+    hint: T("Bitte wählen Sie bis zu 3 Gründe.", "Please select up to 3."),
+    options: LL("Die Kosten sind zu hoch|Meine Kund:innen brauchen es nicht|Zu viel Aufwand|Bedenken beim Datenschutz|Ich plane, den Betrieb bald aufzugeben oder zu übergeben|Ich möchte unabhängig von Banken und Anbietern bleiben|Anderer Grund|Kein bestimmter Grund",
+                "Costs are too high|My customers don't need it|Too much effort|Data protection concerns|I plan to close or hand over the business soon|I want to stay independent of banks and providers|Another reason|No particular reason"),
+    exclusive: ["H"], other: "G", otherPrompt: T("Bitte angeben", "Please specify"), randomize: true, anchor: ["G", "H"] },
+  { id: "q10", section: T("Zukunft", "Future"), type: "single", text: T("Welche Gebühr pro Kartenzahlung wäre für Sie höchstens akzeptabel?", "What is the highest fee per card payment you would find acceptable?"),
+    options: LL("Gar keine Gebühr|Bis 0,5 % des Betrags|0,5–1 %|1–1,5 %|1,5–2 %|Mehr als 2 %|Weiß nicht", "No fee at all|Up to 0.5% of the amount|0.5–1%|1–1.5%|1.5–2%|More than 2%|Don't know") },
+  { id: "q11", section: T("Zukunft", "Future"), type: "multi", max: 3, text: T("Was wäre Ihnen bei der Wahl eines Zahlungsanbieters am wichtigsten?", "What would matter most to you when choosing a payment provider?"),
+    hint: T("Bitte wählen Sie bis zu 3.", "Please select up to 3."),
+    options: LL("Niedrige Gebühren pro Zahlung|Keine monatliche Grundgebühr|Günstiges Gerät|Schnelle Auszahlung (am nächsten Tag)|Einfache Einrichtung|Funktioniert mit meiner Kasse (TSE)|Anbieter aus Deutschland oder der EU|Datenschutz|Guter Kundenservice auf Deutsch|Keine lange Vertragsbindung",
+                "Low fees per payment|No monthly fixed fee|Affordable device|Fast payout (next day)|Easy setup|Works with my cash register (TSE)|Provider from Germany or the EU|Data protection|Good customer service in German|No long contract"),
+    randomize: true },
+  { id: "q12", section: T("Zukunft", "Future"), type: "multi", text: T("Wo würden Sie sich über Zahlungslösungen für Ihren Betrieb informieren?", "Where would you look for information about payment solutions for your business?"),
+    hint: T("Mehrfachnennung möglich.", "Select all that apply."),
+    options: LL("Bei meiner Hausbank|Steuerberater:in|IHK oder Handwerkskammer|Branchen- oder Fachverband|Internetsuche|Andere Unternehmer:innen|Vertreter:innen von Zahlungsanbietern|Soziale Medien|Nirgends / kein Interesse",
+                "My bank|Tax advisor|Chamber of commerce (IHK) or crafts (HWK)|Trade association|Internet search|Other business owners|Payment provider sales reps|Social media|Nowhere / not interested"),
+    exclusive: ["I"], randomize: true, anchor: ["I"] },
+  { id: "q13", section: T("Zukunft", "Future"), type: "text", min: 5, max: 600, dk: T("Weiß nicht / keine Angabe", "Don't know / no answer"),
+    text: T("Was müsste sich ändern, damit Sie Karten- oder digitale Zahlungen anbieten?", "What would need to change for you to offer card or digital payments?") },
+
+  /* ---------- Firmographics ---------- */
+  { id: "d1", section: T("Zum Schluss", "Finally"), type: "single", text: T("Wie hoch war der Jahresumsatz Ihres Betriebs im letzten Geschäftsjahr ungefähr?", "Roughly what was your business's annual revenue in the last financial year?"),
+    options: LL("Unter 25.000 €|25.000–99.999 €|100.000–249.999 €|250.000–499.999 €|500.000–999.999 €|1 Mio. € oder mehr|Keine Angabe", "Under €25,000|€25,000–99,999|€100,000–249,999|€250,000–499,999|€500,000–999,999|€1m or more|Prefer not to say") },
+  { id: "d2", section: T("Zum Schluss", "Finally"), type: "single", text: T("An wie vielen Standorten ist Ihr Betrieb tätig?", "How many locations does your business have?"),
+    options: LL("1|2–3|4 oder mehr", "1|2–3|4 or more") },
+];
+
+const TYPE_LABEL = { single: T("Eine Antwort", "Select one"), multi: T("Mehrfachnennung", "Select all that apply"), grid: T("Eine Antwort pro Zeile", "One answer per row"), text: T("Offene Frage", "Open question") };
+const UI = {
+  eyebrow: T("QuestionLab · Online-Umfrage", "QuestionLab · Online survey"), name: T("Zahlungsumfrage Handel", "Merchant Payments Survey"),
+  title: T("Umfrage zu Zahlungsarten in kleinen Betrieben", "Survey on payment methods in small businesses"),
+  lead: T("Wir möchten verstehen, wie kleine Betriebe in Deutschland Zahlungen annehmen und was sie sich dabei wünschen. Es gibt keine richtigen oder falschen Antworten.", "We want to understand how small businesses in Germany take payments and what they need. There are no right or wrong answers."),
+  time: T("Dauer", "Time"), timeV: T("10–15 Minuten", "10–15 minutes"), anon: T("Ihre Antworten", "Your answers"), anonV: T("Anonym", "Anonymous"),
+  privacy: T("Ihre Angaben werden anonym und ausschließlich zu Forschungszwecken ausgewertet. Es werden keine Namen oder Kontaktdaten erhoben. Die Teilnahme ist freiwillig und kann jederzeit abgebrochen werden.", "Your answers are analysed anonymously and only for research. No names or contact details are collected. Taking part is voluntary and you can stop at any time."),
+  start: T("Umfrage starten", "Start survey"), back: T("Zurück", "Back"), next: T("Weiter", "Next"), saving: T("Wird gespeichert…", "Saving…"), retry: T("Erneut versuchen", "Try again"),
+  upTo: n => T(` · bis zu ${n}`, ` · up to ${n}`),
+  errOne: T("Bitte wählen Sie eine Antwort.", "Please select an answer."), errMulti: T("Bitte wählen Sie mindestens eine Antwort.", "Please select at least one answer."),
+  errOther: T("Bitte machen Sie im Textfeld eine Angabe.", "Please specify your answer in the text box."), errMax: n => T(`Sie können bis zu ${n} Antworten wählen.`, `You can select up to ${n}.`),
+  errGrid: n => T(`Bitte beantworten Sie jede Zeile (noch ${n}).`, `Please answer every row (${n} left).`),
+  errText: T("Bitte geben Sie eine kurze Antwort ein oder kreuzen Sie „Weiß nicht“ an.", "Please type a short answer or tick \"Don't know\"."),
+  errSave: T("Ihre Antworten konnten nicht gespeichert werden. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.", "Your answers couldn't be saved. Check your connection and try again."),
+  preview: T("Vorschau: Antworten werden nicht gespeichert.", "Preview: answers are not saved."),
+};
+const MSG = {
+  complete: [T("Vielen Dank!", "Thank you!"), T("Ihre Antworten wurden gespeichert. Vielen Dank für Ihre Zeit und Ihre Meinung.", "Your answers have been saved. Thank you for your time and opinions.")],
+  terminated: [T("Vielen Dank für Ihr Interesse", "Thank you for your interest"), T("Leider gehören Sie aufgrund Ihrer Angaben nicht zur Zielgruppe dieser Umfrage. Vielen Dank für Ihre Zeit.", "Unfortunately, based on your answers you are not in the target group for this survey. Thank you for your time.")],
+  quality: [T("Vielen Dank", "Thank you"), T("Leider können wir diese Antwort nicht berücksichtigen. Vielen Dank für Ihre Zeit.", "Unfortunately we can't accept this response. Thank you for your time.")],
+  overquota: [T("Vielen Dank für Ihr Interesse", "Thank you for your interest"), T("Wir haben bereits alle benötigten Antworten erhalten. Vielen Dank für Ihre Zeit.", "We have already received all the responses we need. Thank you for your time.")],
+};
+const SPEEDER_SECONDS = 180;
+
+/* ================= Engine ================= */
+const S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {}, end: null };
+const server = window.SURVEY_SERVER;
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const visible = q => !q.show || q.show(S.a);
+const shuffle = arr => { const x = arr.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; };
+function ordered(q, list) {
+  if (!q.randomize) return list;
+  if (!S.order[q.id]) {
+    const anchor = q.anchor || [];
+    S.order[q.id] = [...shuffle(list.filter(o => !anchor.includes(o.code))), ...list.filter(o => anchor.includes(o.code))].map(o => o.code);
+  }
+  return S.order[q.id].map(c => list.find(o => o.code === c));
+}
+
+function header() {
+  $("eyebrow").textContent = t(UI.eyebrow); $("brandname").textContent = t(UI.name);
+  document.documentElement.lang = LANG;
+  $("lang-de").setAttribute("aria-pressed", String(LANG === "de")); $("lang-en").setAttribute("aria-pressed", String(LANG === "en"));
+  if (!server) { $("banner").textContent = t(UI.preview); $("banner").hidden = false; }
+}
+function rerender() { header(); if (S.end) showEnd(S.end.status, S.end.redirect, true); else if (S.idx < 0) renderIntro(); else renderQuestion(); }
+$("lang-de").addEventListener("click", () => { LANG = "de"; rerender(); });
+$("lang-en").addEventListener("click", () => { LANG = "en"; rerender(); });
+
+function renderIntro() {
+  S.idx = -1;
+  $("survey").replaceChildren(
+    el("h1", { text: t(UI.title) }), el("p", { class: "lead", text: t(UI.lead) }),
+    el("dl", { class: "facts" },
+      el("div", {}, el("dt", { text: t(UI.time) }), el("dd", { text: t(UI.timeV) })),
+      el("div", {}, el("dt", { text: t(UI.anon) }), el("dd", { text: t(UI.anonV) }))),
+    el("p", { class: "small", text: t(UI.privacy) }),
+    el("div", { class: "actions" }, el("span"), el("button", { class: "btn", type: "button", id: "start-btn", text: t(UI.start), onclick: () => { S.startedAt = S.startedAt || new Date(); go(0, 1); } })));
+}
+function go(i, dir) {
+  while (i >= 0 && i < QUESTIONS.length && !visible(QUESTIONS[i])) i += dir;
+  if (i < 0) { renderIntro(); return; }
+  if (i >= QUESTIONS.length) { finish("complete", ""); return; }
+  S.idx = i; renderQuestion(); window.scrollTo({ top: 0 });
+}
+function renderQuestion() {
+  const q = QUESTIONS[S.idx];
+  const pct = Math.round((S.idx / QUESTIONS.length) * 100);
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  const body = { single: renderOptions, multi: renderOptions, grid: renderGrid, text: renderText }[q.type](q, err);
+  $("survey").replaceChildren(
+    el("div", { class: "progress" }, el("div", { class: "meta" }, el("span", { text: t(q.section) }), el("span", { text: pct + "%" })), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` }))),
+    el("div", { class: "qhead" }, el("span", { class: "qcode", text: q.id.toUpperCase() }), el("span", { class: "qtype", text: t(TYPE_LABEL[q.type]) + (q.max && q.type === "multi" ? t(UI.upTo(q.max)) : "") })),
+    el("h2", { class: "qtext", id: "qtext", text: t(q.text) }),
+    q.hint ? el("p", { class: "hint", text: t(q.hint) }) : null,
+    body, err,
+    el("div", { class: "actions" },
+      el("button", { class: "btn ghost", type: "button", text: t(UI.back), onclick: () => go(S.idx - 1, -1) }),
+      el("button", { class: "btn", type: "button", id: "next-btn", text: t(UI.next), onclick: () => advance(err) })));
+}
+function renderOptions(q, err) {
+  const multi = q.type === "multi";
+  const box = el("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => S.a[q.id] || (multi ? [] : null);
+  const paint = () => {
+    const v = cur();
+    box.querySelectorAll(".opt").forEach(row => {
+      const on = multi ? v.includes(row.dataset.code) : v === row.dataset.code;
+      row.classList.toggle("sel", on); row.querySelector("input").checked = on;
+      row.classList.toggle("dis", !!(multi && q.max && v.length >= q.max && !on));
+      const o = row.querySelector(".other-in"); if (o) o.hidden = !on;
+    });
+  };
+  for (const o of ordered(q, q.options)) {
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id: `${q.id}-${o.code}`, value: o.code });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}`, for: input.id, "data-code": o.code }, input, el("span", { class: "key" }), el("span", { text: t(o.label) }));
+    if (q.other === o.code) {
+      const tx = el("input", { type: "text", class: "other-in", id: `${q.id}-other`, maxlength: "200", placeholder: t(q.otherPrompt), value: S.other[q.id] || "" });
+      tx.addEventListener("input", () => { S.other[q.id] = tx.value; });
+      tx.addEventListener("click", e => e.stopPropagation());
+      label.append(el("span"), tx);
+    }
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) S.a[q.id] = o.code;
+      else {
+        let v = cur().slice();
+        if (input.checked) {
+          if ((q.exclusive || []).includes(o.code)) v = [o.code];
+          else {
+            v = v.filter(c => !(q.exclusive || []).includes(c));
+            if (q.max && v.length >= q.max) { input.checked = false; err.textContent = t(UI.errMax(q.max)); return; }
+            v.push(o.code);
+          }
+        } else v = v.filter(c => c !== o.code);
+        S.a[q.id] = v;
+      }
+      paint();
+    });
+    box.append(label);
+  }
+  paint();
+  return box;
+}
+function renderGrid(q, err) {
+  const g = el("div", { class: "grid" });
+  for (const r of ordered(q, q.rows)) {
+    const key = `${q.id}_${r.code}`;
+    const row = el("div", { class: "grow", role: "radiogroup", "aria-label": t(r.label), "data-row": r.code });
+    const chips = el("div", { class: "chips" });
+    const paint = () => {
+      row.classList.toggle("done", !!S.a[key]);
+      chips.querySelectorAll(".chip").forEach(c => { const on = S.a[key] === c.dataset.code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; });
+    };
+    for (const c of q.cols) {
+      const input = el("input", { type: "radio", name: key, id: `${key}-${c.code}`, value: c.code });
+      input.addEventListener("change", () => { S.a[key] = c.code; err.textContent = ""; paint(); });
+      chips.append(el("label", { class: "chip", for: input.id, "data-code": c.code }, input, t(c.label)));
+    }
+    row.append(el("div", { class: "rl", text: t(r.label) }), chips);
+    paint(); g.append(row);
+  }
+  return g;
+}
+function renderText(q) {
+  const w = el("div");
+  const ta = el("textarea", { id: `${q.id}-text`, maxlength: String(q.max), "aria-labelledby": "qtext" });
+  ta.value = S.a[q.id] || "";
+  const count = el("div", { class: "counter" });
+  const dk = el("input", { type: "checkbox", id: `${q.id}-dk` }); dk.checked = !!S.a[q.id + "_dk"];
+  const upd = () => { count.textContent = `${ta.value.length} / ${q.max}`; };
+  ta.addEventListener("input", () => { S.a[q.id] = ta.value; if (ta.value.trim()) { dk.checked = false; S.a[q.id + "_dk"] = false; } upd(); });
+  dk.addEventListener("change", () => { S.a[q.id + "_dk"] = dk.checked; if (dk.checked) { ta.value = ""; S.a[q.id] = ""; upd(); } });
+  upd();
+  w.append(ta, count, el("label", { class: "dk", for: dk.id }, dk, t(q.dk)));
+  return w;
+}
+function validate(q) {
+  const a = S.a;
+  if (q.type === "single") { if (!a[q.id]) return t(UI.errOne); if (q.other === a[q.id] && !(S.other[q.id] || "").trim()) return t(UI.errOther); }
+  if (q.type === "multi") { if (!(a[q.id] || []).length) return t(UI.errMulti); if (q.other && a[q.id].includes(q.other) && !(S.other[q.id] || "").trim()) return t(UI.errOther); }
+  if (q.type === "grid") { const m = q.rows.filter(r => !a[`${q.id}_${r.code}`]).length; if (m) return t(UI.errGrid(m)); }
+  if (q.type === "text") { if (!a[q.id + "_dk"] && (a[q.id] || "").trim().length < q.min) return t(UI.errText); }
+  return "";
+}
+function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  const reason = q.terminate && q.terminate(S.a);
+  if (reason) { finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
+  go(S.idx + 1, 1);
+}
+
+/* ================= Record ================= */
+const enLabel = (list, code) => { const o = list.find(x => x.code === code); return o ? o.label.en : ""; };
+function computeFlags(status, dur) {
+  const f = [], a = S.a;
+  if (status === "complete" && dur < SPEEDER_SECONDS) f.push(`Speeder: ${dur}s`);
+  const q6 = QUESTIONS.find(q => q.id === "q6");
+  const v = q6.rows.filter(r => r.code !== TRAP_ROW).map(r => a[`q6_${r.code}`]).filter(Boolean);
+  if (status === "complete" && v.length > 3 && new Set(v).size === 1) f.push("Straight-lined Q6");
+  const txt = (a.q13 || "").trim();
+  if (txt && (/(.)\1{4,}/.test(txt) || !/[aeiouäöüy]/i.test(txt))) f.push("Q13 possible gibberish");
+  if (a.s8 === "B") f.push("S8 mostly (not only) consumers");
+  if (a.s9 === "C") f.push("S9 mobile stand (no fixed shop)");
+  return f;
+}
+function buildRecord(status, reason) {
+  const now = new Date(), a = S.a, dur = Math.round((now - (S.startedAt || now)) / 1000);
+  const r = { status, terminate_reason: reason, flags: "", started_at: (S.startedAt || now).toISOString(), completed_at: now.toISOString(), duration_sec: dur, lang: LANG };
+  for (const q of QUESTIONS) {
+    const shown = visible(q);
+    if (q.type === "single") { r[q.id] = shown ? a[q.id] || "" : ""; r[q.id + "_label"] = shown ? enLabel(q.options, a[q.id]) : ""; }
+    if (q.type === "multi") { const v = shown ? a[q.id] || [] : []; r[q.id] = v.join(";"); r[q.id + "_label"] = v.map(c => enLabel(q.options, c)).join("; "); }
+    if (q.type === "grid") for (const row of q.rows) { const v = shown ? a[`${q.id}_${row.code}`] || "" : ""; r[`${q.id}_${row.code}`] = v; r[`${q.id}_${row.code}_label`] = enLabel(q.cols, v); }
+    if (q.type === "text") { r[q.id] = (a[q.id] || "").trim(); r[q.id + "_dk"] = a[q.id + "_dk"] ? 1 : ""; }
+    if (q.other) r[q.id + "_other"] = shown && [].concat(a[q.id] || []).includes(q.other) ? (S.other[q.id] || "").trim() : "";
+  }
+  r.flags = computeFlags(status, dur).join(" | ");
+  return r;
+}
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = t(UI.saving); }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  if (server) {
+    rec.rid = server.rid || "";
+    try {
+      const r = await fetch(server.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      if (!r.ok && r.status !== 409) throw new Error(String(r.status));
+      res = await r.json().catch(() => ({}));
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = t(UI.retry); }
+      const e2 = $("err"); if (e2) e2.textContent = t(UI.errSave);
+      return;
+    }
+  } else console.log("Preview record (not saved):", rec);
+  S.done = true;
+  showEnd(res.status || status, res.redirect || "");
+}
+function showEnd(status, redirect, noRedirect) {
+  S.end = { status, redirect };
+  const [h, p] = MSG[status] || MSG.terminated;
+  $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: t(h) }), el("p", { class: "lead", text: t(p) }));
+  if (redirect && !noRedirect) setTimeout(() => { location.href = redirect; }, 2000);
+}
+
+header();
+if (server && server.closed) showEnd("overquota", server.redirect || "");
+else renderIntro();
+})();
+</script>

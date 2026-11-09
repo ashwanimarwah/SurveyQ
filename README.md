@@ -111,3 +111,43 @@ Each row also carries `gc_store_numbers` / `gc_store_locations` for the responde
   panel return links, use `{rid}` where the respondent id goes.
 - `GC_REQUIRE_RID=1` to block entry without a panel id.
 - Uses the same `ADMIN_PASSWORD` as the India survey.
+
+---
+
+# Germany cash-only merchants survey (`/de`)
+
+B2C small businesses in Germany that accept cash only: why, the cost of cash, intent to adopt card or
+digital payments, preferred solutions, fee tolerance and provider choice. n=260, LOI 10–15 min.
+German by default; reviewers can switch to English with the DE/EN toggle or `?lang=en`.
+Codes are stable and the `_label` columns are in English whatever language the respondent used.
+
+- Panel link: `https://<your-domain>/de?rid={panel_id}`
+- Dashboard: `https://<your-domain>/admin/de` · data: **Download de_responses.csv**
+
+## Screener
+| Q | Rule |
+|---|---|
+| S1 Age | under 18 or over 75 → terminate |
+| S2 Gender, S3 Bundesland | recorded |
+| S4 Employment | unemployed, retired, student/apprentice, homemaker, other → terminate |
+| S5 Position | recorded |
+| S6 Industry | market research/marketing or advertising/PR → terminate |
+| S7 Employees | 100+ or don't know → terminate (max 99) |
+| S8 Customers | about equal / mostly / only businesses → terminate ("mostly consumers" passes, flagged) |
+| S9 Where customers buy | online only → terminate (mobile stand passes, flagged) |
+| S10 Payment decision | not involved → terminate |
+| S11 Payment methods accepted | anything other than cash alone → terminate |
+
+## Main questionnaire
+Q1 years in business · Q2 average purchase · Q3 reasons for cash only · Q4 how often customers ask for card ·
+Q5 lost sales · Q6 cash-handling attitudes grid (attention check row → `quality`) · Q7 likelihood to adopt in 12 months ·
+Q8 preferred solution (likely adopters) · Q9 reasons not to adopt (unlikely) · Q10 acceptable fee · Q11 provider choice factors ·
+Q12 information sources · Q13 open end: what would need to change · D1 revenue · D2 locations.
+
+## Settings (Railway → Variables)
+`DE_QUOTA` (default 260), `DE_REDIRECT_COMPLETE`, `DE_REDIRECT_TERMINATE`, `DE_REDIRECT_OVERQUOTA`,
+`DE_REDIRECT_QUALITY` ({rid} placeholder), `DE_REQUIRE_RID=1`.
+
+## Adding another survey
+`survey_blueprint.make_survey(slug, title, page, default_quota)` gives any new page the same storage,
+quota, de-duplication, redirects and dashboard; register it in `app.py`.

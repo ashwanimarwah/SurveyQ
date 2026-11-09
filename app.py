@@ -222,6 +222,10 @@ def export_csv():
 from golden_corral import bp as golden_corral_bp  # noqa: E402  (Golden Corral survey at /gc)
 app.register_blueprint(golden_corral_bp)
 
+from survey_blueprint import make_survey  # noqa: E402
+# Germany: cash-only B2C small businesses, payments study (n=260) at /de
+app.register_blueprint(make_survey(slug="de", title="Germany cash-only merchants survey", page="de-cash.html", default_quota=260))
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "8000")))
