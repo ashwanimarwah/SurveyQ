@@ -164,6 +164,10 @@ td.q4 { max-width: 320px; }
 .pill.terminated { background: var(--bad-soft); color: var(--bad); }
 .flag { display: block; font-size: 12.5px; color: var(--warn); line-height: 1.35; margin-bottom: 3px; }
 .empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -194,7 +198,7 @@ const L = s => s.split("|").map((label, i) => ({ code: String.fromCharCode(65 + 
 
 const QUESTIONS = [
   { id: "q1", section: 1, type: "single", text: "Are you currently working in the education sector in India?",
-    options: L("Yes|No"), terminate: ["B"] },
+    options: L("Yes|No"), terminate: ["B"], req: "This survey is for people currently working in the education sector in India." },
   { id: "q2", section: 1, type: "state", text: "In which Indian State or Union Territory do you primarily work?" },
   { id: "q3", section: 1, type: "single", text: "What is your current professional role in the education sector?",
     options: L("School teacher / subject teacher|Principal / headmaster / headmistress|Academic coordinator / academic administrator|School management / owner / trustee|Government education department / policymaker|Education consultant / trainer|NGO / nonprofit education professional|EdTech professional / education service provider|Other education-related role"),
@@ -209,7 +213,7 @@ const QUESTIONS = [
   { id: "q6", section: 2, type: "multi", text: "Which school education levels are you directly involved with in your current role?",
     hint: "Select all class bands that apply.",
     options: L("Primary — Classes 1–5|Upper primary / middle school — Classes 6–8|Secondary — Classes 9–10|Senior secondary — Classes 11–12|Multiple levels across the school system|Not directly involved in school-level education"),
-    exclusive: ["E", "F"], terminate: ["F"] },
+    exclusive: ["E", "F"], terminate: ["F"], req: "This survey is for people directly involved with at least one school level (Classes 1–12)." },
   { id: "q7", section: 2, type: "single", text: s => `How would you rate the overall quality of school education in ${s.q2 || "your state"}?`,
     options: L("Excellent|Good|Average|Poor|Very poor|Not sure / unable to assess") },
   { id: "q8", section: 2, type: "single", text: "How adequate is the infrastructure available in the schools you work with?",
@@ -229,6 +233,7 @@ const QUESTIONS = [
 const SECTION_NAMES = { 1: "Screening & demographics", 2: "Education system assessment" };
 const TYPE_LABEL = { single: "Single select", multi: "Multiple select", state: "Searchable list", open: "Open-ended · required" };
 const SPEEDER_SECONDS = 120;
+const SHOW_REASON = !window.SURVEY_SERVER || window.SURVEY_SERVER.showReason !== false;
 const TERMINATION_MSG = "Thank you for your interest in this survey. Unfortunately, based on your responses, you do not currently meet the eligibility criteria for this study. We appreciate your time and participation.";
 
 const CSV_COLUMNS = ["respondent_id","status","terminate_reason","flags","started_at","completed_at","duration_sec",
@@ -462,6 +467,7 @@ function advance(err) {
   const v = S.answers[q.id];
   if (q.terminate && [].concat(v).some(c => q.terminate.includes(c))) {
     const reason = q.id === "q1" ? "Q1: not working in education sector" : "Q6: not directly involved in school-level education";
+    S.termQ = q;
     finish("terminated", reason); return;
   }
   if (S.idx < QUESTIONS.length - 1) go(S.idx + 1);
@@ -524,8 +530,17 @@ async function finish(status, reason) {
       el("p", { class: "lead", text: "Your responses have been recorded. We appreciate the time you've given to help us understand school education in India." }));
   } else {
     m.append(el("div", { class: "endmark" }), el("h1", { text: "Thank you for your interest" }), el("p", { class: "lead", text: TERMINATION_MSG }));
+    const q = S.termQ;
+    if (q && SHOW_REASON) {
+      const ans = [].concat(S.answers[q.id] || []).map(c => labelOf(q, c)).join("; ");
+      m.append(el("div", { class: "reason", id: "term-reason" },
+        el("div", { class: "rk", text: "Why the survey ended" }),
+        el("p", {}, el("b", { text: q.id.toUpperCase() + " " }), document.createTextNode(qText(q))),
+        el("p", {}, el("span", { class: "rl", text: "Your answer: " }), document.createTextNode(ans)),
+        q.req ? el("p", {}, el("span", { class: "rl", text: "Requirement: " }), document.createTextNode(q.req)) : null));
+    }
   }
-  if (res && res.redirect) setTimeout(() => { location.href = res.redirect; }, 2500);
+  if (res && res.redirect) setTimeout(() => { location.href = res.redirect; }, $("term-reason") ? 8000 : 2500);
   if (Backend.mode === "claude" && Backend.isAdmin) refreshTabs();
 }
 

@@ -151,3 +151,12 @@ Q12 information sources · Q13 open end: what would need to change · D1 revenue
 ## Adding another survey
 `survey_blueprint.make_survey(slug, title, page, default_quota)` gives any new page the same storage,
 quota, de-duplication, redirects and dashboard; register it in `app.py`.
+
+---
+
+## Screen-out reasons shown to respondents
+When someone is screened out, the end page shows the question that ended the survey, their answer and the
+requirement (German/English on `/de`). This is on by default, which helps testing. For live fieldwork you may
+want to hide it so respondents can't learn how to qualify: set `SHOW_REASON=0` (India), `GC_SHOW_REASON=0`
+(Golden Corral) or `DE_SHOW_REASON=0` (Germany) in Railway → Variables. With a panel redirect set, the page
+waits 8 seconds before redirecting when a reason is shown.

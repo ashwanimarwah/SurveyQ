@@ -125,7 +125,7 @@ def survey():
         return Response("<p>This survey link is missing a respondent id.</p>", 400)
     if rid and has_responded(rid):
         return Response("<p style='font-family:sans-serif;padding:24px'>You have already taken part in this survey. Thank you.</p>")
-    return Response(wrap_page({"rid": rid}), mimetype="text/html")
+    return Response(wrap_page({"rid": rid, "showReason": os.environ.get("SHOW_REASON", "1") != "0"}), mimetype="text/html")
 
 
 def _clean(v, limit=1000):

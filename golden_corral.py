@@ -54,6 +54,10 @@ bp = Blueprint("gc", __name__)
 _tlock = threading.Lock()
 
 
+def SHOW_REASON():
+    return os.environ.get("GC_SHOW_REASON", "1") != "0"
+
+
 def quota():
     try:
         return int(os.environ.get("GC_QUOTA", "500"))
@@ -123,7 +127,7 @@ def page():
         return Response("<p style='font-family:sans-serif;padding:24px'>You have already taken part in this survey. Thank you.</p>")
     if completes(rs) >= quota():
         return Response(wrap({"rid": rid, "closed": True, "redirect": redirect_for("overquota", rid) if rid else ""}), mimetype="text/html")
-    return Response(wrap({"rid": rid}), mimetype="text/html")
+    return Response(wrap({"rid": rid, "showReason": SHOW_REASON()}), mimetype="text/html")
 
 
 @bp.post("/api/gc/zip")

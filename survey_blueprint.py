@@ -12,7 +12,7 @@ gives these routes:
     /admin/<slug>/export.csv        all responses
 
 Environment variables use the slug in upper case, e.g. for slug "de":
-    DE_QUOTA, DE_RESPONSES_FILE, DE_REQUIRE_RID,
+    DE_QUOTA, DE_RESPONSES_FILE, DE_REQUIRE_RID, DE_SHOW_REASON (0 hides the screen-out reason),
     DE_REDIRECT_COMPLETE, DE_REDIRECT_TERMINATE, DE_REDIRECT_OVERQUOTA, DE_REDIRECT_QUALITY ({rid} placeholder)
 """
 import csv
@@ -111,7 +111,7 @@ def make_survey(slug, title, page, default_quota):
         rs = rows()
         if rid and any(r.get("respondent_id") == rid for r in rs):
             return Response("<p style='font-family:sans-serif;padding:24px'>Sie haben bereits an dieser Umfrage teilgenommen. Vielen Dank! / You have already taken part. Thank you.</p>")
-        cfg = {"rid": rid, "api": f"api/{slug}/responses"}
+        cfg = {"rid": rid, "api": f"api/{slug}/responses", "showReason": env("SHOW_REASON", "1") != "0"}
         if completes(rs) >= quota():
             cfg.update(closed=True, redirect=redirect_for("overquota", rid))
         return Response(wrap(cfg), mimetype="text/html")

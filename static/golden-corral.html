@@ -91,6 +91,10 @@ input.zip { max-width: 200px; font-family: var(--font-mono); font-size: 22px; le
 .facts dd { margin: 2px 0 0; font-weight: 600; }
 .small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
 .endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
 @media (max-width: 520px) { .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
@@ -123,20 +127,20 @@ const AGREE = L("Strongly agree|Somewhat agree|Neither agree nor disagree|Somewh
 const TRAP_ROW = "r8", TRAP_ANSWER = "D";
 
 const QUESTIONS = [
-  { id: "s1", section: "Screener", type: "zip", text: "What is your 5-digit ZIP code?" },
+  { id: "s1", section: "Screener", type: "zip", text: "What is your 5-digit ZIP code?", req: "This survey is only for people living in specific areas, and this ZIP code is not one of them." },
   { id: "s2", section: "Screener", type: "single", text: "Which of the following best describes your age?",
     options: L("Under 18|18–24|25–34|35–44|45–54|55–64|65 or older"),
-    terminate: a => a.s2 === "A" ? "S2: under 18" : null },
+    terminate: a => a.s2 === "A" ? "S2: under 18" : null, req: "You must be 18 or older to take part." },
   { id: "s3", section: "Screener", type: "single", text: "How do you describe your gender?",
     options: L("Man|Woman|Non-binary or another gender|Prefer not to say") },
   { id: "s4", section: "Screener", type: "single", text: "What was your total annual household income before taxes last year?",
     options: L("Less than $25,000|$25,000 – $49,999|$50,000 – $74,999|$75,000 – $99,999|$100,000 – $149,999|$150,000 – $199,999|$200,000 or more|Prefer not to say"),
-    terminate: a => ["D", "E"].includes(a.s4) ? "S4: income $75,000–$149,999 (excluded)" : a.s4 === "H" ? "S4: income not provided" : null },
+    terminate: a => ["D", "E"].includes(a.s4) ? "S4: income $75,000–$149,999 (excluded)" : a.s4 === "H" ? "S4: income not provided" : null, req: "This survey is for households with an income below $75,000 or of $150,000 or more. An answer is needed to check this." },
   { id: "s5", section: "Screener", type: "multi", text: "Do you or does anyone in your household work in any of the following industries?",
     hint: "Select all that apply.",
     options: L("Market research, advertising or marketing|Restaurant or food service|Food or beverage manufacturing|Banking or financial services|Healthcare|None of these"),
     exclusive: ["F"], randomize: true, anchor: ["F"],
-    terminate: a => (a.s5 || []).some(c => c === "A" || c === "B") ? "S5: sensitive industry" : null },
+    terminate: a => (a.s5 || []).some(c => c === "A" || c === "B") ? "S5: sensitive industry" : null, req: "People who work, or live with someone who works, in market research, advertising, marketing or restaurants can't take part." },
 
   { id: "q1", section: "Dining out", type: "open", boxes: 3, dk: "I can't think of any",
     text: "When you think of buffet-style restaurants, which restaurant names come to mind?",
@@ -174,7 +178,7 @@ const QUESTIONS = [
     text: "How much do you agree or disagree with each statement?",
     rows: R("All-you-can-eat buffets are good value for money|I eat out less often than a year ago because of prices|I like restaurants where I can try many different dishes|Cleanliness matters more to me at a buffet than at other restaurants|I check for deals or coupons before choosing where to eat|Eating out is mainly a family occasion for me|I am trying to eat healthier when I eat out|For quality control, please select \"Somewhat disagree\" for this row"),
     cols: AGREE, randomize: true,
-    terminate: a => a["q10_" + TRAP_ROW] && a["q10_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q10)" : null },
+    terminate: a => a["q10_" + TRAP_ROW] && a["q10_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q10)" : null, req: "The quality-control row asked for \"Somewhat disagree\"." },
 
   { id: "d1", section: "About you", type: "single", text: "Are there any children under 18 living in your household?",
     options: L("Yes|No|Prefer not to say") },
@@ -183,6 +187,7 @@ const QUESTIONS = [
 ];
 const TYPE_LABEL = { single: "Select one", multi: "Select all that apply", grid: "One answer per row", open: "Type your answer", nps: "0–10 scale", zip: "Screener" };
 const SPEEDER_SECONDS = 150;
+const SHOW_REASON = !window.SURVEY_SERVER || window.SURVEY_SERVER.showReason !== false;
 const MSG = {
   terminated: ["Thank you for your interest", "Unfortunately, based on your answers you don't qualify for this survey. We appreciate your time."],
   quality: ["Thank you", "Unfortunately we can't accept this response. We appreciate your time."],
@@ -388,11 +393,28 @@ async function advance(err) {
     try { res = await (await fetch("api/gc/zip", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ zip: S.a.s1 }) })).json(); }
     catch (e) { btn.disabled = false; btn.textContent = "Next"; err.textContent = "We couldn't check your ZIP code. Please try again."; return; }
     if (res.quotaFull) { finish("overquota", "Quota full"); return; }
-    if (!res.eligible) { finish("terminated", "S1: ZIP not in target area"); return; }
+    if (!res.eligible) { S.termQ = q; finish("terminated", "S1: ZIP not in target area"); return; }
   }
   const reason = q.terminate && q.terminate(S.a);
-  if (reason) { finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
+  if (reason) { S.termQ = q; finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
   go(S.idx + 1, 1);
+}
+
+/* ================= Termination reason ================= */
+function answerText(q) {
+  const a = S.a;
+  if (q.type === "zip") return a.s1 || "";
+  if (q.type === "single") return label(q.options, a[q.id]);
+  if (q.type === "multi") return (a[q.id] || []).map(c => label(q.options, c)).join("; ");
+  if (q.type === "grid") { const row = q.rows.find(r => r.code === TRAP_ROW); return `${row.label} → ${label(q.cols, a[`${q.id}_${TRAP_ROW}`])}`; }
+  return "";
+}
+function reasonBox(q) {
+  return el("div", { class: "reason", id: "term-reason" },
+    el("div", { class: "rk", text: "Why the survey ended" }),
+    el("p", {}, el("b", { text: q.id.toUpperCase() + " " }), document.createTextNode(qText(q))),
+    el("p", {}, el("span", { class: "rl", text: "Your answer: " }), document.createTextNode(answerText(q))),
+    q.req ? el("p", {}, el("span", { class: "rl", text: "Requirement: " }), document.createTextNode(q.req)) : null);
 }
 
 /* ================= Data record ================= */
@@ -446,7 +468,9 @@ async function finish(status, reason) {
   S.done = true;
   const [h, p] = MSG[res.status || status] || MSG.terminated;
   $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: h }), el("p", { class: "lead", text: p }));
-  if (res.redirect) setTimeout(() => { location.href = res.redirect; }, 2000);
+  const st = res.status || status;
+  if (SHOW_REASON && S.termQ && (st === "terminated" || st === "quality")) $("survey").append(reasonBox(S.termQ));
+  if (res.redirect) setTimeout(() => { location.href = res.redirect; }, $("term-reason") ? 8000 : 2000);
 }
 
 if (!server) { $("banner").textContent = "Preview: answers are not saved and every ZIP code is accepted."; $("banner").hidden = false; }

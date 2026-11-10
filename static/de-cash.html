@@ -88,6 +88,10 @@ input[type=text]:focus, textarea:focus { outline: 2px solid var(--focus); outlin
 .facts dd { margin: 2px 0 0; font-weight: 600; }
 .small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
 .endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 
@@ -122,7 +126,7 @@ const QUESTIONS = [
   /* ---------- Screener ---------- */
   { id: "s1", section: T("Screener", "Screener"), type: "single", text: T("Wie alt sind Sie?", "How old are you?"),
     options: LL("Unter 18 Jahre|18–29 Jahre|30–39 Jahre|40–49 Jahre|50–59 Jahre|60–75 Jahre|Über 75 Jahre", "Under 18|18–29|30–39|40–49|50–59|60–75|Over 75"),
-    terminate: a => ["A", "G"].includes(a.s1) ? "S1: age outside 18-75" : null },
+    terminate: a => ["A", "G"].includes(a.s1) ? "S1: age outside 18-75" : null, req: T("Teilnehmen können Personen zwischen 18 und 75 Jahren.", "Participants must be 18 to 75 years old.") },
   { id: "s2", section: T("Screener", "Screener"), type: "single", text: T("Welchem Geschlecht ordnen Sie sich zu?", "Which gender do you identify with?"),
     options: LL("Männlich|Weiblich|Divers|Keine Angabe", "Male|Female|Diverse|Prefer not to say") },
   { id: "s3", section: T("Screener", "Screener"), type: "single", text: T("In welchem Bundesland befindet sich Ihr Betrieb?", "In which German state is your business located?"),
@@ -131,34 +135,34 @@ const QUESTIONS = [
   { id: "s4", section: T("Screener", "Screener"), type: "single", text: T("Was ist Ihre derzeitige berufliche Situation?", "What is your current employment status?"),
     options: LL("Angestellt in Vollzeit|Angestellt in Teilzeit|Selbstständig / Inhaber:in eines Unternehmens|Arbeitslos / arbeitsuchend|Im Ruhestand / Rente|Schüler:in, Student:in oder in Ausbildung|Hausfrau / Hausmann|Sonstiges",
                 "Employed full-time|Employed part-time|Self-employed / business owner|Unemployed / looking for work|Retired|School pupil, student or apprentice|Homemaker|Other"),
-    terminate: a => ["D", "E", "F", "G", "H"].includes(a.s4) ? "S4: not employed / self-employed" : null },
+    terminate: a => ["D", "E", "F", "G", "H"].includes(a.s4) ? "S4: not employed / self-employed" : null, req: T("Die Umfrage richtet sich an Berufstätige und Selbstständige (nicht arbeitslos, im Ruhestand oder in Ausbildung).", "The survey is for people who are employed or run a business (not unemployed, retired or studying).") },
   { id: "s5", section: T("Screener", "Screener"), type: "single", text: T("Welche Position haben Sie im Unternehmen?", "What is your position in the business?"),
     options: LL("Inhaber:in / Mitinhaber:in|Geschäftsführer:in|Filial- oder Abteilungsleitung|Mitarbeiter:in|Sonstiges", "Owner / co-owner|Managing director|Store or department manager|Employee|Other") },
   { id: "s6", section: T("Screener", "Screener"), type: "single", text: T("In welcher Branche ist das Unternehmen tätig, das Sie führen oder in dem Sie arbeiten?", "Which industry is the business you run or work for in?"),
     options: LL("Lebensmittelhandel (z. B. Bäckerei, Metzgerei, Lebensmittelgeschäft)|Einzelhandel ohne Lebensmittel|Gastronomie (Restaurant, Café, Bar, Imbiss)|Kiosk / Späti|Friseur, Kosmetik, Nagelstudio|Handwerk|Gesundheit (z. B. Physiotherapie, Apotheke)|Kfz-Werkstatt / Kfz-Dienstleistungen|Hotel / Unterkunft|Marktstand / Wochenmarkt|Freizeit, Kultur, Sport|Sonstige Dienstleistungen|Marktforschung / Marketing|Werbung / PR|Sonstige Branche",
                 "Food retail (e.g. bakery, butcher, grocery)|Non-food retail|Hospitality (restaurant, café, bar, snack bar)|Kiosk / convenience store|Hairdresser, beauty, nail salon|Skilled trades (Handwerk)|Health (e.g. physiotherapy, pharmacy)|Car repair / automotive services|Hotel / accommodation|Market stall / weekly market|Leisure, culture, sport|Other services|Market research / marketing|Advertising / PR|Other industry"),
     other: "O", otherPrompt: T("Bitte angeben", "Please specify"), randomize: true, anchor: ["O"],
-    terminate: a => ["M", "N"].includes(a.s6) ? "S6: excluded industry (MR/marketing/advertising/PR)" : null },
+    terminate: a => ["M", "N"].includes(a.s6) ? "S6: excluded industry (MR/marketing/advertising/PR)" : null, req: T("Unternehmen aus Marktforschung, Marketing, Werbung oder PR können nicht teilnehmen.", "Businesses in market research, marketing, advertising or PR can't take part.") },
   { id: "s7", section: T("Screener", "Screener"), type: "single", text: T("Wie viele Beschäftigte hat das Unternehmen insgesamt (einschließlich Ihnen)?", "How many people does the business employ in total (including you)?"),
     options: LL("1 (nur ich)|2–9|10–49|50–99|100–249|250 oder mehr|Weiß nicht", "1 (just me)|2–9|10–49|50–99|100–249|250 or more|Don't know"),
-    terminate: a => ["E", "F", "G"].includes(a.s7) ? "S7: company size 100+ or unknown" : null },
+    terminate: a => ["E", "F", "G"].includes(a.s7) ? "S7: company size 100+ or unknown" : null, req: T("Das Unternehmen darf höchstens 99 Beschäftigte haben.", "The business must have no more than 99 employees.") },
   { id: "s8", section: T("Screener", "Screener"), type: "single", text: T("Wer sind die Kund:innen Ihres Unternehmens?", "Who are your business's customers?"),
     options: LL("Ausschließlich Privatpersonen / Endverbraucher:innen|Überwiegend Privatpersonen, einige Geschäftskunden|Etwa gleich viele Privat- und Geschäftskunden|Überwiegend Geschäftskunden|Ausschließlich Geschäftskunden",
                 "Only private individuals / end consumers|Mostly consumers, some business customers|About equal consumers and businesses|Mostly business customers|Only business customers"),
-    terminate: a => ["C", "D", "E"].includes(a.s8) ? "S8: does not sell mainly to consumers" : null },
+    terminate: a => ["C", "D", "E"].includes(a.s8) ? "S8: does not sell mainly to consumers" : null, req: T("Das Unternehmen muss hauptsächlich an Privatpersonen / Endverbraucher:innen verkaufen.", "The business must sell mainly to private individuals / end consumers.") },
   { id: "s9", section: T("Screener", "Screener"), type: "single", text: T("Wo kaufen Ihre Kund:innen bei Ihnen ein?", "Where do customers buy from you?"),
     options: LL("Nur in einem festen Geschäft / Standort|In einem festen Geschäft und zusätzlich online|An einem mobilen Stand (z. B. Markt, Foodtruck)|Nur online (kein physischer Standort)",
                 "Only at a fixed shop / location|At a fixed shop and also online|At a mobile stand (e.g. market, food truck)|Online only (no physical location)"),
-    terminate: a => a.s9 === "D" ? "S9: online-only business" : null },
+    terminate: a => a.s9 === "D" ? "S9: online-only business" : null, req: T("Das Unternehmen braucht einen physischen Verkaufsort (nicht nur online).", "The business must have a physical place of sale (not online only).") },
   { id: "s10", section: T("Screener", "Screener"), type: "single", text: T("Inwieweit sind Sie an der Entscheidung beteiligt, welche Zahlungsarten Ihr Unternehmen anbietet?", "How involved are you in deciding which payment methods your business offers?"),
     options: LL("Ich entscheide allein|Ich entscheide gemeinsam mit anderen|Ich werde gefragt und habe Einfluss|Ich bin nicht beteiligt", "I decide alone|I decide jointly with others|I am consulted and have influence|I am not involved"),
-    terminate: a => a.s10 === "D" ? "S10: not involved in payment decisions" : null },
+    terminate: a => a.s10 === "D" ? "S10: not involved in payment decisions" : null, req: T("Sie müssen an der Auswahl der Zahlungsarten beteiligt sein.", "You must be involved in choosing payment methods.") },
   { id: "s11", section: T("Screener", "Screener"), type: "multi", text: T("Welche Zahlungsarten akzeptiert Ihr Unternehmen derzeit?", "Which payment methods does your business currently accept?"),
     hint: T("Mehrfachnennung möglich.", "Select all that apply."),
     options: LL("Bargeld|Girocard (EC-Karte)|Kreditkarte (z. B. Visa, Mastercard)|Mobiles Bezahlen (z. B. Apple Pay, Google Pay)|PayPal oder andere Online-Zahlungsdienste|Überweisung / Rechnung|Gutscheine oder Essensmarken|Sonstige",
                 "Cash|Girocard (EC card)|Credit card (e.g. Visa, Mastercard)|Mobile payments (e.g. Apple Pay, Google Pay)|PayPal or other online payment services|Bank transfer / invoice|Vouchers or meal vouchers|Other"),
     randomize: true, anchor: ["A", "H"],
-    terminate: a => (a.s11 || []).join() !== "A" ? "S11: accepts payment methods other than cash" : null },
+    terminate: a => (a.s11 || []).join() !== "A" ? "S11: accepts payment methods other than cash" : null, req: T("Die Umfrage richtet sich an Betriebe, die ausschließlich Bargeld akzeptieren.", "The survey is for businesses that accept cash only.") },
 
   /* ---------- Main ---------- */
   { id: "q1", section: T("Ihr Betrieb", "Your business"), type: "single", text: T("Seit wann gibt es Ihren Betrieb?", "How long has your business existed?"),
@@ -178,7 +182,7 @@ const QUESTIONS = [
     rows: RR("Das Zählen und Abrechnen von Bargeld kostet viel Zeit|Bargeld zur Bank zu bringen ist umständlich oder teuer|Ich mache mir Sorgen wegen Diebstahl oder Überfall|Die Gebühren meiner Bank für Bargeldeinzahlungen steigen|Bargeld macht meine Buchhaltung einfacher|Kartenzahlung würde meinen Umsatz steigern|Zur Qualitätssicherung: Bitte wählen Sie hier „Stimme eher nicht zu“",
              "Counting and reconciling cash takes a lot of time|Taking cash to the bank is inconvenient or expensive|I worry about theft or robbery|My bank's fees for cash deposits are rising|Cash makes my bookkeeping easier|Accepting cards would increase my sales|For quality control: please select \"Somewhat disagree\" here"),
     cols: AGREE, randomize: true,
-    terminate: a => a["q6_" + TRAP_ROW] && a["q6_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q6)" : null },
+    terminate: a => a["q6_" + TRAP_ROW] && a["q6_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q6)" : null, req: T("In der Qualitätskontroll-Zeile sollte „Stimme eher nicht zu“ gewählt werden.", "The quality-control row asked for \"Somewhat disagree\".") },
   { id: "q7", section: T("Zukunft", "Future"), type: "single", text: T("Wie wahrscheinlich ist es, dass Ihr Betrieb in den nächsten 12 Monaten Karten- oder digitale Zahlungen einführt?", "How likely is your business to start accepting card or digital payments in the next 12 months?"),
     options: LL("Ganz sicher|Wahrscheinlich|Vielleicht|Eher nicht|Auf keinen Fall", "Definitely|Probably|Maybe|Probably not|Definitely not") },
   { id: "q8", section: T("Zukunft", "Future"), type: "single", show: willAdopt,
@@ -228,6 +232,7 @@ const UI = {
   errText: T("Bitte geben Sie eine kurze Antwort ein oder kreuzen Sie „Weiß nicht“ an.", "Please type a short answer or tick \"Don't know\"."),
   errSave: T("Ihre Antworten konnten nicht gespeichert werden. Bitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.", "Your answers couldn't be saved. Check your connection and try again."),
   preview: T("Vorschau: Antworten werden nicht gespeichert.", "Preview: answers are not saved."),
+  why: T("Warum die Umfrage beendet wurde", "Why the survey ended"), yourAns: T("Ihre Antwort: ", "Your answer: "), reqL: T("Voraussetzung: ", "Requirement: "),
 };
 const MSG = {
   complete: [T("Vielen Dank!", "Thank you!"), T("Ihre Antworten wurden gespeichert. Vielen Dank für Ihre Zeit und Ihre Meinung.", "Your answers have been saved. Thank you for your time and opinions.")],
@@ -236,6 +241,7 @@ const MSG = {
   overquota: [T("Vielen Dank für Ihr Interesse", "Thank you for your interest"), T("Wir haben bereits alle benötigten Antworten erhalten. Vielen Dank für Ihre Zeit.", "We have already received all the responses we need. Thank you for your time.")],
 };
 const SPEEDER_SECONDS = 180;
+const SHOW_REASON = !window.SURVEY_SERVER || window.SURVEY_SERVER.showReason !== false;
 
 /* ================= Engine ================= */
 const S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {}, end: null };
@@ -392,8 +398,24 @@ function advance(err) {
   const msg = validate(q);
   if (msg) { err.textContent = msg; return; }
   const reason = q.terminate && q.terminate(S.a);
-  if (reason) { finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
+  if (reason) { S.termQ = q; finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
   go(S.idx + 1, 1);
+}
+
+/* ================= Termination reason ================= */
+function answerText(q) {
+  const a = S.a, lab = (list, c) => { const o = list.find(x => x.code === c); return o ? t(o.label) : ""; };
+  if (q.type === "single") return lab(q.options, a[q.id]);
+  if (q.type === "multi") return (a[q.id] || []).map(c => lab(q.options, c)).join("; ");
+  if (q.type === "grid") { const row = q.rows.find(r => r.code === TRAP_ROW); return `${t(row.label)} → ${lab(q.cols, a[`${q.id}_${TRAP_ROW}`])}`; }
+  return "";
+}
+function reasonBox(q) {
+  return el("div", { class: "reason", id: "term-reason" },
+    el("div", { class: "rk", text: t(UI.why) }),
+    el("p", {}, el("b", { text: q.id.toUpperCase() + " " }), document.createTextNode(t(q.text))),
+    el("p", {}, el("span", { class: "rl", text: t(UI.yourAns) }), document.createTextNode(answerText(q))),
+    q.req ? el("p", {}, el("span", { class: "rl", text: t(UI.reqL) }), document.createTextNode(t(q.req))) : null);
 }
 
 /* ================= Record ================= */
@@ -448,7 +470,8 @@ function showEnd(status, redirect, noRedirect) {
   S.end = { status, redirect };
   const [h, p] = MSG[status] || MSG.terminated;
   $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: t(h) }), el("p", { class: "lead", text: t(p) }));
-  if (redirect && !noRedirect) setTimeout(() => { location.href = redirect; }, 2000);
+  if (SHOW_REASON && S.termQ && (status === "terminated" || status === "quality")) $("survey").append(reasonBox(S.termQ));
+  if (redirect && !noRedirect) setTimeout(() => { location.href = redirect; }, $("term-reason") ? 8000 : 2000);
 }
 
 header();
