@@ -57,6 +57,28 @@ VALID_STATUS = {"complete", "terminated"}
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
+
+# ONLY_SURVEY=<slug> (e.g. "de") turns this deployment into a single-survey service: "/" goes to that
+# survey and every other survey's pages and data are unreachable from it.
+ONLY_SURVEY = os.environ.get("ONLY_SURVEY", "").strip().lower()
+
+
+@app.before_request
+def _only_one_survey():
+    if not ONLY_SURVEY:
+        return None
+    p = request.path.rstrip("/") or "/"
+    s = ONLY_SURVEY
+    if p == "/":
+        from flask import redirect
+        qs = request.query_string.decode()
+        return redirect(f"/{s}" + (f"?{qs}" if qs else ""), 302)
+    if p == "/healthz" or p == f"/{s}" or p.startswith(f"/api/{s}/") or p == f"/admin/{s}" or p.startswith(f"/admin/{s}/"):
+        return None
+    if p == "/admin":
+        from flask import redirect
+        return redirect(f"/admin/{s}", 302)
+    return Response("Not found", 404)
 _thread_lock = threading.Lock()
 
 
