@@ -1,0 +1,478 @@
+<title>Lifestyle Survey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a reading column; grids stack row by row for phones. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --ink: #16191d;
+  --muted: #5b6370;
+  --line: #d9dde3;
+  --accent: #2e4a3c;        /* pine */
+  --accent-soft: #e2ebe5;
+  --focus: #d08c1c;
+  --bad: #b23a32;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+    --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+  --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+.wrap { max-width: 720px; margin: 0 auto; }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; }
+.brandname { font-family: var(--font-display); font-weight: 600; font-size: 19px; display: block; }
+.lang { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.lang button { font: 500 13px var(--font-mono); padding: 3px 10px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 20px; }
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4.6vw, 33px); line-height: 1.2; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(20px, 3.5vw, 24px); line-height: 1.32; margin: 0 0 18px; hyphens: auto; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -8px 0 16px; }
+.options { display: grid; gap: 8px; }
+.opt { position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.opt:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.opt input[type=radio], .opt input[type=checkbox], .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key { width: 22px; height: 22px; border: 1.5px solid var(--line); border-radius: 5px; margin-top: 2px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .key { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.opt.dis { opacity: .45; }
+.opt:focus-within, .chip:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+input[type=text], textarea { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+textarea { min-height: 130px; resize: vertical; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+.dk { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--muted); cursor: pointer; margin-top: 10px; }
+.counter { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; text-align: right; }
+.grid { display: grid; gap: 14px; }
+.grow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.grow.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.grow .rl { font-weight: 600; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; font-size: 14.5px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; background: var(--bg); line-height: 1.3; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.btn { font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible, .lang button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><span class="eyebrow" id="eyebrow"></span><span class="brandname" id="brandname"></span></div>
+    <div class="lang" role="group" aria-label="Language" hidden>
+      <button type="button" id="lang-de" aria-pressed="true">DE</button>
+      <button type="button" id="lang-en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* US men 18+ general lifestyle survey. English only (engine shared with the German survey). */
+let LANG = "en";
+const t = x => (x && typeof x === "object" && !Array.isArray(x)) ? (x[LANG] ?? x.de) : x;
+const LL = (de, en) => { const d = de.split("|"), e = en.split("|"); return d.map((x, i) => ({ code: String.fromCharCode(65 + i), label: { de: x, en: e[i] } })); };
+const RR = (de, en) => LL(de, en).map((o, i) => ({ ...o, code: "r" + (i + 1) }));
+const T = (de, en) => ({ de, en });
+
+const LE = s => LL(s, s);
+const RE = s => RR(s, s);
+const AGREE = LE("Strongly agree|Somewhat agree|Neither agree nor disagree|Somewhat disagree|Strongly disagree");
+const TRAP_ROW = "r7", TRAP_ANSWER = "D";
+const STATES = "Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|District of Columbia|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|Washington|West Virginia|Wisconsin|Wyoming|I don't live in the United States";
+const STATE_OPTS = STATES.split("|").map((s, i) => ({ code: "st" + String(i + 1).padStart(2, "0"), label: { de: s, en: s } }));
+const NOT_US = STATE_OPTS[STATE_OPTS.length - 1].code;
+
+const QUESTIONS = [
+  /* ---------- Screener ---------- */
+  { id: "s1", section: "About you", type: "single", text: "What is your gender?",
+    options: LE("Male|Female|Non-binary or another gender|Prefer not to say"),
+    terminate: a => a.s1 !== "A" ? "S1: not male" : null, req: "This survey is for men." },
+  { id: "s2", section: "About you", type: "single", text: "Which of these age groups are you in?",
+    options: LE("Under 18|18–24|25–34|35–44|45–54|55–64|65 or older"),
+    terminate: a => a.s2 === "A" ? "S2: under 18" : null, req: "You must be 18 or older to take part." },
+  { id: "s3", section: "About you", type: "single", text: "In which state do you live?",
+    options: STATE_OPTS,
+    terminate: a => a.s3 === NOT_US ? "S3: lives outside the US" : null, req: "This survey is for people living in the United States." },
+  { id: "s4", section: "About you", type: "multi", text: "Do you or does anyone in your household work in any of these industries?",
+    hint: "Select all that apply.",
+    options: LE("Market research|Advertising, marketing or public relations|Journalism or news media|Retail|Healthcare|Education|Technology|None of these"),
+    exclusive: ["H"], randomize: true, anchor: ["H"],
+    terminate: a => (a.s4 || []).some(c => ["A", "B", "C"].includes(c)) ? "S4: sensitive industry" : null,
+    req: "People who work, or live with someone who works, in market research, advertising, marketing, PR or news media can't take part." },
+
+  /* ---------- Lifestyle ---------- */
+  { id: "q1", section: "Lifestyle", type: "single", text: "Overall, how satisfied are you with your life these days?",
+    options: LE("Very satisfied|Somewhat satisfied|Neither satisfied nor dissatisfied|Somewhat dissatisfied|Very dissatisfied") },
+  { id: "q2", section: "Lifestyle", type: "multi", text: "Which of these have you done in the past month?", hint: "Select all that apply.",
+    options: LE("Watched live sports (TV, streaming or in person)|Played a sport|Worked out at a gym or at home|Hiking, fishing, hunting or camping|Played video games|Cooked a meal from scratch|DIY or home improvement project|Traveled overnight|Read a book|Went to a concert, game or live event|Volunteered|None of these"),
+    exclusive: ["L"], randomize: true, anchor: ["L"] },
+  { id: "q3", section: "Lifestyle", type: "single", text: "In a typical week, about how many hours of free time do you have?",
+    options: LE("Less than 5 hours|5–9 hours|10–19 hours|20–29 hours|30 hours or more") },
+
+  /* ---------- Media & technology ---------- */
+  { id: "q4", section: "Media & technology", type: "multi", text: "Which of these devices do you personally own?", hint: "Select all that apply.",
+    options: LE("Smartphone|Laptop or desktop computer|Tablet|Smart TV or streaming device|Video game console|Smartwatch or fitness tracker|Smart speaker|VR headset|None of these"),
+    exclusive: ["I"], randomize: true, anchor: ["I"] },
+  { id: "q5", section: "Media & technology", type: "multi", text: "Which of these have you used in the past month?", hint: "Select all that apply.",
+    options: LE("Netflix|YouTube|Amazon Prime Video|Hulu|Disney+|Max|Peacock|Paramount+|ESPN+|Spotify|Apple Music|Podcasts (any app)|None of these"),
+    exclusive: ["M"], randomize: true, anchor: ["M"] },
+  { id: "q6", section: "Media & technology", type: "multi", text: "Which of these social media platforms do you use at least once a week?", hint: "Select all that apply.",
+    options: LE("Facebook|Instagram|YouTube|TikTok|X (Twitter)|Reddit|Snapchat|LinkedIn|Discord|None of these"),
+    exclusive: ["J"], randomize: true, anchor: ["J"] },
+  { id: "q7", section: "Media & technology", type: "single", text: "Where do you get most of your news?",
+    options: LE("TV news|News websites or apps|Social media|Podcasts or radio|Print newspapers or magazines|Friends and family|I don't really follow the news") },
+
+  /* ---------- Shopping ---------- */
+  { id: "q8", section: "Shopping", type: "grid", text: "How often do you buy each of these online?",
+    rows: RE("Groceries|Clothing and shoes|Electronics|Personal care and grooming products|Household essentials|Restaurant delivery or takeout"),
+    cols: LE("Never|Less than once a month|About once a month|A few times a month|Weekly or more"), randomize: true },
+  { id: "q9", section: "Shopping", type: "grid", text: "How much do you agree or disagree with each statement?",
+    rows: RE("I research products thoroughly before buying|I'm willing to pay more for quality brands|I always look for deals and discounts|I'm usually among the first to try new technology|I prefer shopping in physical stores to shopping online|I'm worried about my financial situation over the next year|For quality control, please select \"Somewhat disagree\" for this row"),
+    cols: AGREE, randomize: true,
+    terminate: a => a["q9_" + TRAP_ROW] && a["q9_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q9)" : null,
+    req: "The quality-control row asked for \"Somewhat disagree\"." },
+  { id: "q10", section: "Shopping", type: "single", text: "Who does most of the grocery shopping in your household?",
+    options: LE("Mostly me|Shared about equally|Mostly someone else|Not applicable") },
+
+  /* ---------- Health & wellbeing ---------- */
+  { id: "q11", section: "Health & wellbeing", type: "single", text: "How often do you exercise for at least 30 minutes?",
+    options: LE("Every day|4–6 times a week|1–3 times a week|Less than once a week|Rarely or never") },
+  { id: "q12", section: "Health & wellbeing", type: "multi", max: 3, text: "Which health or wellness goals are you working on right now?", hint: "Select up to 3.",
+    options: LE("Lose weight|Build muscle or strength|Eat healthier|Sleep better|Reduce stress|Drink less alcohol|Quit smoking or vaping|Improve my mental health|None right now"),
+    exclusive: ["I"], randomize: true, anchor: ["I"] },
+  { id: "q13", section: "Health & wellbeing", type: "grid", text: "How would you rate your current…",
+    rows: RE("Physical health|Mental and emotional health"), cols: LE("Excellent|Very good|Good|Fair|Poor") },
+
+  /* ---------- Outlook ---------- */
+  { id: "q14", section: "Outlook", type: "multi", max: 3, text: "What are your top priorities in life right now?", hint: "Select up to 3.",
+    options: LE("Family|Career|Finances|Health|Friendships|Faith or spirituality|Hobbies and interests|My community|Education or learning|Travel and experiences"),
+    randomize: true },
+  { id: "q15", section: "Outlook", type: "multi", text: "Which of these do you plan to buy in the next 12 months?", hint: "Select all that apply.",
+    options: LE("A vehicle|A home|A new smartphone|A TV|A computer or tablet|A video game console|Furniture|A vacation|Fitness equipment|None of these"),
+    exclusive: ["J"], randomize: true, anchor: ["J"] },
+  { id: "q16", section: "Outlook", type: "text", min: 5, max: 600, dk: "Nothing comes to mind",
+    text: "What is one product or service you bought in the past year that made your life better, and why?" },
+
+  /* ---------- Demographics ---------- */
+  { id: "d1", section: "Final questions", type: "single", text: "What is your marital status?",
+    options: LE("Married|Living with a partner|Single, never married|Divorced or separated|Widowed|Prefer not to say") },
+  { id: "d2", section: "Final questions", type: "single", text: "Are there any children under 18 living in your household?",
+    options: LE("Yes|No|Prefer not to say") },
+  { id: "d3", section: "Final questions", type: "single", text: "What is the highest level of education you have completed?",
+    options: LE("Less than high school|High school diploma or GED|Some college, no degree|Associate degree|Bachelor's degree|Graduate or professional degree|Prefer not to say") },
+  { id: "d4", section: "Final questions", type: "single", text: "Which best describes your current employment status?",
+    options: LE("Employed full-time|Employed part-time|Self-employed|Unemployed and looking for work|Retired|Student|Not working for another reason|Prefer not to say") },
+  { id: "d5", section: "Final questions", type: "single", text: "What was your total household income before taxes last year?",
+    options: LE("Less than $25,000|$25,000 – $49,999|$50,000 – $74,999|$75,000 – $99,999|$100,000 – $149,999|$150,000 – $199,999|$200,000 or more|Prefer not to say") },
+  { id: "d6", section: "Final questions", type: "single", text: "Are you of Hispanic, Latino or Spanish origin?",
+    options: LE("Yes|No|Prefer not to say") },
+  { id: "d7", section: "Final questions", type: "multi", text: "Which of these best describes your race?", hint: "Select all that apply.",
+    options: LE("White|Black or African American|Asian|American Indian or Alaska Native|Native Hawaiian or Pacific Islander|Another race|Prefer not to say"),
+    exclusive: ["G"] },
+  { id: "d8", section: "Final questions", type: "single", text: "Which best describes where you live?",
+    options: LE("A large city|A suburb near a large city|A small city or town|A rural area") },
+];
+const TYPE_LABEL = { single: "Select one", multi: "Select all that apply", grid: "One answer per row", text: "Open question" };
+const UI = {
+  eyebrow: "QuestionLab · Online survey", name: "Lifestyle Survey",
+  title: "Tell us about your life and the things you buy",
+  lead: "We'd like to hear about your everyday life, the media you use, how you shop and what matters to you. There are no right or wrong answers.",
+  time: "Time needed", timeV: "About 15 minutes", anon: "Your answers", anonV: "Confidential",
+  privacy: "Your answers are combined with others' and used for research only. We don't ask for your name or contact details. Please answer every question honestly and carefully.",
+  start: "Start survey", back: "Back", next: "Next", saving: "Saving…", retry: "Try again",
+  upTo: n => ` · up to ${n}`,
+  errOne: "Please select an answer.", errMulti: "Please select at least one answer.",
+  errOther: "Please specify your answer in the text box.", errMax: n => `You can select up to ${n}.`,
+  errGrid: n => `Please answer every row (${n} left).`,
+  errText: "Please type a short answer, or tick the box if nothing comes to mind.",
+  errSave: "Your answers couldn't be saved. Check your connection and try again.",
+  preview: "Preview: answers are not saved.",
+  why: "Why the survey ended", yourAns: "Your answer: ", reqL: "Requirement: ",
+};
+const MSG = {
+  complete: ["Thank you!", "Your answers have been recorded. We appreciate your time and opinions."],
+  terminated: ["Thank you for your interest", "Unfortunately, based on your answers you don't qualify for this survey. Thank you for your time."],
+  quality: ["Thank you", "Unfortunately we can't accept this response. Thank you for your time."],
+  overquota: ["Thank you for your interest", "We have already received all the responses we need for this survey. Thank you for your time."],
+};
+const SPEEDER_SECONDS = 300;
+const SHOW_REASON = !window.SURVEY_SERVER || window.SURVEY_SERVER.showReason !== false;
+
+/* ================= Engine ================= */
+const S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {}, end: null };
+const server = window.SURVEY_SERVER;
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const visible = q => !q.show || q.show(S.a);
+const shuffle = arr => { const x = arr.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; };
+function ordered(q, list) {
+  if (!q.randomize) return list;
+  if (!S.order[q.id]) {
+    const anchor = q.anchor || [];
+    S.order[q.id] = [...shuffle(list.filter(o => !anchor.includes(o.code))), ...list.filter(o => anchor.includes(o.code))].map(o => o.code);
+  }
+  return S.order[q.id].map(c => list.find(o => o.code === c));
+}
+
+function header() {
+  $("eyebrow").textContent = t(UI.eyebrow); $("brandname").textContent = t(UI.name);
+  document.documentElement.lang = LANG;
+  $("lang-de").setAttribute("aria-pressed", String(LANG === "de")); $("lang-en").setAttribute("aria-pressed", String(LANG === "en"));
+  if (!server) { $("banner").textContent = t(UI.preview); $("banner").hidden = false; }
+}
+function rerender() { header(); if (S.end) showEnd(S.end.status, S.end.redirect, true); else if (S.idx < 0) renderIntro(); else renderQuestion(); }
+$("lang-de").addEventListener("click", () => { LANG = "de"; rerender(); });
+$("lang-en").addEventListener("click", () => { LANG = "en"; rerender(); });
+
+function renderIntro() {
+  S.idx = -1;
+  $("survey").replaceChildren(
+    el("h1", { text: t(UI.title) }), el("p", { class: "lead", text: t(UI.lead) }),
+    el("dl", { class: "facts" },
+      el("div", {}, el("dt", { text: t(UI.time) }), el("dd", { text: t(UI.timeV) })),
+      el("div", {}, el("dt", { text: t(UI.anon) }), el("dd", { text: t(UI.anonV) }))),
+    el("p", { class: "small", text: t(UI.privacy) }),
+    el("div", { class: "actions" }, el("span"), el("button", { class: "btn", type: "button", id: "start-btn", text: t(UI.start), onclick: () => { S.startedAt = S.startedAt || new Date(); go(0, 1); } })));
+}
+function go(i, dir) {
+  while (i >= 0 && i < QUESTIONS.length && !visible(QUESTIONS[i])) i += dir;
+  if (i < 0) { renderIntro(); return; }
+  if (i >= QUESTIONS.length) { finish("complete", ""); return; }
+  S.idx = i; renderQuestion(); window.scrollTo({ top: 0 });
+}
+function renderQuestion() {
+  const q = QUESTIONS[S.idx];
+  const pct = Math.round((S.idx / QUESTIONS.length) * 100);
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  const body = { single: renderOptions, multi: renderOptions, grid: renderGrid, text: renderText }[q.type](q, err);
+  $("survey").replaceChildren(
+    el("div", { class: "progress" }, el("div", { class: "meta" }, el("span", { text: t(q.section) }), el("span", { text: pct + "%" })), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` }))),
+    el("div", { class: "qhead" }, el("span", { class: "qcode", text: q.id.toUpperCase() }), el("span", { class: "qtype", text: t(TYPE_LABEL[q.type]) + (q.max && q.type === "multi" ? t(UI.upTo(q.max)) : "") })),
+    el("h2", { class: "qtext", id: "qtext", text: t(q.text) }),
+    q.hint ? el("p", { class: "hint", text: t(q.hint) }) : null,
+    body, err,
+    el("div", { class: "actions" },
+      el("button", { class: "btn ghost", type: "button", text: t(UI.back), onclick: () => go(S.idx - 1, -1) }),
+      el("button", { class: "btn", type: "button", id: "next-btn", text: t(UI.next), onclick: () => advance(err) })));
+}
+function renderOptions(q, err) {
+  const multi = q.type === "multi";
+  const box = el("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => S.a[q.id] || (multi ? [] : null);
+  const paint = () => {
+    const v = cur();
+    box.querySelectorAll(".opt").forEach(row => {
+      const on = multi ? v.includes(row.dataset.code) : v === row.dataset.code;
+      row.classList.toggle("sel", on); row.querySelector("input").checked = on;
+      row.classList.toggle("dis", !!(multi && q.max && v.length >= q.max && !on));
+      const o = row.querySelector(".other-in"); if (o) o.hidden = !on;
+    });
+  };
+  for (const o of ordered(q, q.options)) {
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id: `${q.id}-${o.code}`, value: o.code });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}`, for: input.id, "data-code": o.code }, input, el("span", { class: "key" }), el("span", { text: t(o.label) }));
+    if (q.other === o.code) {
+      const tx = el("input", { type: "text", class: "other-in", id: `${q.id}-other`, maxlength: "200", placeholder: t(q.otherPrompt), value: S.other[q.id] || "" });
+      tx.addEventListener("input", () => { S.other[q.id] = tx.value; });
+      tx.addEventListener("click", e => e.stopPropagation());
+      label.append(el("span"), tx);
+    }
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) S.a[q.id] = o.code;
+      else {
+        let v = cur().slice();
+        if (input.checked) {
+          if ((q.exclusive || []).includes(o.code)) v = [o.code];
+          else {
+            v = v.filter(c => !(q.exclusive || []).includes(c));
+            if (q.max && v.length >= q.max) { input.checked = false; err.textContent = t(UI.errMax(q.max)); return; }
+            v.push(o.code);
+          }
+        } else v = v.filter(c => c !== o.code);
+        S.a[q.id] = v;
+      }
+      paint();
+    });
+    box.append(label);
+  }
+  paint();
+  return box;
+}
+function renderGrid(q, err) {
+  const g = el("div", { class: "grid" });
+  for (const r of ordered(q, q.rows)) {
+    const key = `${q.id}_${r.code}`;
+    const row = el("div", { class: "grow", role: "radiogroup", "aria-label": t(r.label), "data-row": r.code });
+    const chips = el("div", { class: "chips" });
+    const paint = () => {
+      row.classList.toggle("done", !!S.a[key]);
+      chips.querySelectorAll(".chip").forEach(c => { const on = S.a[key] === c.dataset.code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; });
+    };
+    for (const c of q.cols) {
+      const input = el("input", { type: "radio", name: key, id: `${key}-${c.code}`, value: c.code });
+      input.addEventListener("change", () => { S.a[key] = c.code; err.textContent = ""; paint(); });
+      chips.append(el("label", { class: "chip", for: input.id, "data-code": c.code }, input, t(c.label)));
+    }
+    row.append(el("div", { class: "rl", text: t(r.label) }), chips);
+    paint(); g.append(row);
+  }
+  return g;
+}
+function renderText(q) {
+  const w = el("div");
+  const ta = el("textarea", { id: `${q.id}-text`, maxlength: String(q.max), "aria-labelledby": "qtext" });
+  ta.value = S.a[q.id] || "";
+  const count = el("div", { class: "counter" });
+  const dk = el("input", { type: "checkbox", id: `${q.id}-dk` }); dk.checked = !!S.a[q.id + "_dk"];
+  const upd = () => { count.textContent = `${ta.value.length} / ${q.max}`; };
+  ta.addEventListener("input", () => { S.a[q.id] = ta.value; if (ta.value.trim()) { dk.checked = false; S.a[q.id + "_dk"] = false; } upd(); });
+  dk.addEventListener("change", () => { S.a[q.id + "_dk"] = dk.checked; if (dk.checked) { ta.value = ""; S.a[q.id] = ""; upd(); } });
+  upd();
+  w.append(ta, count, el("label", { class: "dk", for: dk.id }, dk, t(q.dk)));
+  return w;
+}
+function validate(q) {
+  const a = S.a;
+  if (q.type === "single") { if (!a[q.id]) return t(UI.errOne); if (q.other === a[q.id] && !(S.other[q.id] || "").trim()) return t(UI.errOther); }
+  if (q.type === "multi") { if (!(a[q.id] || []).length) return t(UI.errMulti); if (q.other && a[q.id].includes(q.other) && !(S.other[q.id] || "").trim()) return t(UI.errOther); }
+  if (q.type === "grid") { const m = q.rows.filter(r => !a[`${q.id}_${r.code}`]).length; if (m) return t(UI.errGrid(m)); }
+  if (q.type === "text") { if (!a[q.id + "_dk"] && (a[q.id] || "").trim().length < q.min) return t(UI.errText); }
+  return "";
+}
+function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  const reason = q.terminate && q.terminate(S.a);
+  if (reason) { S.termQ = q; finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
+  go(S.idx + 1, 1);
+}
+
+/* ================= Termination reason ================= */
+function answerText(q) {
+  const a = S.a, lab = (list, c) => { const o = list.find(x => x.code === c); return o ? t(o.label) : ""; };
+  if (q.type === "single") return lab(q.options, a[q.id]);
+  if (q.type === "multi") return (a[q.id] || []).map(c => lab(q.options, c)).join("; ");
+  if (q.type === "grid") { const row = q.rows.find(r => r.code === TRAP_ROW); return `${t(row.label)} → ${lab(q.cols, a[`${q.id}_${TRAP_ROW}`])}`; }
+  return "";
+}
+function reasonBox(q) {
+  return el("div", { class: "reason", id: "term-reason" },
+    el("div", { class: "rk", text: t(UI.why) }),
+    el("p", {}, el("b", { text: q.id.toUpperCase() + " " }), document.createTextNode(t(q.text))),
+    el("p", {}, el("span", { class: "rl", text: t(UI.yourAns) }), document.createTextNode(answerText(q))),
+    q.req ? el("p", {}, el("span", { class: "rl", text: t(UI.reqL) }), document.createTextNode(t(q.req))) : null);
+}
+
+/* ================= Record ================= */
+const enLabel = (list, code) => { const o = list.find(x => x.code === code); return o ? o.label.en : ""; };
+function computeFlags(status, dur) {
+  const f = [], a = S.a;
+  if (status === "complete" && dur < SPEEDER_SECONDS) f.push(`Speeder: ${dur}s`);
+  const straight = (id, skip) => { const q = QUESTIONS.find(x => x.id === id); const v = q.rows.filter(r => r.code !== skip).map(r => a[`${id}_${r.code}`]).filter(Boolean); return v.length > 3 && new Set(v).size === 1; };
+  if (status === "complete" && straight("q8")) f.push("Straight-lined Q8");
+  if (status === "complete" && straight("q9", TRAP_ROW)) f.push("Straight-lined Q9");
+  const txt = (a.q16 || "").trim();
+  if (txt && (/(.)\1{4,}/.test(txt) || !/[aeiouy]/i.test(txt))) f.push("Q16 possible gibberish");
+  if (status === "complete" && (a.q2 || []).length >= 11) f.push("Q2 selected almost everything");
+  return f;
+}
+function buildRecord(status, reason) {
+  const now = new Date(), a = S.a, dur = Math.round((now - (S.startedAt || now)) / 1000);
+  const r = { status, terminate_reason: reason, flags: "", started_at: (S.startedAt || now).toISOString(), completed_at: now.toISOString(), duration_sec: dur, lang: LANG };
+  for (const q of QUESTIONS) {
+    const shown = visible(q);
+    if (q.type === "single") { r[q.id] = shown ? a[q.id] || "" : ""; r[q.id + "_label"] = shown ? enLabel(q.options, a[q.id]) : ""; }
+    if (q.type === "multi") { const v = shown ? a[q.id] || [] : []; r[q.id] = v.join(";"); r[q.id + "_label"] = v.map(c => enLabel(q.options, c)).join("; "); }
+    if (q.type === "grid") for (const row of q.rows) { const v = shown ? a[`${q.id}_${row.code}`] || "" : ""; r[`${q.id}_${row.code}`] = v; r[`${q.id}_${row.code}_label`] = enLabel(q.cols, v); }
+    if (q.type === "text") { r[q.id] = (a[q.id] || "").trim(); r[q.id + "_dk"] = a[q.id + "_dk"] ? 1 : ""; }
+    if (q.other) r[q.id + "_other"] = shown && [].concat(a[q.id] || []).includes(q.other) ? (S.other[q.id] || "").trim() : "";
+  }
+  r.flags = computeFlags(status, dur).join(" | ");
+  return r;
+}
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = t(UI.saving); }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  if (server) {
+    rec.rid = server.rid || "";
+    try {
+      const r = await fetch(server.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      if (!r.ok && r.status !== 409) throw new Error(String(r.status));
+      res = await r.json().catch(() => ({}));
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = t(UI.retry); }
+      const e2 = $("err"); if (e2) e2.textContent = t(UI.errSave);
+      return;
+    }
+  } else console.log("Preview record (not saved):", rec);
+  S.done = true;
+  showEnd(res.status || status, res.redirect || "");
+}
+function showEnd(status, redirect, noRedirect) {
+  S.end = { status, redirect };
+  const [h, p] = MSG[status] || MSG.terminated;
+  $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: t(h) }), el("p", { class: "lead", text: t(p) }));
+  if (SHOW_REASON && S.termQ && (status === "terminated" || status === "quality")) $("survey").append(reasonBox(S.termQ));
+  if (redirect && !noRedirect) setTimeout(() => { location.href = redirect; }, $("term-reason") ? 8000 : 2000);
+}
+
+header();
+if (server && server.closed) showEnd("overquota", server.redirect || "");
+else renderIntro();
+})();
+</script>

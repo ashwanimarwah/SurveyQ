@@ -170,3 +170,18 @@ The German survey runs this way on its own service with its own volume (see Rail
 `DISABLED_SURVEYS=de` (comma-separated slugs) closes a survey on that service: its API and dashboard return 404.
 With `DE_MOVED_TO=<url>` the old survey link redirects there and keeps `?rid=`. The shared SurveyQ service uses
 this to send the old `/de` link to the German survey's own service.
+
+---
+
+# US men 18+ general survey (`/men`)
+USA, men 18+, n=500, LOI ~15 min, IR ~30%, all devices, 3 days in field. Runs on its own Railway service
+(SurveyQ-Men, `ONLY_SURVEY=men`), so `/` opens the survey and `/admin` its dashboard.
+
+Screener: S1 gender (male only) · S2 age (18+) · S3 state (US only) · S4 industry security (market research,
+advertising/marketing/PR, journalism → terminate).
+Main: Q1 life satisfaction · Q2 activities · Q3 free time · Q4 devices · Q5 streaming/audio · Q6 social media ·
+Q7 news source · Q8 online shopping frequency grid · Q9 attitudes grid (attention check → `quality`) · Q10 grocery role ·
+Q11 exercise · Q12 wellness goals · Q13 health self-rating · Q14 life priorities · Q15 purchase plans · Q16 open end.
+Demographics D1–D8: marital status, children, education, employment, income, Hispanic origin, race, community type.
+Flags: speeder < 300 s, straight-lining Q8/Q9, Q16 gibberish, Q2 near-all selected.
+Settings: `MEN_QUOTA` (500), `MEN_REDIRECT_COMPLETE|TERMINATE|OVERQUOTA|QUALITY`, `MEN_REQUIRE_RID`, `MEN_SHOW_REASON`.

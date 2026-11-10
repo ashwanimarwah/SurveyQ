@@ -268,6 +268,8 @@ app.register_blueprint(golden_corral_bp)
 from survey_blueprint import make_survey  # noqa: E402
 # Germany: cash-only B2C small businesses, payments study (n=260) at /de
 app.register_blueprint(make_survey(slug="de", title="Germany cash-only merchants survey", page="de-cash.html", default_quota=260))
+# USA: general survey of men 18+ (n=500) at /men
+app.register_blueprint(make_survey(slug="men", title="US men 18+ general survey", page="men.html", default_quota=500))
 
 
 if __name__ == "__main__":
