@@ -165,3 +165,8 @@ waits 8 seconds before redirecting when a reason is shown.
 Set `ONLY_SURVEY=de` (or `gc`) on a Railway service built from this repo: `/` redirects to that survey,
 `/admin` to its dashboard, and every other survey's pages, APIs and data return 404 on that service.
 The German survey runs this way on its own service with its own volume (see Railway project SurveyQ).
+
+## Switching a survey off on a deployment
+`DISABLED_SURVEYS=de` (comma-separated slugs) closes a survey on that service: its API and dashboard return 404.
+With `DE_MOVED_TO=<url>` the old survey link redirects there and keeps `?rid=`. The shared SurveyQ service uses
+this to send the old `/de` link to the German survey's own service.

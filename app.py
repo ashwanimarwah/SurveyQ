@@ -63,6 +63,27 @@ app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 ONLY_SURVEY = os.environ.get("ONLY_SURVEY", "").strip().lower()
 
 
+# DISABLED_SURVEYS=de,gc switches surveys off on this deployment. If <SLUG>_MOVED_TO is set (e.g.
+# DE_MOVED_TO=https://surveyq-de-production.up.railway.app), the survey page redirects there, keeping ?rid=.
+DISABLED_SURVEYS = {s.strip().lower() for s in os.environ.get("DISABLED_SURVEYS", "").split(",") if s.strip()}
+
+
+@app.before_request
+def _disabled_surveys():
+    p = request.path.rstrip("/") or "/"
+    for s in DISABLED_SURVEYS:
+        if p == f"/{s}":
+            target = os.environ.get(f"{s.upper()}_MOVED_TO", "").rstrip("/")
+            if target:
+                from flask import redirect
+                qs = request.query_string.decode()
+                return redirect(target + "/" + (f"?{qs}" if qs else ""), 301)
+            return Response("This survey is closed.", 404)
+        if p.startswith(f"/api/{s}/") or p == f"/admin/{s}" or p.startswith(f"/admin/{s}/"):
+            return Response("Not found", 404)
+    return None
+
+
 @app.before_request
 def _only_one_survey():
     if not ONLY_SURVEY:
