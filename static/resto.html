@@ -1,0 +1,484 @@
+<title>Restaurant Operators Survey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a reading column; grids stack row by row for phones. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --ink: #16191d;
+  --muted: #5b6370;
+  --line: #d9dde3;
+  --accent: #7a2e2a;        /* bordeaux */
+  --accent-soft: #f3e4e2;
+  --focus: #d08c1c;
+  --bad: #b23a32;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+    --accent: #e39a92; --accent-soft: #3a2220; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+  --accent: #e39a92; --accent-soft: #3a2220; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+.wrap { max-width: 720px; margin: 0 auto; }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; }
+.brandname { font-family: var(--font-display); font-weight: 600; font-size: 19px; display: block; }
+.lang { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.lang button { font: 500 13px var(--font-mono); padding: 3px 10px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 20px; }
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4.6vw, 33px); line-height: 1.2; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(20px, 3.5vw, 24px); line-height: 1.32; margin: 0 0 18px; hyphens: auto; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -8px 0 16px; }
+.options { display: grid; gap: 8px; }
+.opt { position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.opt:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.opt input[type=radio], .opt input[type=checkbox], .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key { width: 22px; height: 22px; border: 1.5px solid var(--line); border-radius: 5px; margin-top: 2px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .key { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.opt.dis { opacity: .45; }
+.opt:focus-within, .chip:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+input[type=text], textarea { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+textarea { min-height: 130px; resize: vertical; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+.dk { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--muted); cursor: pointer; margin-top: 10px; }
+.counter { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; text-align: right; }
+.grid { display: grid; gap: 14px; }
+.grow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.grow.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.grow .rl { font-weight: 600; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; font-size: 14.5px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; background: var(--bg); line-height: 1.3; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.btn { font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible, .lang button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><span class="eyebrow" id="eyebrow"></span><span class="brandname" id="brandname"></span></div>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" id="lang-fr" aria-pressed="false">FR</button>
+      <button type="button" id="lang-en" aria-pressed="true">EN</button>
+    </div>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* Canada B2B restaurant operators. English/Canadian French: browser language decides, ?lang=fr|en overrides. Labels stored in English. */
+const _qlang = new URLSearchParams(location.search).get("lang");
+let LANG = _qlang === "fr" || _qlang === "en" ? _qlang : ((navigator.language || "").toLowerCase().startsWith("fr") ? "fr" : "en");
+const t = x => (x && typeof x === "object" && !Array.isArray(x)) ? (x[LANG] ?? x.en) : x;
+const LL = (fr, en) => { const d = fr.split("|"), e = en.split("|"); return d.map((x, i) => ({ code: String.fromCharCode(65 + i), label: { fr: x, en: e[i] } })); };
+const RR = (de, en) => LL(de, en).map((o, i) => ({ ...o, code: "r" + (i + 1) }));
+const T = (fr, en) => ({ fr, en });
+
+const AGREE = LL("Tout à fait d'accord|Plutôt d'accord|Ni d'accord ni en désaccord|Plutôt en désaccord|Pas du tout d'accord",
+                 "Strongly agree|Somewhat agree|Neither agree nor disagree|Somewhat disagree|Strongly disagree");
+const TRAP_ROW = "r7", TRAP_ANSWER = "D";
+const SEC_S = T("Admissibilité", "Screening"), SEC_R = T("Votre restaurant", "Your restaurant"), SEC_B = T("Activités", "Business"), SEC_O = T("Exploitation", "Operations"), SEC_F = T("Perspectives", "Outlook");
+
+const QUESTIONS = [
+  /* ---------- Screener ---------- */
+  { id: "s1", section: SEC_S, type: "single", text: T("Lequel des énoncés suivants décrit le mieux votre rôle?", "Which of these best describes your role?"),
+    options: LL("Propriétaire ou copropriétaire d'un restaurant|Directeur(trice) général(e) d'un restaurant|Gérant(e) de restaurant ou des opérations|Chef ou gérant(e) de cuisine|Gérant(e) adjoint(e) ou gérant(e) de salle|Superviseur(e) ou employé(e) (sans rôle de gestion)|Je ne travaille pas dans un restaurant",
+                "Restaurant owner or co-owner|Restaurant general manager|Restaurant or operations manager|Head chef or kitchen manager|Assistant or front-of-house manager|Supervisor or staff (non-management role)|I don't work in a restaurant"),
+    terminate: a => ["F", "G"].includes(a.s1) ? "S1: not an owner or manager" : null,
+    req: T("Ce sondage s'adresse aux propriétaires et aux gestionnaires de restaurants.", "This survey is for restaurant owners and managers.") },
+  { id: "s2", section: SEC_S, type: "single", text: T("Quel type d'établissement est votre restaurant?", "What type of establishment is your restaurant?"),
+    hint: T("Si vous gérez plusieurs établissements, répondez pour celui que vous connaissez le mieux.", "If you run more than one, answer for the one you know best."),
+    options: LL("Restaurant avec service aux tables (familial, bistro, gastronomique, pub avec service aux tables, etc.)|Restauration rapide|Restauration rapide décontractée (commande au comptoir)|Café ou salon de thé|Bar ou boîte de nuit (surtout des boissons)|Traiteur ou cuisine virtuelle seulement|Camion de cuisine de rue",
+                "Full-service restaurant with table service (family, bistro, fine dining, pub with table service, etc.)|Quick-service / fast food|Fast casual (order at the counter)|Café or coffee shop|Bar or nightclub (mainly drinks)|Catering or ghost kitchen only|Food truck"),
+    terminate: a => a.s2 !== "A" ? "S2: not a full-service restaurant" : null,
+    req: T("Ce sondage s'adresse aux restaurants avec service aux tables.", "This survey is for full-service (table-service) restaurants.") },
+  { id: "s3", section: SEC_S, type: "single", text: T("Lequel des énoncés suivants décrit le mieux la propriété du restaurant?", "Which best describes the restaurant's ownership?"),
+    options: LL("Restaurant indépendant (un seul établissement, pas une franchise)|Petit groupe indépendant (2 à 9 établissements, pas une franchise)|Franchise d'une chaîne ou d'une bannière|Établissement d'une chaîne régionale ou nationale (10 établissements ou plus)",
+                "Independent restaurant (single location, not a franchise)|Small independent group (2–9 locations, not a franchise)|Franchise of a chain or banner|Location of a regional or national chain (10+ locations)"),
+    terminate: a => ["C", "D"].includes(a.s3) ? "S3: franchise or chain" : null,
+    req: T("Ce sondage s'adresse aux restaurants indépendants (pas les franchises ni les chaînes).", "This survey is for independent restaurants (not franchises or chains).") },
+  { id: "s4", section: SEC_S, type: "single", text: T("Dans quelle ville se trouve le restaurant?", "In which city is the restaurant located?"),
+    options: LL("Toronto (y compris la région du Grand Toronto)|Montréal (y compris le Grand Montréal)|Vancouver (y compris le Grand Vancouver)|Calgary|Une autre ville au Canada|À l'extérieur du Canada",
+                "Toronto (including the Greater Toronto Area)|Montreal (including Greater Montreal)|Vancouver (including Metro Vancouver)|Calgary|Another city in Canada|Outside Canada"),
+    terminate: a => ["E", "F"].includes(a.s4) ? "S4: city not in target (Toronto, Montreal, Vancouver, Calgary)" : null,
+    req: T("Ce sondage s'adresse aux restaurants de Toronto, Montréal, Vancouver et Calgary.", "This survey is for restaurants in Toronto, Montreal, Vancouver and Calgary.") },
+  { id: "s5", section: SEC_S, type: "multi", text: T("Est-ce que vous ou un membre de votre ménage travaillez dans l'un des secteurs suivants?", "Do you or does anyone in your household work in any of these industries?"),
+    hint: T("Sélectionnez toutes les réponses qui s'appliquent.", "Select all that apply."),
+    options: LL("Études de marché|Publicité, marketing ou relations publiques|Distribution alimentaire ou vente aux restaurants|Banque ou services financiers|Aucun de ces secteurs",
+                "Market research|Advertising, marketing or public relations|Food distribution or selling to restaurants|Banking or financial services|None of these"),
+    exclusive: ["E"], randomize: true, anchor: ["E"],
+    terminate: a => (a.s5 || []).some(c => c === "A" || c === "B") ? "S5: sensitive industry" : null,
+    req: T("Les personnes travaillant en études de marché, publicité, marketing ou relations publiques (ou dont un membre du ménage y travaille) ne peuvent pas participer.", "People who work, or live with someone who works, in market research, advertising, marketing or PR can't take part.") },
+
+  /* ---------- Restaurant profile ---------- */
+  { id: "q1", section: SEC_R, type: "single", text: T("Depuis combien de temps le restaurant est-il ouvert?", "How long has the restaurant been open?"),
+    options: LL("Moins d'un an|1 à 2 ans|3 à 5 ans|6 à 10 ans|11 à 20 ans|Plus de 20 ans", "Less than 1 year|1–2 years|3–5 years|6–10 years|11–20 years|More than 20 years") },
+  { id: "q2", section: SEC_R, type: "single", text: T("Combien de places assises compte le restaurant?", "How many seats does the restaurant have?"),
+    options: LL("Moins de 30|30 à 59|60 à 99|100 à 149|150 ou plus", "Fewer than 30|30–59|60–99|100–149|150 or more") },
+  { id: "q3", section: SEC_R, type: "single", text: T("Quel type de cuisine décrit le mieux votre restaurant?", "Which type of cuisine best describes your restaurant?"),
+    options: LL("Canadienne / nord-américaine|Italienne|Française|Asiatique de l'Est (chinoise, japonaise, coréenne)|Asiatique du Sud-Est (thaï, vietnamienne, etc.)|Indienne / sud-asiatique|Moyen-orientale / méditerranéenne|Mexicaine / latino-américaine|Grecque|Fruits de mer / poissons|Steakhouse / grillades|Déjeuners et brunchs|Autre",
+                "Canadian / North American|Italian|French|East Asian (Chinese, Japanese, Korean)|Southeast Asian (Thai, Vietnamese, etc.)|Indian / South Asian|Middle Eastern / Mediterranean|Mexican / Latin American|Greek|Seafood|Steakhouse / grill|Breakfast and brunch|Other"),
+    other: "M", otherPrompt: T("Veuillez préciser", "Please specify") },
+  { id: "q4", section: SEC_R, type: "single", text: T("Quel est l'addition moyenne par personne (nourriture et boissons, avant taxes et pourboire)?", "What is the average bill per person (food and drink, before tax and tip)?"),
+    options: LL("Moins de 20 $|20 à 34 $|35 à 49 $|50 à 74 $|75 $ ou plus", "Under $20|$20–34|$35–49|$50–74|$75 or more") },
+  { id: "q5", section: SEC_R, type: "single", text: T("Combien de personnes le restaurant emploie-t-il (temps plein et temps partiel)?", "How many people does the restaurant employ (full-time and part-time)?"),
+    options: LL("1 à 9|10 à 19|20 à 49|50 à 99|100 ou plus", "1–9|10–19|20–49|50–99|100 or more") },
+
+  /* ---------- Business conditions ---------- */
+  { id: "q6", section: SEC_B, type: "single", text: T("Comment le chiffre d'affaires des 12 derniers mois se compare-t-il à celui des 12 mois précédents?", "How do sales over the past 12 months compare with the 12 months before?"),
+    options: LL("En hausse de plus de 10 %|En hausse de 1 à 10 %|À peu près stable|En baisse de 1 à 10 %|En baisse de plus de 10 %|Je ne sais pas", "Up more than 10%|Up 1–10%|About the same|Down 1–10%|Down more than 10%|Don't know") },
+  { id: "q7", section: SEC_B, type: "multi", max: 3, text: T("Quels sont les plus grands défis de votre restaurant en ce moment?", "What are the biggest challenges for your restaurant right now?"),
+    hint: T("Sélectionnez jusqu'à 3 réponses.", "Select up to 3."),
+    options: LL("Coût des aliments|Coût de la main-d'œuvre|Recruter et garder du personnel|Loyer|Coûts de l'énergie|Moins de clients|Commissions des applications de livraison|Concurrence|Remboursement de dettes|Réglementation et taxes|Frais de cartes de crédit|Problèmes d'approvisionnement|Autre",
+                "Food costs|Labour costs|Hiring and keeping staff|Rent|Energy costs|Fewer customers|Delivery app commissions|Competition|Paying back debt|Regulations and taxes|Credit card fees|Supply problems|Other"),
+    other: "M", otherPrompt: T("Veuillez préciser", "Please specify"), randomize: true, anchor: ["M"] },
+  { id: "q8", section: SEC_B, type: "single", text: T("Comment vos prix au menu ont-ils changé au cours des 12 derniers mois?", "How have your menu prices changed over the past 12 months?"),
+    options: LL("Hausse de plus de 10 %|Hausse de 5 à 10 %|Hausse de moins de 5 %|Aucun changement|Baisse", "Raised more than 10%|Raised 5–10%|Raised less than 5%|No change|Lowered") },
+  { id: "q9", section: SEC_B, type: "grid", text: T("Dans quelle mesure êtes-vous d'accord avec chacun des énoncés suivants?", "How much do you agree or disagree with each statement?"),
+    rows: RR("Je m'attends à ce que mon restaurant soit plus rentable l'an prochain|Les hausses de prix ont réduit la fréquentation|Il est plus difficile de recruter et de garder du personnel qu'il y a un an|Les applications de livraison valent leur coût pour mon restaurant|Les restaurants indépendants ont besoin de plus de soutien gouvernemental|La technologie m'aide à gérer mon restaurant plus efficacement|Contrôle de qualité : veuillez sélectionner « Plutôt en désaccord » pour cette ligne",
+             "I expect my restaurant to be more profitable next year|Price increases have reduced customer visits|Hiring and keeping staff is harder than a year ago|Delivery apps are worth their cost for my restaurant|Independent restaurants need more government support|Technology helps me run my restaurant more efficiently|For quality control, please select \"Somewhat disagree\" for this row"),
+    cols: AGREE, randomize: true,
+    terminate: a => a["q9_" + TRAP_ROW] && a["q9_" + TRAP_ROW] !== TRAP_ANSWER ? "QUALITY: failed attention check (Q9)" : null,
+    req: T("La ligne de contrôle de qualité demandait « Plutôt en désaccord ».", "The quality-control row asked for \"Somewhat disagree\".") },
+
+  /* ---------- Operations ---------- */
+  { id: "q10", section: SEC_O, type: "multi", text: T("Lesquels de ces outils votre restaurant utilise-t-il?", "Which of these does your restaurant use?"),
+    hint: T("Sélectionnez toutes les réponses qui s'appliquent.", "Select all that apply."),
+    options: LL("Système de point de vente (PDV)|Réservations en ligne (p. ex. OpenTable, Resy)|Applications de livraison (p. ex. Uber Eats, DoorDash, SkipTheDishes)|Commande en ligne sur notre propre site|Menus par code QR|Terminaux de paiement à la table|Logiciel de gestion des stocks|Logiciel d'horaires du personnel|Programme de fidélité|Marketing sur les réseaux sociaux|Aucun de ces outils",
+                "Point-of-sale (POS) system|Online reservations (e.g. OpenTable, Resy)|Delivery apps (e.g. Uber Eats, DoorDash, SkipTheDishes)|Online ordering on our own website|QR code menus|Pay-at-table terminals|Inventory software|Staff scheduling software|Loyalty program|Social media marketing|None of these"),
+    exclusive: ["K"], randomize: true, anchor: ["K"] },
+  { id: "q11", section: SEC_O, type: "single", text: T("Environ quelle part de votre chiffre d'affaires provient de la livraison et des commandes à emporter?", "Roughly what share of your sales comes from delivery and takeout?"),
+    options: LL("Aucune|Moins de 10 %|10 à 19 %|20 à 29 %|30 % ou plus|Je ne sais pas", "None|Less than 10%|10–19%|20–29%|30% or more|Don't know") },
+  { id: "q12", section: SEC_O, type: "multi", text: T("Auprès de quels types de fournisseurs achetez-vous régulièrement vos aliments et ingrédients?", "Which types of suppliers do you regularly buy food and ingredients from?"),
+    hint: T("Sélectionnez toutes les réponses qui s'appliquent.", "Select all that apply."),
+    options: LL("Grand distributeur alimentaire (p. ex. Sysco, GFS)|Fournisseurs locaux spécialisés|Magasins-entrepôts (p. ex. Costco Entreprise)|Directement des fermes ou producteurs|Plateformes d'achat en ligne|Autre",
+                "Broadline food distributor (e.g. Sysco, GFS)|Local specialty suppliers|Cash & carry / warehouse stores (e.g. Costco Business Centre)|Directly from farms or producers|Online buying platforms|Other"),
+    other: "F", otherPrompt: T("Veuillez préciser", "Please specify"), randomize: true, anchor: ["F"] },
+  { id: "q13", section: SEC_O, type: "multi", max: 3, text: T("Qu'est-ce qui compte le plus pour vous dans le choix d'un fournisseur?", "What matters most to you when choosing a supplier?"),
+    hint: T("Sélectionnez jusqu'à 3 réponses.", "Select up to 3."),
+    options: LL("Prix|Qualité des produits|Fiabilité et constance|Fréquence de livraison|Produits locaux|Conditions de paiement|Relation avec le représentant|Commande en ligne facile|Durabilité|Variété de produits",
+                "Price|Product quality|Reliability and consistency|Delivery frequency|Local products|Payment terms|Relationship with the sales rep|Easy online ordering|Sustainability|Product range"),
+    randomize: true },
+
+  /* ---------- Outlook ---------- */
+  { id: "q14", section: SEC_F, type: "multi", text: T("Dans lesquels de ces domaines prévoyez-vous investir au cours des 12 prochains mois?", "Which of these do you plan to invest in over the next 12 months?"),
+    hint: T("Sélectionnez toutes les réponses qui s'appliquent.", "Select all that apply."),
+    options: LL("Rénovation de la salle|Nouvel équipement de cuisine|Nouvelle technologie ou nouveau PDV|Ouverture d'un nouvel établissement|Marketing|Formation du personnel|Énergie ou durabilité|Aucun investissement prévu",
+                "Dining room renovation|New kitchen equipment|New technology or POS|Opening a new location|Marketing|Staff training|Energy or sustainability|No investment planned"),
+    exclusive: ["H"], randomize: true, anchor: ["H"] },
+  { id: "q15", section: SEC_F, type: "single", text: T("Comment décririez-vous vos perspectives pour votre restaurant au cours des 12 prochains mois?", "How would you describe your outlook for your restaurant over the next 12 months?"),
+    options: LL("Très optimiste|Plutôt optimiste|Neutre|Plutôt pessimiste|Très pessimiste", "Very optimistic|Somewhat optimistic|Neutral|Somewhat pessimistic|Very pessimistic") },
+  { id: "q16", section: SEC_F, type: "text", min: 5, max: 600, dk: T("Je ne sais pas", "Don't know"),
+    text: T("Quel changement aiderait le plus votre restaurant au cours de la prochaine année?", "What one change would help your restaurant most over the next year?") },
+
+  /* ---------- About you ---------- */
+  { id: "d1", section: T("Pour terminer", "Finally"), type: "single", text: T("Depuis combien d'années travaillez-vous dans la restauration?", "How many years have you worked in the restaurant industry?"),
+    options: LL("Moins de 5 ans|5 à 9 ans|10 à 19 ans|20 ans ou plus", "Less than 5 years|5–9 years|10–19 years|20 years or more") },
+  { id: "d2", section: T("Pour terminer", "Finally"), type: "single", text: T("Quel âge avez-vous?", "What is your age?"),
+    options: LL("18 à 29 ans|30 à 39 ans|40 à 49 ans|50 à 59 ans|60 ans ou plus|Préfère ne pas répondre", "18–29|30–39|40–49|50–59|60 or older|Prefer not to say") },
+];
+
+const TYPE_LABEL = { single: T("Une seule réponse", "Select one"), multi: T("Plusieurs réponses possibles", "Select all that apply"), grid: T("Une réponse par ligne", "One answer per row"), text: T("Question ouverte", "Open question") };
+const UI = {
+  eyebrow: T("QuestionLab · Sondage en ligne", "QuestionLab · Online survey"), name: T("Sondage des restaurateurs", "Restaurant Operators Survey"),
+  title: T("Sondage auprès des restaurants indépendants", "Survey of independent restaurants"),
+  lead: T("Nous voulons comprendre la situation actuelle des restaurants indépendants : vos activités, vos défis, vos fournisseurs et vos perspectives. Il n'y a pas de bonnes ou de mauvaises réponses.", "We want to understand how independent restaurants are doing: your business, challenges, suppliers and outlook. There are no right or wrong answers."),
+  time: T("Durée", "Time needed"), timeV: T("Environ 15 minutes", "About 15 minutes"), anon: T("Vos réponses", "Your answers"), anonV: T("Confidentielles", "Confidential"),
+  privacy: T("Vos réponses sont regroupées avec celles des autres participants et utilisées uniquement à des fins de recherche. Nous ne demandons ni votre nom ni le nom de votre restaurant.", "Your answers are combined with other participants' and used for research only. We don't ask for your name or your restaurant's name."),
+  start: T("Commencer le sondage", "Start survey"), back: T("Retour", "Back"), next: T("Suivant", "Next"), saving: T("Enregistrement…", "Saving…"), retry: T("Réessayer", "Try again"),
+  upTo: n => T(` · jusqu'à ${n}`, ` · up to ${n}`),
+  errOne: T("Veuillez sélectionner une réponse.", "Please select an answer."), errMulti: T("Veuillez sélectionner au moins une réponse.", "Please select at least one answer."),
+  errOther: T("Veuillez préciser votre réponse dans la zone de texte.", "Please specify your answer in the text box."), errMax: n => T(`Vous pouvez sélectionner jusqu'à ${n} réponses.`, `You can select up to ${n}.`),
+  errGrid: n => T(`Veuillez répondre à chaque ligne (il en reste ${n}).`, `Please answer every row (${n} left).`),
+  errText: T("Veuillez écrire une courte réponse ou cocher « Je ne sais pas ».", "Please type a short answer or tick \"Don't know\"."),
+  errSave: T("Vos réponses n'ont pas pu être enregistrées. Vérifiez votre connexion et réessayez.", "Your answers couldn't be saved. Check your connection and try again."),
+  preview: T("Aperçu : les réponses ne sont pas enregistrées.", "Preview: answers are not saved."),
+  why: T("Pourquoi le sondage a pris fin", "Why the survey ended"), yourAns: T("Votre réponse : ", "Your answer: "), reqL: T("Condition : ", "Requirement: "),
+};
+const MSG = {
+  complete: [T("Merci!", "Thank you!"), T("Vos réponses ont été enregistrées. Merci de votre temps et de vos opinions.", "Your answers have been recorded. Thank you for your time and opinions.")],
+  terminated: [T("Merci de votre intérêt", "Thank you for your interest"), T("Malheureusement, selon vos réponses, vous ne faites pas partie du groupe visé par ce sondage. Merci de votre temps.", "Unfortunately, based on your answers you don't qualify for this survey. Thank you for your time.")],
+  quality: [T("Merci", "Thank you"), T("Malheureusement, nous ne pouvons pas accepter cette réponse. Merci de votre temps.", "Unfortunately we can't accept this response. Thank you for your time.")],
+  overquota: [T("Merci de votre intérêt", "Thank you for your interest"), T("Nous avons déjà reçu toutes les réponses nécessaires. Merci de votre temps.", "We have already received all the responses we need. Thank you for your time.")],
+};
+const SPEEDER_SECONDS = 300;
+const SHOW_REASON = !window.SURVEY_SERVER || window.SURVEY_SERVER.showReason !== false;
+
+/* ================= Engine ================= */
+const S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {}, end: null };
+const server = window.SURVEY_SERVER;
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const visible = q => !q.show || q.show(S.a);
+const shuffle = arr => { const x = arr.slice(); for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j], x[i]]; } return x; };
+function ordered(q, list) {
+  if (!q.randomize) return list;
+  if (!S.order[q.id]) {
+    const anchor = q.anchor || [];
+    S.order[q.id] = [...shuffle(list.filter(o => !anchor.includes(o.code))), ...list.filter(o => anchor.includes(o.code))].map(o => o.code);
+  }
+  return S.order[q.id].map(c => list.find(o => o.code === c));
+}
+
+function header() {
+  $("eyebrow").textContent = t(UI.eyebrow); $("brandname").textContent = t(UI.name);
+  document.documentElement.lang = LANG;
+  $("lang-fr").setAttribute("aria-pressed", String(LANG === "fr")); $("lang-en").setAttribute("aria-pressed", String(LANG === "en"));
+  if (!server) { $("banner").textContent = t(UI.preview); $("banner").hidden = false; }
+}
+function rerender() { header(); if (S.end) showEnd(S.end.status, S.end.redirect, true); else if (S.idx < 0) renderIntro(); else renderQuestion(); }
+$("lang-fr").addEventListener("click", () => { LANG = "fr"; rerender(); });
+$("lang-en").addEventListener("click", () => { LANG = "en"; rerender(); });
+
+function renderIntro() {
+  S.idx = -1;
+  $("survey").replaceChildren(
+    el("h1", { text: t(UI.title) }), el("p", { class: "lead", text: t(UI.lead) }),
+    el("dl", { class: "facts" },
+      el("div", {}, el("dt", { text: t(UI.time) }), el("dd", { text: t(UI.timeV) })),
+      el("div", {}, el("dt", { text: t(UI.anon) }), el("dd", { text: t(UI.anonV) }))),
+    el("p", { class: "small", text: t(UI.privacy) }),
+    el("div", { class: "actions" }, el("span"), el("button", { class: "btn", type: "button", id: "start-btn", text: t(UI.start), onclick: () => { S.startedAt = S.startedAt || new Date(); go(0, 1); } })));
+}
+function go(i, dir) {
+  while (i >= 0 && i < QUESTIONS.length && !visible(QUESTIONS[i])) i += dir;
+  if (i < 0) { renderIntro(); return; }
+  if (i >= QUESTIONS.length) { finish("complete", ""); return; }
+  S.idx = i; renderQuestion(); window.scrollTo({ top: 0 });
+}
+function renderQuestion() {
+  const q = QUESTIONS[S.idx];
+  const pct = Math.round((S.idx / QUESTIONS.length) * 100);
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  const body = { single: renderOptions, multi: renderOptions, grid: renderGrid, text: renderText }[q.type](q, err);
+  $("survey").replaceChildren(
+    el("div", { class: "progress" }, el("div", { class: "meta" }, el("span", { text: t(q.section) }), el("span", { text: pct + "%" })), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` }))),
+    el("div", { class: "qhead" }, el("span", { class: "qcode", text: q.id.toUpperCase() }), el("span", { class: "qtype", text: t(TYPE_LABEL[q.type]) + (q.max && q.type === "multi" ? t(UI.upTo(q.max)) : "") })),
+    el("h2", { class: "qtext", id: "qtext", text: t(q.text) }),
+    q.hint ? el("p", { class: "hint", text: t(q.hint) }) : null,
+    body, err,
+    el("div", { class: "actions" },
+      el("button", { class: "btn ghost", type: "button", text: t(UI.back), onclick: () => go(S.idx - 1, -1) }),
+      el("button", { class: "btn", type: "button", id: "next-btn", text: t(UI.next), onclick: () => advance(err) })));
+}
+function renderOptions(q, err) {
+  const multi = q.type === "multi";
+  const box = el("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => S.a[q.id] || (multi ? [] : null);
+  const paint = () => {
+    const v = cur();
+    box.querySelectorAll(".opt").forEach(row => {
+      const on = multi ? v.includes(row.dataset.code) : v === row.dataset.code;
+      row.classList.toggle("sel", on); row.querySelector("input").checked = on;
+      row.classList.toggle("dis", !!(multi && q.max && v.length >= q.max && !on));
+      const o = row.querySelector(".other-in"); if (o) o.hidden = !on;
+    });
+  };
+  for (const o of ordered(q, q.options)) {
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id: `${q.id}-${o.code}`, value: o.code });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}`, for: input.id, "data-code": o.code }, input, el("span", { class: "key" }), el("span", { text: t(o.label) }));
+    if (q.other === o.code) {
+      const tx = el("input", { type: "text", class: "other-in", id: `${q.id}-other`, maxlength: "200", placeholder: t(q.otherPrompt), value: S.other[q.id] || "" });
+      tx.addEventListener("input", () => { S.other[q.id] = tx.value; });
+      tx.addEventListener("click", e => e.stopPropagation());
+      label.append(el("span"), tx);
+    }
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) S.a[q.id] = o.code;
+      else {
+        let v = cur().slice();
+        if (input.checked) {
+          if ((q.exclusive || []).includes(o.code)) v = [o.code];
+          else {
+            v = v.filter(c => !(q.exclusive || []).includes(c));
+            if (q.max && v.length >= q.max) { input.checked = false; err.textContent = t(UI.errMax(q.max)); return; }
+            v.push(o.code);
+          }
+        } else v = v.filter(c => c !== o.code);
+        S.a[q.id] = v;
+      }
+      paint();
+    });
+    box.append(label);
+  }
+  paint();
+  return box;
+}
+function renderGrid(q, err) {
+  const g = el("div", { class: "grid" });
+  for (const r of ordered(q, q.rows)) {
+    const key = `${q.id}_${r.code}`;
+    const row = el("div", { class: "grow", role: "radiogroup", "aria-label": t(r.label), "data-row": r.code });
+    const chips = el("div", { class: "chips" });
+    const paint = () => {
+      row.classList.toggle("done", !!S.a[key]);
+      chips.querySelectorAll(".chip").forEach(c => { const on = S.a[key] === c.dataset.code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; });
+    };
+    for (const c of q.cols) {
+      const input = el("input", { type: "radio", name: key, id: `${key}-${c.code}`, value: c.code });
+      input.addEventListener("change", () => { S.a[key] = c.code; err.textContent = ""; paint(); });
+      chips.append(el("label", { class: "chip", for: input.id, "data-code": c.code }, input, t(c.label)));
+    }
+    row.append(el("div", { class: "rl", text: t(r.label) }), chips);
+    paint(); g.append(row);
+  }
+  return g;
+}
+function renderText(q) {
+  const w = el("div");
+  const ta = el("textarea", { id: `${q.id}-text`, maxlength: String(q.max), "aria-labelledby": "qtext" });
+  ta.value = S.a[q.id] || "";
+  const count = el("div", { class: "counter" });
+  const dk = el("input", { type: "checkbox", id: `${q.id}-dk` }); dk.checked = !!S.a[q.id + "_dk"];
+  const upd = () => { count.textContent = `${ta.value.length} / ${q.max}`; };
+  ta.addEventListener("input", () => { S.a[q.id] = ta.value; if (ta.value.trim()) { dk.checked = false; S.a[q.id + "_dk"] = false; } upd(); });
+  dk.addEventListener("change", () => { S.a[q.id + "_dk"] = dk.checked; if (dk.checked) { ta.value = ""; S.a[q.id] = ""; upd(); } });
+  upd();
+  w.append(ta, count, el("label", { class: "dk", for: dk.id }, dk, t(q.dk)));
+  return w;
+}
+function validate(q) {
+  const a = S.a;
+  if (q.type === "single") { if (!a[q.id]) return t(UI.errOne); if (q.other === a[q.id] && !(S.other[q.id] || "").trim()) return t(UI.errOther); }
+  if (q.type === "multi") { if (!(a[q.id] || []).length) return t(UI.errMulti); if (q.other && a[q.id].includes(q.other) && !(S.other[q.id] || "").trim()) return t(UI.errOther); }
+  if (q.type === "grid") { const m = q.rows.filter(r => !a[`${q.id}_${r.code}`]).length; if (m) return t(UI.errGrid(m)); }
+  if (q.type === "text") { if (!a[q.id + "_dk"] && (a[q.id] || "").trim().length < q.min) return t(UI.errText); }
+  return "";
+}
+function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  const reason = q.terminate && q.terminate(S.a);
+  if (reason) { S.termQ = q; finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
+  go(S.idx + 1, 1);
+}
+
+/* ================= Termination reason ================= */
+function answerText(q) {
+  const a = S.a, lab = (list, c) => { const o = list.find(x => x.code === c); return o ? t(o.label) : ""; };
+  if (q.type === "single") return lab(q.options, a[q.id]);
+  if (q.type === "multi") return (a[q.id] || []).map(c => lab(q.options, c)).join("; ");
+  if (q.type === "grid") { const row = q.rows.find(r => r.code === TRAP_ROW); return `${t(row.label)} → ${lab(q.cols, a[`${q.id}_${TRAP_ROW}`])}`; }
+  return "";
+}
+function reasonBox(q) {
+  return el("div", { class: "reason", id: "term-reason" },
+    el("div", { class: "rk", text: t(UI.why) }),
+    el("p", {}, el("b", { text: q.id.toUpperCase() + " " }), document.createTextNode(t(q.text))),
+    el("p", {}, el("span", { class: "rl", text: t(UI.yourAns) }), document.createTextNode(answerText(q))),
+    q.req ? el("p", {}, el("span", { class: "rl", text: t(UI.reqL) }), document.createTextNode(t(q.req))) : null);
+}
+
+/* ================= Record ================= */
+const enLabel = (list, code) => { const o = list.find(x => x.code === code); return o ? o.label.en : ""; };
+function computeFlags(status, dur) {
+  const f = [], a = S.a;
+  if (status === "complete" && dur < SPEEDER_SECONDS) f.push(`Speeder: ${dur}s`);
+  const q9 = QUESTIONS.find(q => q.id === "q9");
+  const v = q9.rows.filter(r => r.code !== TRAP_ROW).map(r => a[`q9_${r.code}`]).filter(Boolean);
+  if (status === "complete" && v.length > 3 && new Set(v).size === 1) f.push("Straight-lined Q9");
+  const txt = (a.q16 || "").trim();
+  if (txt && (/(.)\1{4,}/.test(txt) || !/[aeiouyéèàâêîôû]/i.test(txt))) f.push("Q16 possible gibberish");
+  return f.filter(Boolean);
+}
+function buildRecord(status, reason) {
+  const now = new Date(), a = S.a, dur = Math.round((now - (S.startedAt || now)) / 1000);
+  const r = { status, terminate_reason: reason, flags: "", started_at: (S.startedAt || now).toISOString(), completed_at: now.toISOString(), duration_sec: dur, lang: LANG };
+  for (const q of QUESTIONS) {
+    const shown = visible(q);
+    if (q.type === "single") { r[q.id] = shown ? a[q.id] || "" : ""; r[q.id + "_label"] = shown ? enLabel(q.options, a[q.id]) : ""; }
+    if (q.type === "multi") { const v = shown ? a[q.id] || [] : []; r[q.id] = v.join(";"); r[q.id + "_label"] = v.map(c => enLabel(q.options, c)).join("; "); }
+    if (q.type === "grid") for (const row of q.rows) { const v = shown ? a[`${q.id}_${row.code}`] || "" : ""; r[`${q.id}_${row.code}`] = v; r[`${q.id}_${row.code}_label`] = enLabel(q.cols, v); }
+    if (q.type === "text") { r[q.id] = (a[q.id] || "").trim(); r[q.id + "_dk"] = a[q.id + "_dk"] ? 1 : ""; }
+    if (q.other) r[q.id + "_other"] = shown && [].concat(a[q.id] || []).includes(q.other) ? (S.other[q.id] || "").trim() : "";
+  }
+  r.flags = computeFlags(status, dur).join(" | ");
+  return r;
+}
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = t(UI.saving); }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  if (server) {
+    rec.rid = server.rid || "";
+    try {
+      const r = await fetch(server.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      if (!r.ok && r.status !== 409) throw new Error(String(r.status));
+      res = await r.json().catch(() => ({}));
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = t(UI.retry); }
+      const e2 = $("err"); if (e2) e2.textContent = t(UI.errSave);
+      return;
+    }
+  } else console.log("Preview record (not saved):", rec);
+  S.done = true;
+  showEnd(res.status || status, res.redirect || "");
+}
+function showEnd(status, redirect, noRedirect) {
+  S.end = { status, redirect };
+  const [h, p] = MSG[status] || MSG.terminated;
+  $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: t(h) }), el("p", { class: "lead", text: t(p) }));
+  if (SHOW_REASON && S.termQ && (status === "terminated" || status === "quality")) $("survey").append(reasonBox(S.termQ));
+  if (redirect && !noRedirect) setTimeout(() => { location.href = redirect; }, $("term-reason") ? 8000 : 2000);
+}
+
+header();
+if (server && server.closed) showEnd("overquota", server.redirect || "");
+else renderIntro();
+})();
+</script>

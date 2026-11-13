@@ -185,3 +185,19 @@ Q11 exercise · Q12 wellness goals · Q13 health self-rating · Q14 life priorit
 Demographics D1–D8: marital status, children, education, employment, income, Hispanic origin, race, community type.
 Flags: speeder < 300 s, straight-lining Q8/Q9, Q16 gibberish, Q2 near-all selected.
 Settings: `MEN_QUOTA` (500), `MEN_REDIRECT_COMPLETE|TERMINATE|OVERQUOTA|QUALITY`, `MEN_REQUIRE_RID`, `MEN_SHOW_REASON`.
+
+---
+
+# Canada independent restaurant operators survey (`/resto`)
+B2B, 1 wave, n=300+ at $17 CPI, LOI ~15 min, IR ≥25%. English and Canadian French (browser language decides,
+`?lang=fr` / `?lang=en` override, toggle in the header); `_label` columns are always English.
+Intended to run on its own Railway service with `ONLY_SURVEY=resto`.
+
+Screener: S1 owner/manager (supervisors, staff, non-restaurant → terminate) · S2 full-service with table service
+(QSR, fast casual, café, bar, catering, food truck → terminate) · S3 independent or small independent group, not a
+franchise or chain · S4 Toronto, Montreal, Vancouver or Calgary incl. metro areas · S5 industry security.
+Main: Q1 years open · Q2 seats · Q3 cuisine · Q4 average bill · Q5 employees · Q6 sales trend · Q7 top challenges ·
+Q8 menu price changes · Q9 attitudes grid (attention check → `quality`) · Q10 tools/technology · Q11 delivery & takeout
+share · Q12 supplier types · Q13 supplier choice factors · Q14 investment plans · Q15 outlook · Q16 open end ·
+D1 years in industry · D2 age.
+Settings: `RESTO_QUOTA` (300), `RESTO_REDIRECT_COMPLETE|TERMINATE|OVERQUOTA|QUALITY`, `RESTO_REQUIRE_RID`, `RESTO_SHOW_REASON`.

@@ -270,6 +270,8 @@ from survey_blueprint import make_survey  # noqa: E402
 app.register_blueprint(make_survey(slug="de", title="Germany cash-only merchants survey", page="de-cash.html", default_quota=260))
 # USA: general survey of men 18+ (n=500) at /men
 app.register_blueprint(make_survey(slug="men", title="US men 18+ general survey", page="men.html", default_quota=500))
+# Canada B2B: independent full-service restaurant owners/managers, Toronto/Montreal/Vancouver/Calgary (n=300+) at /resto
+app.register_blueprint(make_survey(slug="resto", title="Canada independent restaurant operators survey", page="resto.html", default_quota=300))
 
 
 if __name__ == "__main__":
