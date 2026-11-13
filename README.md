@@ -188,7 +188,7 @@ Settings: `MEN_QUOTA` (500), `MEN_REDIRECT_COMPLETE|TERMINATE|OVERQUOTA|QUALITY`
 
 ---
 
-# Canada independent restaurant operators survey (`/resto`)
+# Independent Industry Research – Canada (`/resto`)
 B2B, 1 wave, n=300+ at $17 CPI, LOI ~15 min, IR ≥25%. English and Canadian French (browser language decides,
 `?lang=fr` / `?lang=en` override, toggle in the header); `_label` columns are always English.
 Intended to run on its own Railway service with `ONLY_SURVEY=resto`.
