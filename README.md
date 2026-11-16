@@ -201,3 +201,21 @@ Q8 menu price changes · Q9 attitudes grid (attention check → `quality`) · Q1
 share · Q12 supplier types · Q13 supplier choice factors · Q14 investment plans · Q15 outlook · Q16 open end ·
 D1 years in industry · D2 age.
 Settings: `RESTO_QUOTA` (300), `RESTO_REDIRECT_COMPLETE|TERMINATE|OVERQUOTA|QUALITY`, `RESTO_REQUIRE_RID`, `RESTO_SHOW_REASON`.
+
+---
+
+# H&R Block DIY customer survey (`/hrb`)
+US GenPop 18+, no demo quotas; must be H&R Block do-it-yourself customers who filed their 2025 return on the
+Free or Deluxe plan (not Premium, Self-Employed, Basic or Premium & Business). LOI ~14 min, IR ~2.5% on genpop,
+n=200 (`HRB_QUOTA`). Runs on its own Railway service with `ONLY_SURVEY=hrb`.
+
+Screener: S1 age 18+ · S2 gender · S3 US state · S4 industry security (MR, advertising/PR, tax prep/accounting,
+tax/financial software) · S5 has filed a 2025 federal return · S6 prepared it themselves with software · S7 used
+H&R Block (picking fictitious "TaxPilot Plus" → `quality`) · S8 Online or desktop software (desktop flagged) ·
+S9 plan Free or Deluxe · S10 personally used it.
+Main: Q1 years with H&R Block DIY · Q2 previous method (first-year users) · Q3 reasons for choosing · Q4 overall
+satisfaction · Q5 attribute satisfaction grid · Q6 NPS 0–10 · **Q7 open end: reason for NPS score** · Q8 problems ·
+Q9 upgrade prompts · Q10 reaction to prompts · Q11 extras paid for · Q12 total paid · Q13 attitudes (attention check) ·
+Q14 likelihood to use again · Q15 consideration next year · **Q16 open end: one thing to change** · D1–D8 filing status,
+refund/owed, income types, household income, employment, education, Hispanic origin, race.
+Flags: speeder < 280 s, straight-lining Q5/Q13, low-quality or identical open ends, desktop users, Free plan paying $50+ with no extras.

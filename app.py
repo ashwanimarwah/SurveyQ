@@ -272,6 +272,8 @@ app.register_blueprint(make_survey(slug="de", title="Germany cash-only merchants
 app.register_blueprint(make_survey(slug="men", title="US men 18+ general survey", page="men.html", default_quota=500))
 # Canada B2B: independent full-service restaurant owners/managers, Toronto/Montreal/Vancouver/Calgary (n=300+) at /resto
 app.register_blueprint(make_survey(slug="resto", title="Independent Industry Research – Canada", page="resto.html", default_quota=300))
+# USA: H&R Block DIY customers on Free or Deluxe plans, GenPop 18+ (n=200) at /hrb
+app.register_blueprint(make_survey(slug="hrb", title="H&R Block DIY Customer Survey (Free/Deluxe)", page="hrb.html", default_quota=200))
 
 
 if __name__ == "__main__":
