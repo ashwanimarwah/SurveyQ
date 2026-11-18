@@ -1,0 +1,913 @@
+<title>Digital Media Solutions Study</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a reading column; grids stack row by row for phones. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --ink: #16191d;
+  --muted: #5b6370;
+  --line: #d9dde3;
+  --accent: #33415c;        /* slate */
+  --accent-soft: #e2ebe5;
+  --focus: #d08c1c;
+  --bad: #b23a32;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+    --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+  --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+.wrap { max-width: 720px; margin: 0 auto; }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; }
+.brandname { font-family: var(--font-display); font-weight: 600; font-size: 19px; display: block; }
+.lang { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.lang button { font: 500 13px var(--font-mono); padding: 3px 10px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 20px; }
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4.6vw, 33px); line-height: 1.2; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(20px, 3.5vw, 24px); line-height: 1.32; margin: 0 0 18px; hyphens: auto; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -8px 0 16px; }
+.options { display: grid; gap: 8px; }
+.opt { position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.opt:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.opt input[type=radio], .opt input[type=checkbox], .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key { width: 22px; height: 22px; border: 1.5px solid var(--line); border-radius: 5px; margin-top: 2px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .key { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.opt.dis { opacity: .45; }
+.opt:focus-within, .chip:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+input[type=text], textarea { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+textarea { min-height: 130px; resize: vertical; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+.dk { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--muted); cursor: pointer; margin-top: 10px; }
+.counter { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; text-align: right; }
+.grid { display: grid; gap: 14px; }
+.grow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.grow.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.grow .rl { font-weight: 600; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; font-size: 14.5px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; background: var(--bg); line-height: 1.3; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.btn { font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible, .lang button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
+.scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 4px; }
+.scale .chip { text-align: center; padding: 10px 0; font-family: var(--font-mono); border-radius: 8px; }
+.ends { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+@media (max-width: 520px) { .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.info p { max-width: 64ch; margin: 0 0 14px; }
+.info ul { max-width: 64ch; margin: 0 0 14px; padding-left: 22px; }
+details.def { margin: -6px 0 16px; font-size: 15px; color: var(--muted); }
+details.def summary { cursor: pointer; color: var(--accent); }
+details.def p { margin: 6px 0 0; max-width: 64ch; }
+.numin { max-width: 140px; font-family: var(--font-mono); font-size: 20px; }
+.sumtab { display: grid; gap: 8px; }
+.sumrow { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; }
+.sumrow input { text-align: right; font-family: var(--font-mono); }
+.sumtotal { display: flex; justify-content: space-between; font-family: var(--font-mono); padding: 8px 12px; font-weight: 600; }
+.sumtotal.bad { color: var(--bad); }
+.boxes { display: grid; gap: 8px; margin-bottom: 10px; }
+.boxes label { display: grid; grid-template-columns: 24px 1fr; align-items: center; gap: 10px; font: 500 13px var(--font-mono); color: var(--muted); }
+.gridtable { overflow-x: auto; }
+.grid .rl b { font-weight: 700; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><span class="eyebrow">QuestionLab · Online survey</span><span class="brandname">Digital Media Solutions Study</span></div>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* ================================================================
+   Chase Media Solutions A&U Tracker — Wave 3 (programmed from
+   Chase_Media_Solutions_AU_Tracker_W3_v3_11.9.26_For_Programming.docx)
+   Option, row and column codes follow the questionnaire.
+   ================================================================ */
+const WAVE = 3;
+const S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {}, end: null, termQ: null, bkey: null };
+const A = S.a;
+const server = window.SURVEY_SERVER;
+const SHOW_REASON = !server || server.showReason !== false;
+
+/* ---------------- helpers ---------------- */
+const O = (c, l, x = {}) => ({ c, l, ...x });
+const opts = (rows) => rows.map(r => Array.isArray(r) ? O(r[0], r[1], r[2] || {}) : r);
+const isAg = a => a.s5 === 1;
+const AC = (company, agency) => a => isAg(a) ? agency : company;
+const has = (a, id, c) => (a[id] || []).includes(c);
+const cloUser = a => has(a, "s16", 6);
+const words = s => ((s || "").trim().match(/[A-Za-z0-9À-ɏ'’-]+/g) || []).length;
+const sel = (a, id) => a[id] || [];
+
+const BRANDS = opts([
+  ["r1", "Amex Ads (including Amex Offers)"], ["r2", "Mastercard Commerce Media (including Mastercard Offers)"],
+  ["r3", "Bank of America (Bank AmeriDeals)"], ["r4", "Citi Commerce Media (including Merchant Offers)"],
+  ["r6", "Capital One Shopping (including Capital One Offers)"], ["r7", "Chase Media Solutions (including Chase Offers)"],
+  ["r8", "Cardlytics"], ["r10", "Fetch"], ["r12", "TikTok Shop"], ["r13", "Walmart Connect"],
+  ["r14", "Albertson’s Media Collective"], ["r15", "Target Roundel"], ["r16", "PayPal"]]);
+const brandLabel = c => (BRANDS.find(b => b.c === c) || {}).l || "";
+const brandOrder = () => (S.order.a1 || BRANDS.map(b => b.c));
+const awareBrands = a => brandOrder().filter(c => [2, 3, 4].includes(a["a1_" + c]));
+const usedPY = a => awareBrands(a).filter(c => a["a3_" + c] === 3);
+function bBrands(a) {                         // B loop: Chase first if aware, then random others, up to 3
+  const aw = awareBrands(a), key = aw.join(",");
+  if (S.bkey !== key) {
+    const others = aw.filter(c => c !== "r7").sort(() => Math.random() - 0.5);
+    S.bbrands = (aw.includes("r7") ? ["r7", ...others.slice(0, 2)] : others.slice(0, 3));
+    S.bkey = key;
+  }
+  return S.bbrands;
+}
+
+const INDUSTRY = opts([
+  [1, "Advertising / Public Relations", { term: 1 }], [2, "Agriculture", { term: 1 }],
+  [3, "Fashion / Clothing / Apparel (e.g., Macy’s, Lululemon, Nike)"], [4, "Gas / Convenience (e.g., ExxonMobil, Chevron, 7-Eleven, Love’s)"],
+  [5, "Government", { term: 1 }], [6, "Grocery (e.g., Aldi, Shop Rite, Albertsons)"],
+  [7, "Health & Wellness (e.g., LA Fitness, Vitamin Shoppe, Nutrisystem, local fitness centers, hair stylist)"],
+  [8, "Media & Entertainment (e.g., Hulu, Ticketmaster, Spotify)"],
+  [9, "Professional / Business Services (e.g., Management Consulting, Insurance, Graphic Design)", { term: 1 }],
+  [10, "Real Estate (e.g., Property Management, Realtor, Rental Leasing)", { term: 1 }],
+  [11, "Retail - Big box (e.g., Walmart, Costco, Target)"], [12, "Retail - E-commerce and Subscription (e.g., Etsy, Poshmark, Fanatics, eBay)"],
+  [13, "Retail - Specialty Retail (e.g., AutoZone, Home Depot, Sephora)"],
+  [14, "Retail - Luxury Retail Stores / Brands for clothing, jewelry, watches (e.g., Gucci, Saint Laurent, Breitling)"],
+  [15, "Research / Market Research", { term: 1 }], [16, "Restaurant / Food & Beverage CPG (e.g., Chipotle, McDonald’s, PepsiCo, Taco Bell)"],
+  [17, "Technology / Telecommunications / B2B Services (e.g., AT&T, Best Buy, Spectrum, Verizon)"],
+  [18, "Travel & Leisure (e.g., Airbnb, Hilton, National Car Rental, Delta, airports)"],
+  [19, "Financial Services / FinTech / Banks (e.g., TurboTax, Morgan Stanley)"],
+  [98, "Other (please specify)", { anchor: 1, other: 1, term: 1 }], [99, "None of the above", { anchor: 1, ex: 1, term: 1 }]]);
+const IND_QUOTA = [11, 12, 13, 3, 6, 16, 4, 7, 18, 17, 8, 14];
+const hIndustry = a => isAg(a) ? a.s8 : a.s7;
+
+const MIX = opts([[1, "SEO"], [2, "Email marketing"], [3, "Mobile marketing"], [4, "Content marketing"],
+  [5, "Search and display marketing (including pay-per-click posts, suggested posts, etc.)"], [6, "Card-Linked Offers (Debit or Credit Card)"],
+  [7, "Social media marketing"], [8, "Affiliate marketing"], [98, "Other (please specify)", { anchor: 1, other: 1 }], [99, "None of the above", { anchor: 1, ex: 1 }]]);
+const mixLabel = (a, c) => c === 98 ? (S.other.s16 || "Other") : (MIX.find(o => o.c === c) || {}).l;
+
+const MOTIV = opts([[1, "Increase consumer engagement"], [2, "Personalized offers"], [3, "Behavior-based targeting"], [4, "Location-based offers"],
+  [5, "Boost customer retention"], [6, "Real-time attribution and tracking"], [7, "Streamlined redemption process"], [8, "Co-branded campaigns"],
+  [9, "Increase foot traffic"], [10, "Access to transactional data"], [11, "Performance-based pricing"], [12, "Increase transaction value"],
+  [13, "Re-engage lapsed users"], [14, "Consumers like offers on these platforms"], [15, "They’re easy to use"], [16, "Attract new customers"],
+  [98, "Other (please specify)", { anchor: 1, other: 1 }], [99, "None of these", { anchor: 1, ex: 1 }]]);
+
+const CLO_DEF = "Targeted promotions linked directly to a customer’s credit or debit card, offering cashback, points, or discounts when making purchases at participating retailers.";
+const DMS_HOVER = "The use of digital channels and technologies to create, distribute, and optimize content for marketing, advertising, communication, and engagement purposes, connecting businesses with their target audiences.";
+const CLO_HOVER = "The use of payment card data and transaction technology to deliver targeted promotions, discounts, or rewards directly to consumers’ existing credit or debit cards, enabling businesses to drive engagement, track performance, and personalize offers through seamless, real-time integration with customer purchasing behavior.";
+const PRIMARY_CLIENT = "Primary client: the client on whose account you spend most time and/or have the most say over their marketing decisions. This survey refers to your primary client throughout.";
+
+/* ZIP prefix → state; Census region */
+const ZIP_RANGES = [[5,5,"NY"],[10,27,"MA"],[28,29,"RI"],[30,38,"NH"],[39,49,"ME"],[50,54,"VT"],[55,55,"MA"],[56,59,"VT"],[60,69,"CT"],[70,89,"NJ"],
+  [100,149,"NY"],[150,196,"PA"],[197,199,"DE"],[200,200,"DC"],[201,201,"VA"],[202,205,"DC"],[206,219,"MD"],[220,246,"VA"],[247,268,"WV"],[270,289,"NC"],
+  [290,299,"SC"],[300,319,"GA"],[320,339,"FL"],[341,349,"FL"],[350,369,"AL"],[370,385,"TN"],[386,397,"MS"],[398,399,"GA"],[400,427,"KY"],[430,459,"OH"],
+  [460,479,"IN"],[480,499,"MI"],[500,528,"IA"],[530,549,"WI"],[550,567,"MN"],[569,569,"DC"],[570,577,"SD"],[580,588,"ND"],[590,599,"MT"],[600,629,"IL"],
+  [630,658,"MO"],[660,679,"KS"],[680,693,"NE"],[700,714,"LA"],[716,729,"AR"],[730,732,"OK"],[733,733,"TX"],[734,749,"OK"],[750,799,"TX"],[800,816,"CO"],
+  [820,831,"WY"],[832,838,"ID"],[840,847,"UT"],[850,865,"AZ"],[870,884,"NM"],[885,885,"TX"],[889,898,"NV"],[900,961,"CA"],[967,968,"HI"],[970,979,"OR"],
+  [980,994,"WA"],[995,999,"AK"]];
+const REGION = { Northeast: "CT ME MA NH RI VT NJ NY PA", Midwest: "IL IN MI OH WI IA KS MN MO NE ND SD",
+  South: "DE DC FL GA MD NC SC VA WV AL KY MS TN AR LA OK TX", West: "AZ CO ID MT NV NM UT WY AK CA HI OR WA" };
+function zipState(z) { const p = parseInt(String(z).slice(0, 3), 10); const r = ZIP_RANGES.find(([lo, hi]) => p >= lo && p <= hi); return r ? r[2] : ""; }
+function stateRegion(st) { for (const [k, v] of Object.entries(REGION)) if (v.split(" ").includes(st)) return k; return ""; }
+function ageBand(n) { if (n == null) return ""; if (n <= 24) return 1; if (n <= 34) return 2; if (n <= 44) return 3; if (n <= 54) return 4; if (n <= 64) return 5; if (n <= 74) return 6; return 7; }
+function generation(n) { if (n == null) return ""; if (n >= 62 && n <= 74) return "Boomers"; if (n >= 46) return "Gen X"; if (n >= 30) return "Millennials"; if (n >= 25) return "Gen Z"; return ""; }
+
+/* ---------------- questionnaire ---------------- */
+const SEC = { S: "Screener", A: "Awareness & usage", B: "Brand perceptions", C: "Motivations & challenges", D: "Your views", E: "About your business" };
+const AGREE_ONE = "Please select one answer.";
+const QUESTIONS = [
+  { id: "s0a", sec: SEC.S, type: "info", title: "Welcome",
+    paras: ["Thank you for agreeing to participate in this survey. This survey will take approximately 15 minutes to complete.",
+      "We need your opinions so companies can make their products and services better. Your opinions will be combined with those provided by others in order to make the best decisions.",
+      "Any information given during the study will be kept confidential and used for research purposes only.",
+      "Participation in this survey is voluntary. Responses will be used to inform and optimize future marketing. Personal information collected in connection with the survey will be processed in accordance with our Privacy Policy.",
+      "Please complete all of the questions appearing on each page. When you are ready to move on to the next page, click the “Next” button at the bottom of the screen. Do not use your browser buttons to go from one page to another.",
+      "Please take a moment to maximize this window for optimal viewing of our survey."] },
+  { id: "s0b", sec: SEC.S, type: "single", rand: true,
+    pre: ["We value your opinions and appreciate your participation in this survey. Again, the information you provide is strictly confidential and anonymous, and is for research purposes only. We will in no way attempt to sell you anything as a result of this survey.",
+      "Your feedback is important and will be used to improve the products and services our client offers, so please provide honest and thoughtful feedback. Should our quality checks indicate that you are not attentive throughout the survey, you stand the risk of forfeiting the incentive provided by the panel."],
+    text: "Before you begin, please make sure that you check off the appropriate option below:",
+    opts: opts([[1, "I agree to provide honest and thoughtful responses to all questions within this survey and to take the time to read and respond accurately to all questions within this survey."],
+      [2, "I do not agree to provide honest and thoughtful responses to all questions within this survey or to take the time to read and respond accurately to all questions within this survey."]]),
+    term: a => a.s0b === 2 ? "S0B: did not agree to accurate responses" : null, req: "You need to agree to give honest, thoughtful responses to take part." },
+  { id: "s0c", sec: SEC.S, type: "single", rand: true,
+    pre: ["Protecting your personal and confidential information is very important to us and we follow strict privacy rules to ensure this. We also protect our client’s confidential information with the same importance. For our client’s benefit, it is mandatory, by participating in this study, you agree that you will not:"],
+    bullets: ["Share any of the confidential and proprietary information included in this study such as technical concepts, products and/or packaging, or use it for your own benefit or the benefit of a third party, or",
+      "Photograph, record, publish on the Internet, copy, or in any other way reproduce any of the confidential information included in this study."],
+    text: "Do you agree?",
+    opts: opts([[1, "Yes, I agree, and I wish to participate in this study"], [2, "No, I do not agree"]]),
+    term: a => a.s0c === 2 ? "S0C: did not agree to privacy rules" : null, req: "You need to agree to the privacy rules to take part." },
+  { id: "intro_s", sec: SEC.S, type: "info", paras: ["Great, thank you for your interest in participating in this study. We’ll start off with some questions that will help us learn a bit more about you overall."] },
+
+  { id: "s1", sec: SEC.S, type: "number", text: "How old are you?", sub: "Please enter your age.", min: 0, max: 99, pna: "Prefer not to answer",
+    term: a => a.s1_pna ? "S1: age not given" : (a.s1 < 25 ? "S1: under 25" : (a.s1 >= 75 ? "S1: 75 or older" : null)),
+    req: "This survey is for people aged 25 to 74." },
+  { id: "s2", sec: SEC.S, type: "single", text: "Which gender do you most identify with?", sub: AGREE_ONE,
+    opts: opts([[1, "Male"], [2, "Female"], [3, "Non-binary"], [4, "Prefer to self-describe", { other: 1 }], [5, "Prefer not to answer"]]) },
+  { id: "s3", sec: SEC.S, type: "zip", text: "What is your zip code?", sub: "Please enter your 5-digit zip code." },
+  { id: "s4", sec: SEC.S, type: "single", text: "Which of the following best describes your current employment situation?", sub: AGREE_ONE,
+    opts: opts([[1, "Employed full-time"], [2, "Employed part-time"], [3, "Self-employed"], [4, "Not employed"], [5, "Retired"], [6, "Student"]]),
+    term: a => a.s4 !== 1 ? "S4: not employed full-time" : null, req: "This survey is for people employed full-time." },
+  { id: "s5", sec: SEC.S, type: "single", rand: true, text: "What best describes your role?", sub: AGREE_ONE,
+    opts: opts([[1, "I work at an agency that does work for end-clients"], [2, "I work full time for a company selling goods and services to other businesses and/or consumers"],
+      [3, "I work for a brand as a consultant"], [97, "Other (please specify)", { anchor: 1, other: 1 }]]),
+    term: a => [3, 97].includes(a.s5) ? "S5: consultant or other role" : null, req: "This survey is for people working at an agency or full-time at a company selling goods and services." },
+  { id: "s6", sec: SEC.S, type: "single", rand: true, show: isAg, text: "What type of agency do you work at?", sub: AGREE_ONE,
+    opts: opts([[1, "Media agency"], [2, "Advertising agency"], [3, "Other type of agency (please specify)", { anchor: 1, other: 1 }]]) },
+  { id: "s7", sec: SEC.S, type: "single", show: a => a.s5 === 2, text: "Which of the below best describes the industry in which your business operates?", sub: AGREE_ONE,
+    opts: INDUSTRY, term: a => (INDUSTRY.find(o => o.c === a.s7) || {}).term ? "S7: industry not qualifying" : null,
+    req: "This survey is for businesses in specific consumer-facing industries." },
+  { id: "s8", sec: SEC.S, type: "single", show: isAg, text: "Which of the following best describes the industry that your primary client falls into?", sub: AGREE_ONE, def: PRIMARY_CLIENT,
+    opts: INDUSTRY, term: a => (INDUSTRY.find(o => o.c === a.s8) || {}).term ? "S8: primary client industry not qualifying" : null,
+    req: "This survey is for agencies whose primary client is in specific consumer-facing industries." },
+  { id: "s9", sec: SEC.S, type: "single",
+    text: AC("Which range best describes your business’ total gross revenue for the last fiscal year?", "Which range best describes your primary client’s total gross revenue for the last fiscal year?"), sub: AGREE_ONE,
+    opts: opts([[1, "Pre-revenue"], [2, "Under $50,000"], [3, "$50,000 to $99,999"], [4, "$100,000 to $199,999"], [5, "$200,000 to $299,999"], [6, "$300,000 to $399,999"],
+      [7, "$400,000 to $499,999"], [8, "$500,000 to $599,999"], [9, "$600,000 to $699,999"], [10, "$700,000 to $799,999"], [11, "$800,000 to $899,999"],
+      [12, "$900,000 to $999,999"], [13, "$1 million to $1.99 million"], [14, "$2 million to $4.99 million"], [15, "$5 million to $9.99 million"],
+      [16, "$10 million to $19.99 million"], [17, "$20 million to $29.99 million"], [18, "$30 million to $49.99 million"], [19, "$50 million to $99.99 million"],
+      [20, "$100 million to $249.99 million"], [21, "$250 million to $499.99 million"], [22, "$500 million to $749.99 million"], [23, "$750 million to $999.99 million"],
+      [24, "$1 billion to $1.99 billion"], [25, "$2 billion or more"], [99, "Prefer not to answer"]]),
+    term: a => (a.s9 < 18 || a.s9 === 99) ? "S9: revenue under $30M or not given" : null, req: "This survey is for businesses with annual revenue of $30 million or more." },
+  { id: "s9a", sec: SEC.S, type: "single", text: "What is the total number of employees in your business currently?", sub: AGREE_ONE,
+    opts: opts([[1, "Just myself"], [2, "1-5"], [3, "6-10"], [4, "11-20"], [5, "21-50"], [6, "51-75"], [7, "76-100"], [8, "101-199"], [9, "200-250"], [10, "251-499"], [11, "500 or more"]]),
+    term: a => (a.s5 === 2 && ((a.s9a === 1 && a.s9 >= 21) || (a.s9a === 2 && a.s9 >= 22) || (a.s9a === 3 && a.s9 >= 23))) ? "QUALITY: S9A employees inconsistent with S9 revenue" : null,
+    flag: a => (a.s5 === 2 && a.s9a === 4 && a.s9 === 25) ? "S9A 11-20 employees with $2B+ revenue" : null,
+    req: "The number of employees didn’t match the revenue range given." },
+  { id: "s10", sec: SEC.S, type: "single", text: "How many years of professional experience do you have in your industry?", sub: AGREE_ONE,
+    opts: opts([[1, "Less than 1 year"], [2, "1-5 years"], [3, "6-10 years"], [4, "11-20 years"], [5, "21-30 years"], [6, "31+ years"]]),
+    term: a => a.s10 === 1 ? "S10: less than 1 year experience" : null, req: "This survey is for people with at least 1 year of professional experience." },
+  { id: "s11", sec: SEC.S, type: "single", text: "What is your current job title, level, or responsibility?", sub: AGREE_ONE,
+    opts: opts([[1, "Owner (e.g., Partner, Founder)"], [2, "C-Level (e.g., CEO, CFO, CTO, President)"], [3, "Vice President (e.g., EVP, SVP, AVP, VP)"],
+      [4, "Director (e.g., Group Director, Sr. Director, Director)"], [5, "Manager (e.g., Group Manager, Sr. Manager, Manager, Program Manager)"], [6, "Analyst"],
+      [7, "Assistant or Associate"], [8, "Consultant"], [9, "Administrative (e.g., Clerical or Support Staff)"], [10, "Intern"], [11, "Volunteer"], [99, "None of the above"]]),
+    term: a => a.s11 >= 7 ? "S11: job level not qualifying" : null, req: "This survey is for owners, executives, directors, managers and analysts." },
+  { id: "s12", sec: SEC.S, type: "multi", show: a => a.s5 === 2,
+    text: "Please choose which departments/products you have influence or decision-making authority over regarding spending/purchasing.", sub: "Please select all that apply.",
+    opts: opts([[1, "Billing / Billing Operations"], [2, "Customer Experience"], [3, "Engineering / Information Technology"], [4, "Finance"], [5, "Human Resources"],
+      [6, "Legal"], [7, "Marketing / Advertising"], [8, "Media / Media Buying"], [9, "Office management (e.g., supplies, security)"], [10, "Operations"], [11, "Payments"],
+      [12, "Procurement / Sourcing / Strategic Partnerships"], [13, "Product"], [14, "Sales"], [15, "Shipping"], [16, "Travel"], [98, "Other"],
+      [99, "I don’t have influence or decision-making authority", { ex: 1 }]]),
+    term: a => {
+      const v = sel(a, "s12");
+      if (![2, 7, 8, 14].some(c => v.includes(c))) return "S12: no influence over customer experience, marketing, sales or media";
+      if (a.s11 !== 1 && v.length > 10) return "QUALITY: S12 more than 10 departments";
+      return null;
+    },
+    flag: a => (a.s11 !== 1 && sel(a, "s12").length > 7) ? "S12 more than 7 departments" : null,
+    req: "This survey is for people with spending influence over customer experience, marketing/advertising, sales or media." },
+  { id: "s13", sec: SEC.S, type: "single",
+    text: AC("Which of the following best describes your role in decision-making for the business when it comes to the selection of digital/programmatic/affiliate advertising?",
+      "Which of the following best describes your role in decision-making for your primary client when it comes to the selection of digital/programmatic/affiliate advertising?"), sub: AGREE_ONE,
+    opts: opts([[1, "I have the lead role in decision-making"], [2, "I share the decision-making but am more involved in decisions than my business partners"],
+      [3, "I have an equal role in decision-making as business partners"], [4, "I have influence, but don’t lead the decision-making"], [5, "I leave the decisions to other individuals / teams within the business"]]),
+    term: a => a.s13 === 4 ? "S13: influence only, not a decision maker" : null, req: "This survey is for people who lead or share digital advertising decisions." },
+  { id: "s14", sec: SEC.S, type: "single", rand: true,
+    text: AC("How would you describe the primary end user of your products/services (If your company caters to more than one of the below, please select the one that is most relevant to you)?",
+      "How would you describe the primary end user of your primary client’s products/services (If your primary client caters to more than one of the below, please select the one that is most relevant to you)?"), sub: AGREE_ONE,
+    opts: opts([[1, "Consumers"], [2, "Other businesses (your primary customers are companies or organizations, not individual consumers)"]]), quotaCheck: true },
+  { id: "s15", sec: SEC.S, type: "single",
+    text: AC("How much of your marketing budget was allocated to digital marketing in the past 12 months?", "How much of your primary client’s marketing budget was allocated to digital marketing in the past 12 months?"),
+    sub: "Please select one answer. Your best estimate is fine.",
+    opts: opts([[1, "$0"], [2, "Less than $1 million"], [3, "$1 million to <$2.5 million"], [4, "$2.5 million to <$5 million"], [5, "$5 million to <$10 million"],
+      [6, "$10 million to <$15 million"], [7, "$15 million to <$20 million"], [8, "$20 million to <$25 million"], [9, "$25 million to <$35 million"],
+      [10, "$35 million to <$50 million"], [11, "$50 million or more"], [99, "Prefer not to answer"]]),
+    term: a => [1, 99].includes(a.s15) ? "S15: no digital marketing spend or not given" : null, req: "This survey is for businesses with digital marketing spend in the past 12 months." },
+  { id: "s16", sec: SEC.S, type: "multi", rand: true,
+    text: AC("Which of the following digital marketing/advertising tools/strategies does your company currently utilize to reach consumers?",
+      "Which of the following digital marketing/advertising tools/strategies does your primary client currently utilize to reach consumers?"), sub: "Please select all that apply.",
+    opts: MIX, term: a => has(a, "s16", 99) ? "S16: uses none of the digital marketing tools" : null, req: "This survey is for businesses using digital marketing tools." },
+  { id: "s16a", sec: SEC.S, type: "sum", show: a => sel(a, "s16").filter(c => c !== 99).length > 1,
+    text: AC("How does your company currently allocate your digital marketing spend across the tools/strategies used?",
+      "How do you allocate digital marketing spend for your primary client across the tools/strategies used?"),
+    sub: "Please include a percentage for each. Your best estimate is fine.",
+    rows: a => (S.order.s16 || MIX.map(o => o.c)).filter(c => has(a, "s16", c) && c !== 99).map(c => O(c, mixLabel(a, c))),
+    universe: MIX.filter(o => o.c !== 99), auto: a => { const v = sel(a, "s16").filter(c => c !== 99); return v.length === 1 ? { [v[0]]: 100 } : null; } },
+  { id: "s17", sec: SEC.S, type: "single", show: a => !cloUser(a),
+    text: "What best describes your relationship with Card-Linked Offers on Credit/Debit Cards (CLOs) as a marketing tool?", sub: AGREE_ONE,
+    note: "When we refer to CLOs, we are referring to targeted promotions linked directly to a customer’s credit or debit card, offering cashback, points, or discounts when making purchases at participating retailers.",
+    opts: opts([[1, "Have no awareness of Card-Linked Offers (Debit or Credit Card)"], [2, "Aware of but have never used"], [3, "Aware of and have used in the past"], [4, "Aware of and currently using"]]),
+    term: a => a.s17 === 4 ? "QUALITY: S17 currently using CLOs but not selected at S16" : null, req: "This answer didn’t match the marketing tools selected earlier." },
+  { id: "s18", sec: SEC.S, type: "single", show: a => !cloUser(a) && [2, 3].includes(a.s17),
+    text: AC("How likely are you to include Card-Linked Offers (Debit or Credit Card) for your digital marketing plans in the future?",
+      "How likely are you to include Card-Linked Offers (Debit or Credit Card) for your primary client’s digital marketing plans in the future?"), sub: AGREE_ONE,
+    opts: opts([[1, "Not at all likely"], [2, "Not very likely"], [3, "Somewhat likely"], [4, "Very likely"], [5, "Extremely likely"]]) },
+  { id: "s19", sec: SEC.S, type: "text", show: a => !cloUser(a) && [2, 3].includes(a.s17) && [1, 2].includes(a.s18), minWords: 1, minChars: 5,
+    text: a => `Why are you ${(a.s18 === 1 ? "not at all likely" : "not very likely")} to include card-linked offers (debit or credit card) in future digital marketing plans?`,
+    term: () => "S18: not likely to include CLOs in future (S19 captured)", req: "This survey is for people likely to consider card-linked offers in the future." },
+
+  /* ---------------- Section A ---------------- */
+  { id: "intro_a", sec: SEC.A, type: "info",
+    paras: a => ["Congratulations, you’re exactly who we’re looking for to provide us with some important feedback as it relates to your use of digital media solutions.",
+      "For the purposes of this survey, when we are referring to digital media solutions, please keep in mind we’re talking about the overall landscape as it relates to the use of digital channels and technologies to create, distribute, and optimize content for marketing, advertising, communication, and engagement purposes, connecting businesses with their target audiences.",
+      ...(isAg(a) ? ["And, for the rest of the survey, keep in mind that all questions should focus on your actions, choices or perceptions around digital marketing as it relates to what you do for your primary client."] : [])] },
+  { id: "a00", sec: SEC.A, type: "boxes", n: 5, minChars: 3, none: "I’m not aware of any", def: DMS_HOVER, defLabel: "What are digital media solutions?",
+    text: "When you think of digital media solutions, which brands come to mind?", sub: "Please enter your answers in the boxes below." },
+  { id: "a01", sec: SEC.A, type: "boxes", n: 5, minChars: 3, none: "I’m not aware of any", def: CLO_HOVER, defLabel: "What are Card-Linked Offers?",
+    text: "When you think of Card-Linked Offers (Debit or Credit Card), which brands come to mind?", sub: "Please enter your answers in the boxes below." },
+  { id: "a1", sec: SEC.A, type: "grid", rowRand: true, rows: BRANDS,
+    text: "Which of the following best describes your familiarity with each of the brands currently offering digital media solutions?", sub: "Please select one answer for each brand.",
+    cols: opts([[1, "Never heard of this"], [2, "Heard of, but not familiar"], [3, "Somewhat familiar"], [4, "Very familiar"]]), straight: 13 },
+  { id: "a2", sec: SEC.A, type: "grid", show: a => awareBrands(a).length > 0, rows: a => awareBrands(a).map(c => O(c, brandLabel(c))), universe: BRANDS,
+    text: AC("How likely are you to consider each of the following as a part of your future digital marketing spend?", "How likely are you to consider each of the following as a part of your primary client’s future digital marketing spend?"),
+    sub: "Please select one answer for each brand.",
+    cols: opts([[1, "Definitely would not consider"], [2, "Probably would not consider"], [3, "Probably would consider"], [4, "Definitely would consider"]]), straight: 3 },
+  { id: "a3", sec: SEC.A, type: "grid", show: a => awareBrands(a).length > 0, rows: a => awareBrands(a).map(c => O(c, brandLabel(c))), universe: BRANDS,
+    text: AC("Which of the following digital media solutions have you included as part of your digital marketing spend within the past 12 months?",
+      "Which of the following digital media solutions have you included as part of your primary client’s digital marketing spend within the past 12 months?"),
+    sub: "Please select one answer for each brand.", cols: opts([[1, "Never used"], [2, "Used but not in the past year"], [3, "Used in the past year"]]), straight: 3 },
+  { id: "a4a", sec: SEC.A, type: "grid", show: a => usedPY(a).length > 0, rowRand: true,
+    rows: opts([["A", "Affiliate marketing"], ["B", "Digital media solutions"], ["C", "Card-Linked Offers (Debit or Credit Card)"]]),
+    text: AC("How often are you typically running or launching the following types of digital media campaigns?", "How often are you typically running or launching the following types of digital media campaigns for your primary client?"),
+    sub: "Please select one answer per campaign type.", def: `Digital media solutions: ${DMS_HOVER} Card-Linked Offers: ${CLO_HOVER}`, defLabel: "Definitions",
+    cols: opts([[1, "Weekly / Biweekly digital campaigns"], [2, "Monthly digital campaigns"], [3, "Quarterly digital campaigns"], [4, "Digital campaigns run around key sales periods / are seasonal"],
+      [5, "Always on (year-round) digital campaigns"], [99, "Not applicable / I don’t use this type of digital media campaign"]]),
+    flag: a => {
+      const f = [];
+      if (a.a4a_C === 99 && cloUser(a)) f.push("A4A CLO n/a but S16 CLO user");
+      if (a.a4a_A === 99 && has(a, "s16", 8)) f.push("A4A affiliate n/a but S16 affiliate");
+      if (a.a4a_C >= 1 && a.a4a_C <= 5 && !cloUser(a)) f.push("A4A CLO campaigns but not S16 CLO user");
+      if (a.a4a_A >= 1 && a.a4a_A <= 5 && !has(a, "s16", 8)) f.push("A4A affiliate campaigns but not S16 affiliate");
+      return f.join(" | ") || null;
+    } },
+  { id: "a4b", sec: SEC.A, type: "grid", show: a => usedPY(a).length > 0, rows: a => usedPY(a).map(c => O(c, brandLabel(c))), universe: BRANDS,
+    text: a => { const t = usedPY(a).length > 1 ? "these brands" : "this brand"; return isAg(a) ? `How often are you including ${t} as a part of your primary client’s digital media campaigns?` : `How often are you including ${t} as a part of your digital media campaigns?`; },
+    sub: "Please select one answer for each brand.", cols: opts([[1, "Almost never"], [2, "Occasionally"], [3, "Almost every time"], [4, "Every time"]]) },
+  { id: "a5", sec: SEC.A, type: "single", show: a => usedPY(a).length > 0, opts: a => usedPY(a).map(c => O(c, brandLabel(c))), universe: BRANDS,
+    text: AC("Among the digital media solutions you have used in the past 12 months, which do you use most often?", "Among the digital media solutions you have used in the past year on behalf of your primary client, which do you use most often for that client specifically?"),
+    sub: AGREE_ONE },
+  { id: "a6", sec: SEC.A, type: "text", show: a => usedPY(a).length > 0, minWords: 3,
+    text: a => `What is the primary reason you are using ${brandLabel(a.a5)} most often?`, sub: "Please be as specific as possible." },
+  { id: "a7", sec: SEC.A, type: "grid", show: a => awareBrands(a).length > 0, rows: a => awareBrands(a).map(c => O(c, brandLabel(c))), universe: BRANDS, boldRows: true,
+    text: AC("How likely are you to use each of the following as a part of your future digital media strategy?", "How likely are you to use each of the following as a part of your primary client’s future digital media strategy?"),
+    sub: "Please select one answer for each brand.", cols: opts([[1, "Would definitely not use"], [2, "Would probably not use"], [3, "Would probably use"], [4, "Would definitely use"]]) },
+  { id: "a8", sec: SEC.A, type: "multi", show: cloUser, rand: true,
+    opts: a => [...usedPY(a).map(c => O(c, brandLabel(c))), O(98, "Other (please specify)", { anchor: 1, other: 1 })], universe: [...BRANDS, O(98, "Other")],
+    text: AC("Earlier you mentioned that you are allocating a portion of your digital media spend specifically to Card-Linked Offers (Debit or Credit Card). Which of the following platforms are you currently using for Card-Linked Offers (Debit or Credit Card)?",
+      "Earlier you mentioned that you are allocating a portion of your primary client’s digital media spend specifically to Card-Linked Offers (Debit or Credit Card). Which of the following platforms are you currently using for Card-Linked Offers (Debit or Credit Card)?"),
+    sub: "Please select all that apply." },
+  { id: "a9", sec: SEC.A, type: "single", show: a => cloUser(a) && sel(a, "a8").length > 1, rand: true,
+    opts: a => sel(a, "a8").map(c => O(c, c === 98 ? (S.other.a8 || "Other") : brandLabel(c))), universe: [...BRANDS, O(98, "Other")],
+    auto: a => (cloUser(a) && sel(a, "a8").length === 1) ? sel(a, "a8")[0] : null,
+    text: AC("Among the Card-Linked Offers (Debit or Credit Card) solutions you are using, which do you use most often?", "Among the Card-Linked Offers (Debit or Credit Card) solutions you are using as a part of your primary client’s digital media spend, which do you use most often?"),
+    sub: AGREE_ONE },
+  { id: "a10", sec: SEC.A, type: "single", text: "For this question, please choose somewhat agree to continue.", sub: AGREE_ONE,
+    opts: opts([[1, "Strongly disagree"], [2, "Somewhat disagree"], [3, "Neither agree nor disagree"], [4, "Somewhat agree"], [5, "Strongly agree"]]),
+    term: a => a.a10 !== 4 ? "QUALITY: failed red herring (A10)" : null, req: "This question asked you to choose “Somewhat agree”." },
+
+  /* ---------------- Section B ---------------- */
+  { id: "intro_b", sec: SEC.B, type: "info", show: a => bBrands(a).length > 0,
+    paras: ["Thank you for your feedback so far! Next we’re going to show you a few different digital media solutions brands and ask you to provide feedback and rate them in more detail."] },
+  { id: "b1", sec: SEC.B, type: "grid", show: a => bBrands(a).length > 0, rows: a => bBrands(a).map(c => O(c, brandLabel(c))), universe: BRANDS,
+    text: "What is your overall opinion of each of these brands as a digital media solutions platform?",
+    sub: a => (isAg(a) ? "As a reminder, think about this as the platform used for your primary client. " : "") + "Please select one answer for each row.",
+    cols: opts([[1, "Very poor"], [2, "Poor"], [3, "Fair"], [4, "Good"], [5, "Excellent"], [6, "Not sure"]]) },
+  { id: "b2", sec: SEC.B, type: "grid", show: a => bBrands(a).some(c => [2, 3].includes(a["a3_" + c])),
+    rows: a => bBrands(a).filter(c => [2, 3].includes(a["a3_" + c])).map(c => O(c, brandLabel(c))), universe: BRANDS,
+    text: "You mentioned using the following digital media solutions platforms in the past 12 months. How satisfied are you with each?",
+    sub: a => (isAg(a) ? "As a reminder, think about this as the platform used for your primary client. " : "") + "Please select one answer for each brand.",
+    cols: opts([[1, "Highly unsatisfied"], [2, "Somewhat unsatisfied"], [3, "Neither satisfied nor unsatisfied"], [4, "Somewhat satisfied"], [5, "Highly satisfied"]]) },
+];
+const B3 = opts([[1, "Is a brand I trust"], [2, "Is a leader in digital media solutions"], [3, "Is an innovative brand"], [4, "Offers the most seamless user experience"],
+  [5, "Is always evolving and improving their solution"], [6, "Is the leader in reaching a global audience"], [7, "Is easy to use"], [8, "Offers the most flexibility for offer structure"],
+  [99, "None of these", { anchor: 1, ex: 1 }]]);
+const B4 = opts([[1, "The reward amounts are customizable"], [2, "The reward format (e.g., dollar, percentage, points) is customizable"],
+  [3, "I can reward audience subsegments differently, such as a different reward format for one group vs. another"], [4, "Platform offers advanced customer segmentation"],
+  [5, "I am able to target the right audiences"], [6, "It has accurate reporting capabilities"], [7, "The dashboard is always available to me"],
+  [8, "I am able to integrate my Card-Linked Offers (Debit or Credit Card) platform with my other marketing platforms"], [9, "It provides third party verification for post-serve spend validation"],
+  [10, "It can identify card users who also utilize our loyalty program"], [11, "It provides data-based recommendations to help with audience selection"],
+  [12, "I can monitor offer activation in real time"], [13, "I can adjust my marketing spend in real time in relation to offer activation and usage"], [14, "It has the best pricing structure"],
+  [16, "It can easily scale to growing content demands and user traffic"], [17, "It can identify card users who also use other payment methods with our business"],
+  [18, "I can monitor offer usage / redemption in real time"], [19, "Complimentary to my other marketing campaigns"], [98, "Other (please specify)", { anchor: 1, other: 1 }]]);
+for (const b of ["r7", ...BRANDS.map(x => x.c).filter(c => c !== "r7")]) {
+  QUESTIONS.push(
+    { id: "b3_" + b, sec: SEC.B, type: "multi", rand: true, opts: B3, show: a => bBrands(a).includes(b),
+      text: `Which of the following statements best describes your current perceptions of ${brandLabel(b)} as a digital media solutions provider?`, sub: "Please select all that apply." },
+    { id: "b4_" + b, sec: SEC.B, type: "multi", rand: true, opts: B4, show: a => bBrands(a).includes(b),
+      text: `Thinking about when you’ve used ${brandLabel(b)} as a digital media solutions provider, which of the following statements are true for you?`, sub: "Please select all that apply." });
+}
+const CLO_ISSUES_USER = opts([[1, "The reward amount is not customizable"], [2, "The reward format (e.g., dollar, percentage, points) is not customizable"],
+  [3, "I can’t vary my promotions by customer segment (e.g., different cashback amounts for different segments)"], [4, "The reporting capabilities are too limited"],
+  [5, "Platform does not have advanced customer segmentation"], [6, "I can’t monitor offer activation and usage in real time"], [7, "I can’t adjust my marketing spend in real time based on activation and usage"],
+  [8, "I am not able to integrate my Card-Linked Offers (Debit or Credit Card) platform with my other ad buying and reporting platforms"], [9, "Lack of third-party validation"],
+  [10, "I cannot identify card users who also utilize our loyalty program or use other credit cards with our business"], [11, "Lack of data-based recommendations for audience selection"],
+  [12, "They’re not effective enough for my business"], [17, "They do not help me reach unique audiences I need"], [13, "It’s currently cost prohibitive / not in the budget"],
+  [18, "They don’t integrate with our other tools"], [14, "I don’t see the value of using Card-Linked Offers"], [19, "It’s hard to understand how they work"],
+  [15, "Client is not ready to activate the strategy", { agency: 1 }], [16, "Client is skeptical about effectiveness", { agency: 1 }],
+  [98, "Other (please specify)", { anchor: 1, other: 1 }], [99, "I haven’t experienced any challenges", { anchor: 1, ex: 1 }]]);
+const CLO_ISSUES_NON = opts([[1, "The reward amount is not customizable enough"], [2, "The reward format (e.g., dollar, percentage, points) is not customizable enough"],
+  [3, "I can’t vary my promotions by customer segment enough (e.g., different cashback amounts for different segments)"], [4, "I think the reporting capabilities are too limited"],
+  [5, "Platform does not have advanced customer segmentation"], [6, "I don’t think it can monitor offer activation and usage in real time"],
+  [7, "I don’t think it can adjust my marketing spend in real time based on activation and usage"],
+  [8, "I don’t think it can integrate my Card-Linked Offers (Debit or Credit Card) platform with my other marketing platforms"], [9, "I don’t believe there is third-party validation"],
+  [10, "I don’t think it can identify card users who also utilize our loyalty program or use other credit cards with our business"],
+  [11, "I don’t think there are data-based recommendations for audience selection"], [12, "They’re not known to be effective enough for my business"],
+  [17, "They’re not able to help me reach unique audiences I need"], [13, "It’s currently cost prohibitive / not in the budget"], [18, "I don’t think they’ll integrate with our other tools"],
+  [14, "I don’t see the value of using Card-Linked Offers"], [19, "I don’t understand how they work"],
+  [15, "Client is not ready to activate the strategy", { agency: 1 }], [16, "Client is skeptical about effectiveness", { agency: 1 }],
+  [98, "Other (please specify)", { anchor: 1, other: 1 }]]);
+const C7 = opts([[1, "Increase in sales revenue overall"], [7, "Add incremental sales revenue"], [2, "Increase in transaction volume"], [3, "Increase in customer acquisition"],
+  [8, "Add new-to-brand customer growth"], [4, "Improvement in customer retention"], [5, "Increase in average order value"], [6, "Delivers strong return on ad spend (ROAS)"],
+  [9, "Gives me insight about my customers I can’t get elsewhere"], [98, "Other (please specify)", { anchor: 1, other: 1 }]]);
+const D2_ROWS = opts([["r1", "Is a brand marketers and consumers can trust"], ["r2", "Is a trusted partner"],
+  ["r3", "Uses a full customer view of actual purchase behavior across categories to reach relevant customers"], ["r4", "Reaches high-intent audiences"],
+  ["r5", "Helps marketers strengthen customer retention"], ["r6", "Offers differentiated reach"], ["r7", "Helps brands reach customers at relevant moments in the purchase journey"],
+  ["r8", "Can reach consumers through integrated campaigns that combine card-linked offers with tailored media and experiential activations"],
+  ["r9", "Converts purchase behavior into actionable transaction intelligence"], ["r10", "Offers omnichannel intelligence on-platform and in the real world"],
+  ["r11", "Provides accountable campaign performance reporting that ties to business outcomes"], ["r12", "Connects campaign to verified purchase outcomes"],
+  ["r13", "Gives me insights about consumers that help shape my strategy"], ["r14", "A safe choice I’d be comfortable defending internally"],
+  ["r15", "Uses AI to help me plan, target and optimize campaigns"], ["r16", "Proves its results with independent, test-vs-control measurement"],
+  ["r17", "Reaches audiences in- and off-platform"]]);
+const D2_COLS = [[1, "Chase Media Solutions", "r7"], [2, "Amex Ads", "r1"], [3, "Mastercard Commerce", "r2"], [4, "PayPal", "r16"], [5, "Citi Commerce Media", "r4"]];
+const d2Cols = a => [...D2_COLS.filter(([, , b]) => [3, 4].includes(a["a1_" + b])).map(([c, l]) => O(c, l)), O(99, "None of these")];
+const D3 = opts([[1, "Cannes Lions 2026"], [2, "CES 2026"], [3, "Sapphire Reserve Dinners"], [4, "JPMorganChase Athlete Council"], [5, "POSSIBLE"],
+  [6, "Advertising Week New York 2026"], [7, "Ascendant Retail + Commerce Media Upfront"], [8, "Other industry conference, panel, or event"],
+  [9, "Industry or trade publication such as AdAge, AdWeek"], [10, "Social media (e.g., LinkedIn)"], [11, "Client dinner, executive event, or hospitality experience"],
+  [12, "Chase Media Solutions website"], [13, "Chase Media Solutions sales presentation or meeting"], [14, "Colleague, agency partner, or industry peer"],
+  [98, "Other (please specify)", { other: 1 }], [99, "I have not seen any advertising or marketing", { ex: 1 }]]);
+const shuf = x => { const y = x.slice(); for (let i = y.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [y[i], y[j]] = [y[j], y[i]]; } return y; };
+const cmsAware = a => [2, 3, 4].includes(a.a1_r7);
+
+QUESTIONS.push(
+  { id: "intro_c", sec: SEC.C, type: "info", paras: ["We’re getting to the home stretch, thank you for your thoughtful feedback thus far! We’re now going to continue exploring your use of digital media solutions and Card-Linked Offers (Debit or Credit Card)."] },
+  { id: "c1", sec: SEC.C, type: "multi", max: 3, rand: true, show: a => usedPY(a).length > 0, opts: MOTIV,
+    text: AC("What are your primary motivations for engaging digital media solutions as a part of your tools/strategy?", "What are your primary motivations for engaging digital media solutions as a part of your primary client’s tools/strategy?"),
+    sub: "Please select up to 3." },
+  { id: "c2", sec: SEC.C, type: "multi", max: 3, rand: true, show: cloUser, opts: MOTIV,
+    text: AC("What are your primary motivations for engaging Card-Linked Offers (Debit or Credit Card) platforms as a part of your digital media spend?", "What are your primary motivations for engaging Card-Linked Offers (Debit or Credit Card) platforms as a part of your primary client’s digital media spend?"),
+    sub: "Please select up to 3." },
+  { id: "c3", sec: SEC.C, type: "multi", max: 3, rand: true, show: cloUser, opts: a => CLO_ISSUES_USER.filter(o => !o.agency || isAg(a)), universe: CLO_ISSUES_USER,
+    text: "What are some of the current challenges you’ve encountered with Card-Linked Offers (Debit or Credit Card)?", sub: "Please select up to 3." },
+  { id: "c4", sec: SEC.C, type: "multi", max: 3, rand: true, show: a => !cloUser(a), opts: a => CLO_ISSUES_NON.filter(o => !o.agency || isAg(a)), universe: CLO_ISSUES_NON,
+    text: "What are some of the reasons you are not using Card-Linked Offers (Debit or Credit Card)?", sub: "Please select up to 3." },
+  { id: "c5", sec: SEC.C, type: "multi", rand: true,
+    opts: opts([[1, "Cashback/statement credit (percentage)"], [2, "Cashback/statement credit (fixed dollar amount)"], [3, "Discount at point of purchase (percentage)"],
+      [4, "Discount at point of purchase (fixed dollar amount)"], [5, "Credit card points"], [6, "Merchant loyalty program points/miles"],
+      [7, "Free products or services (e.g., buy one get one)"], [8, "Free service trial (e.g., free for 30 days)"], [98, "Other (please specify)", { anchor: 1, other: 1 }]]),
+    text: a => cloUser(a) ? "Which types of rewards are you currently using?" : "If you use Card-Linked Offers (Debit or Credit Card) in future marketing mixes, which types of reward format would you expect to or want to use?",
+    sub: "Select all that apply." },
+  { id: "c6", sec: SEC.C, type: "single",
+    opts: opts([[1, "Not at all effective"], [2, "Not very effective"], [3, "Somewhat effective"], [4, "Very effective"], [5, "Extremely effective"]]),
+    text: a => cloUser(a) ? "How effective are Card-Linked Offers (Debit or Credit Card) to your marketing goals and strategy?" : "How effective do you think Card-Linked Offers (Debit or Credit Card) could be as a part of your marketing goals and strategy?",
+    sub: AGREE_ONE },
+  { id: "c7", sec: SEC.C, type: "multi", opts: C7, randGroups: [[1, 7], [2], [3, 8], [4], [5], [6], [9]],
+    text: a => cloUser(a) ? "How do you measure success of Card-Linked Offers (Debit or Credit Card)?" : "How would you expect to measure the success of Card-Linked Offers (Debit or Credit Card)?",
+    sub: "Please select all that apply." },
+  { id: "c8", sec: SEC.C, type: "single", rand: true, show: a => sel(a, "c7").length > 1,
+    opts: a => sel(a, "c7").map(c => O(c, c === 98 ? (S.other.c7 || "Other") : C7.find(o => o.c === c).l)), universe: C7,
+    auto: a => sel(a, "c7").length === 1 ? sel(a, "c7")[0] : null,
+    text: "Which of the following is the most important measure of success of Card-Linked Offers (Debit or Credit Card)?", sub: AGREE_ONE },
+
+  /* ---------------- Section D: flex ---------------- */
+  { id: "d1_w3", sec: SEC.D, type: "text", show: cmsAware, minWords: 3,
+    optOuts: opts([[1, "I only associate it with card-linked offers"], [2, "I don't know enough"]]),
+    text: "Beyond card-linked offers, what products, capabilities, or benefits, if any, do you associate with Chase Media Solutions?", sub: "Please be as detailed as possible." },
+  { id: "d2_w3", sec: SEC.D, type: "grid", rowRand: true, rows: D2_ROWS, show: a => d2Cols(a).length > 1, cols: d2Cols,
+    colUniverse: [...D2_COLS.map(([c, l]) => O(c, l)), O(99, "None of these")],
+    text: "Which of the brands below most closely align with the following statements?", sub: "Please select one answer for each." },
+  { id: "d3_w3", sec: SEC.D, type: "multi", show: cmsAware, opts: D3,
+    customOrder: () => { const ev = shuf([1, 2, 3, 4, 5, 6, 7]); const rest = shuf([[9], [10], [11], [12, 13], [14]]).flat(); return [...ev, 8, ...rest, 98, 99]; },
+    text: "Where have you seen advertising or marketing specifically for Chase Media Solutions in the past 12 months?", sub: "Please select all that apply." },
+  { id: "d4_w3", sec: SEC.D, type: "multi", rand: true, show: a => a.a3_r7 === 1,
+    opts: opts([[1, "Limited understanding of its capabilities"], [2, "Unclear differentiation from other media networks"], [3, "Insufficient audience scale or reach"],
+      [4, "Limited campaign flexibility"], [5, "Unclear measurement or attribution"], [6, "Concerns about cost or expected return"], [7, "Integration or operational complexity"],
+      [8, "Existing relationships with other providers"], [98, "Other (please specify)", { anchor: 1, other: 1 }], [99, "Nothing would prevent me from considering it", { anchor: 1, ex: 1 }]]),
+    text: "Which of the following, if any, would prevent you from considering Chase Media Solutions for future campaigns?", sub: "Please select all that apply." },
+  { id: "d5_w3", sec: SEC.D, type: "single", rand: true,
+    opts: opts([[1, "Transaction intelligence based on purchase behavior"], [2, "Ability to connect media exposure to sales outcomes"], [3, "Access to high-intent audiences"],
+      [4, "Engagement across digital and real-world touchpoints"], [5, "Strong consumer trust"], [6, "Campaign flexibility and ease of activation"], [7, "Broad customer reach"],
+      [98, "Other (please specify)", { anchor: 1, other: 1 }], [99, "There is no capability a media solutions provider would offer to increase my likelihood of considering", { anchor: 1 }]]),
+    text: "Which capability would most increase your likelihood of considering a media solutions provider?", sub: AGREE_ONE },
+  { id: "d6_w3", sec: SEC.D, type: "single", rand: true,
+    opts: opts([[1, "Incremental sales or revenue"], [2, "Return on advertising spend"], [3, "Customer acquisition"], [4, "Customer retention or loyalty"],
+      [5, "Brand awareness or consideration"], [6, "Reach and engagement"], [98, "Other (please specify)", { anchor: 1, other: 1 }]]),
+    text: "Which outcome is most important when evaluating a media solutions partner?", sub: AGREE_ONE },
+
+  /* ---------------- Section E ---------------- */
+  { id: "intro_e", sec: SEC.E, type: "info", paras: ["Almost done – just a few more questions!"] },
+  { id: "e3", sec: SEC.E, type: "single", rand: true,
+    opts: opts([[1, "Brand awareness"], [2, "Consideration"], [3, "Customer acquisition"], [4, "Sales or revenue"], [5, "Retention or loyalty"], [6, "Re-engagement"], [98, "Other", { anchor: 1 }]]),
+    text: "Which objective accounts for the largest share of your digital media investment?", sub: AGREE_ONE },
+  { id: "e4", sec: SEC.E, type: "single",
+    opts: opts([[1, "Not at all effectively"], [2, "Slightly effectively"], [3, "Moderately effectively"], [4, "Very effectively"], [5, "Extremely effectively"]]),
+    text: "How effectively can your organization connect media exposure to business outcomes such as purchases or revenue?", sub: AGREE_ONE },
+  { id: "e5", sec: SEC.E, type: "multi", rand: true,
+    opts: opts([[1, "Setting strategy"], [2, "Selecting media partners or platforms"], [3, "Planning campaigns"], [4, "Activating campaigns"], [5, "Managing budgets"],
+      [6, "Measuring performance"], [7, "Approving investments"], [98, "Other", { anchor: 1 }]]),
+    text: "Which areas of the digital media process are you personally involved in?", sub: "Please select all that apply." },
+  { id: "e1", sec: SEC.E, type: "multi",
+    opts: opts([[1, "Online via website that was custom built (by my company or a contractor / firm)"], [2, "Online via website that was built using a software platform (BigCommerce, Wix, etc.)"],
+      [3, "Online via a marketplace"], [4, "Remote / digitally (from an office)"], [5, "Brick and mortar (physical store / location)"], [6, "On-site (out-of-office at site of work)"],
+      [7, "Via telephone or mail"]]),
+    text: AC("Which of the following best describes how / where your business sells products?", "Which of the following best describes how / where your primary client’s business sells products?"),
+    sub: "Please select all that apply." },
+  { id: "e2", sec: SEC.E, type: "single",
+    opts: a => opts([[1, "Start: Just opened and working through the various aspects of our business", { agency: 1 }], [2, "Settle-in: Understand the cycle of the business, and begin to identify trends and patterns"],
+      [3, "Manage: Maintain and optimize / fine-tune our operation"], [4, "Grow: In growth mode (e.g., actively working to increase sales / revenue, looking to expand to other locations, hiring more staff)"],
+      [5, "Transition: The current owner is looking to wind down, be less hands-on, and potentially sell, pass on to children or end the business"]]).filter(o => !o.agency || isAg(a)),
+    universe: opts([[1, "Start"], [2, "Settle-in"], [3, "Manage"], [4, "Grow"], [5, "Transition"]]),
+    text: AC("Which of the following statements best describes your business currently (i.e., the one that most closely represents your business)?", "Which of the following statements best describes your primary client’s business currently?"),
+    sub: AGREE_ONE },
+);
+
+/* ---------------- quota cells ---------------- */
+function quotaCells(a) {
+  const c = [];
+  const ind = hIndustry(a);
+  if (ind) c.push("ind_" + ind);
+  if (a.s5 === 1) c.push("agency"); else if (a.s5 === 2) c.push("company");
+  if (a.s14 === 2) c.push("b2b");
+  if (a.s16 && !cloUser(a)) c.push("clo_nonuser");
+  if (a.s10 === 2 && a.s11 === 5) c.push("exp1to5_manager");
+  if (a.s10 === 2 && a.s11 === 6) c.push("exp1to5_analyst");
+  return c;
+}
+
+/* ================= engine ================= */
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const val = (x, a = A) => typeof x === "function" ? x(a) : x;
+const visible = q => !q.show || q.show(A);
+const qOpts = q => val(q.opts) || [];
+const qRows = q => val(q.rows) || [];
+const qCols = q => val(q.cols) || [];
+
+function ordered(q, list, key = q.id) {
+  if (!S.order[key]) {
+    let codes;
+    if (q.customOrder) codes = q.customOrder();
+    else if (q.randGroups) codes = [...shuf(q.randGroups).flat(), ...list.filter(o => o.anchor).map(o => o.c)];
+    else if (q.rand || q.rowRand) codes = [...shuf(list.filter(o => !o.anchor)).map(o => o.c), ...list.filter(o => o.anchor).map(o => o.c)];
+    else codes = list.map(o => o.c);
+    S.order[key] = codes;
+  }
+  const known = S.order[key];
+  const inList = known.map(c => list.find(o => o.c === c)).filter(Boolean);
+  return [...inList, ...list.filter(o => !known.includes(o.c))];
+}
+
+function header() {}
+function go(i, dir) {
+  while (i >= 0 && i < QUESTIONS.length && !visible(QUESTIONS[i])) i += dir;
+  if (i < 0) i = 0;
+  if (i >= QUESTIONS.length) { finish("complete", ""); return; }
+  if (!S.startedAt) S.startedAt = new Date();
+  S.idx = i; render(); window.scrollTo({ top: 0 });
+}
+
+function render() {
+  const q = QUESTIONS[S.idx];
+  const pct = Math.round((S.idx / QUESTIONS.length) * 100);
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  const parts = [el("div", { class: "progress" }, el("div", { class: "meta" }, el("span", { text: q.sec }), el("span", { text: pct + "%" })), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` })))];
+  if (q.type === "info") {
+    parts.push(el("div", { class: "info" }, q.title ? el("h1", { text: q.title }) : null, ...val(q.paras).map(p => el("p", { text: p }))));
+  } else {
+    parts.push(el("div", { class: "qhead" }, el("span", { class: "qcode", text: q.id.toUpperCase().replace("_W3", "") })));
+    if (q.pre) parts.push(el("div", { class: "info" }, ...q.pre.map(p => el("p", { text: p })), q.bullets ? el("ul", {}, ...q.bullets.map(b => el("li", { text: b }))) : null));
+    parts.push(el("h2", { class: "qtext", id: "qtext", text: val(q.text) }));
+    if (q.note) parts.push(el("p", { class: "hint", text: q.note }));
+    if (q.sub) parts.push(el("p", { class: "hint", text: val(q.sub) }));
+    if (q.def) parts.push(el("details", { class: "def" }, el("summary", { text: q.defLabel || "What does this mean?" }), el("p", { text: q.def })));
+    parts.push(({ single: renderOptions, multi: renderOptions, grid: renderGrid, number: renderNumber, zip: renderZip, sum: renderSum, boxes: renderBoxes, text: renderText })[q.type](q, err));
+  }
+  parts.push(err, el("div", { class: "actions" },
+    S.idx > 0 ? el("button", { class: "btn ghost", type: "button", text: "Back", onclick: () => go(S.idx - 1, -1) }) : el("span"),
+    el("button", { class: "btn", type: "button", id: "next-btn", text: "Next", onclick: () => advance(err) })));
+  $("survey").replaceChildren(...parts);
+}
+
+function renderOptions(q, err) {
+  const multi = q.type === "multi";
+  const list = ordered(q, qOpts(q));
+  const box = el("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => multi ? (A[q.id] || []) : A[q.id];
+  const exCodes = list.filter(o => o.ex).map(o => o.c);
+  const paint = () => {
+    const v = cur();
+    box.querySelectorAll(".opt").forEach(row => {
+      const code = row._code, on = multi ? v.includes(code) : v === code;
+      row.classList.toggle("sel", on); row.querySelector("input").checked = on;
+      row.classList.toggle("dis", !!(multi && q.max && v.length >= q.max && !on));
+      const o = row.querySelector(".other-in"); if (o) o.hidden = !on;
+    });
+  };
+  list.forEach((o, i) => {
+    const id = `${q.id}-${i}`;
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id, value: String(o.c) });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}`, for: id, "data-code": String(o.c) }, input, el("span", { class: "key" }), el("span", { text: o.l }));
+    label._code = o.c;
+    if (o.other) {
+      const t = el("input", { type: "text", class: "other-in", id: `${q.id}-other`, maxlength: "200", placeholder: "Please specify", value: S.other[q.id] || "" });
+      t.addEventListener("input", () => { S.other[q.id] = t.value; });
+      t.addEventListener("click", e => e.stopPropagation());
+      label.append(el("span"), t);
+    }
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) A[q.id] = o.c;
+      else {
+        let v = cur().slice();
+        if (input.checked) {
+          if (exCodes.includes(o.c)) v = [o.c];
+          else {
+            v = v.filter(c => !exCodes.includes(c));
+            if (q.max && v.length >= q.max) { input.checked = false; err.textContent = `You can select up to ${q.max}.`; return; }
+            v.push(o.c);
+          }
+        } else v = v.filter(c => c !== o.c);
+        A[q.id] = v;
+      }
+      paint();
+    });
+    box.append(label);
+  });
+  paint();
+  return box;
+}
+
+function renderGrid(q, err) {
+  const g = el("div", { class: "grid" });
+  const cols = qCols(q);
+  for (const r of ordered(q, qRows(q), q.rowFrom || q.id)) {
+    const key = `${q.id}_${r.c}`;
+    const row = el("div", { class: "grow", role: "radiogroup", "aria-label": r.l, "data-row": String(r.c) });
+    const chips = el("div", { class: "chips" });
+    const paint = () => { row.classList.toggle("done", A[key] != null); chips.querySelectorAll(".chip").forEach(c => { const on = A[key] === c._code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; }); };
+    cols.forEach((c, i) => {
+      const id = `${key}-${i}`;
+      const input = el("input", { type: "radio", name: key, id, value: String(c.c) });
+      input.addEventListener("change", () => { A[key] = c.c; err.textContent = ""; paint(); });
+      const lab = el("label", { class: "chip", for: id, "data-code": String(c.c) }, input, c.l); lab._code = c.c;
+      chips.append(lab);
+    });
+    row.append(el("div", { class: "rl" }, q.boldRows ? el("b", { text: r.l }) : r.l), chips);
+    paint(); g.append(row);
+  }
+  return g;
+}
+
+function renderNumber(q, err) {
+  const w = el("div");
+  const inp = el("input", { type: "text", inputmode: "numeric", class: "numin", id: `${q.id}-num`, maxlength: "3", value: A[q.id] ?? "", "aria-labelledby": "qtext" });
+  const pna = el("input", { type: "checkbox", id: `${q.id}-pna` }); pna.checked = !!A[q.id + "_pna"];
+  inp.addEventListener("input", () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 3); A[q.id] = inp.value === "" ? null : parseInt(inp.value, 10); if (inp.value) { pna.checked = false; A[q.id + "_pna"] = false; } err.textContent = ""; });
+  pna.addEventListener("change", () => { A[q.id + "_pna"] = pna.checked; if (pna.checked) { inp.value = ""; A[q.id] = null; } });
+  w.append(inp, el("label", { class: "dk", for: pna.id }, pna, q.pna));
+  return w;
+}
+function renderZip(q) {
+  const inp = el("input", { type: "text", inputmode: "numeric", class: "numin", id: `${q.id}-zip`, maxlength: "5", autocomplete: "postal-code", value: A[q.id] || "", "aria-labelledby": "qtext" });
+  inp.addEventListener("input", () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 5); A[q.id] = inp.value; });
+  return inp;
+}
+function renderSum(q, err) {
+  const w = el("div", { class: "sumtab" });
+  const rows = qRows(q);
+  const total = el("div", { class: "sumtotal" });
+  const upd = () => { const t = rows.reduce((s, r) => s + (A[`${q.id}_${r.c}`] || 0), 0); total.replaceChildren(el("span", { text: "Total" }), el("span", { text: `${t}%` })); total.classList.toggle("bad", t !== 100); };
+  rows.forEach(r => {
+    const key = `${q.id}_${r.c}`;
+    const inp = el("input", { type: "text", inputmode: "numeric", maxlength: "3", id: `${q.id}-${r.c}`, value: A[key] ?? "", "aria-label": r.l });
+    inp.addEventListener("input", () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 3); A[key] = inp.value === "" ? null : parseInt(inp.value, 10); err.textContent = ""; upd(); });
+    w.append(el("label", { class: "sumrow", for: inp.id }, el("span", { text: r.l }), el("span", { style: "display:flex;align-items:center;gap:6px" }, inp, "%")));
+  });
+  w.append(total); upd();
+  return w;
+}
+function renderBoxes(q) {
+  const w = el("div");
+  const boxes = el("div", { class: "boxes" });
+  const ins = [];
+  const none = el("input", { type: "checkbox", id: `${q.id}-none` }); none.checked = !!A[q.id + "_none"];
+  for (let i = 1; i <= q.n; i++) {
+    const t = el("input", { type: "text", id: `${q.id}-${i}`, maxlength: "100", value: A[`${q.id}_${i}`] || "", "aria-label": `Answer ${i}` });
+    t.addEventListener("input", () => { A[`${q.id}_${i}`] = t.value; if (t.value.trim()) { none.checked = false; A[q.id + "_none"] = false; } });
+    ins.push(t); boxes.append(el("label", {}, String(i), t));
+  }
+  none.addEventListener("change", () => { A[q.id + "_none"] = none.checked; if (none.checked) ins.forEach((t, i) => { t.value = ""; A[`${q.id}_${i + 1}`] = ""; }); });
+  w.append(boxes, el("label", { class: "dk", for: none.id }, none, q.none));
+  return w;
+}
+function renderText(q) {
+  const w = el("div");
+  const ta = el("textarea", { id: `${q.id}-text`, maxlength: "1500", "aria-labelledby": "qtext" });
+  ta.value = A[q.id] || "";
+  const oos = (q.optOuts || []).map(o => { const cb = el("input", { type: "checkbox", id: `${q.id}-oo${o.c}` }); cb.checked = A[q.id + "_optout"] === o.c; return [o, cb]; });
+  ta.addEventListener("input", () => { A[q.id] = ta.value; if (ta.value.trim()) { A[q.id + "_optout"] = null; oos.forEach(([, cb]) => cb.checked = false); } });
+  oos.forEach(([o, cb]) => cb.addEventListener("change", () => {
+    if (cb.checked) { A[q.id + "_optout"] = o.c; ta.value = ""; A[q.id] = ""; oos.forEach(([o2, c2]) => { if (o2 !== o) c2.checked = false; }); }
+    else if (A[q.id + "_optout"] === o.c) A[q.id + "_optout"] = null;
+  }));
+  w.append(ta, ...oos.map(([o, cb]) => el("label", { class: "dk", for: cb.id }, cb, o.l)));
+  return w;
+}
+
+function validate(q) {
+  switch (q.type) {
+    case "info": return "";
+    case "single": {
+      const v = A[q.id]; if (v == null || !qOpts(q).some(o => o.c === v)) return "Please select an answer.";
+      const o = qOpts(q).find(x => x.c === v); if (o && o.other && !(S.other[q.id] || "").trim()) return "Please specify your answer in the text box.";
+      return "";
+    }
+    case "multi": {
+      const valid = qOpts(q).map(o => o.c);
+      A[q.id] = sel(A, q.id).filter(c => valid.includes(c));
+      const v = A[q.id]; if (!v.length) return "Please select at least one answer.";
+      if (qOpts(q).some(o => o.other && v.includes(o.c)) && !(S.other[q.id] || "").trim()) return "Please specify your answer in the text box.";
+      return "";
+    }
+    case "grid": { const m = qRows(q).filter(r => A[`${q.id}_${r.c}`] == null || !qCols(q).some(c => c.c === A[`${q.id}_${r.c}`])).length; return m ? `Please answer every row (${m} left).` : ""; }
+    case "number": if (A[q.id + "_pna"]) return ""; if (A[q.id] == null || A[q.id] < q.min || A[q.id] > q.max) return `Please enter a whole number between ${q.min} and ${q.max}.`; return "";
+    case "zip": if (!/^\d{5}$/.test(A[q.id] || "")) return "Please enter a 5-digit zip code."; return "";
+    case "sum": {
+      const rows = qRows(q); const vals = rows.map(r => A[`${q.id}_${r.c}`]);
+      if (vals.some(v => v == null || v < 1 || v > 100)) return "Please enter a whole number from 1 to 100 for each row.";
+      const t = vals.reduce((s, v) => s + v, 0); return t === 100 ? "" : `Your percentages add up to ${t}%. They must total 100%.`;
+    }
+    case "boxes": {
+      if (A[q.id + "_none"]) return "";
+      const filled = Array.from({ length: q.n }, (_, i) => (A[`${q.id}_${i + 1}`] || "").trim()).filter(Boolean);
+      if (!filled.length) return `Please enter at least one brand, or tick “${q.none}”.`;
+      if (filled.some(t => t.length < q.minChars)) return `Each answer must be at least ${q.minChars} characters.`;
+      return "";
+    }
+    case "text": {
+      if (A[q.id + "_optout"]) return "";
+      const t = (A[q.id] || "").trim();
+      if (q.minWords && words(t) < q.minWords) return `Please write at least ${q.minWords} word${q.minWords > 1 ? "s" : ""}.`;
+      if (q.minChars && t.length < q.minChars) return "Please write a little more.";
+      return "";
+    }
+  }
+  return "";
+}
+
+async function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  const reason = q.term && q.term(A);
+  if (reason) { S.termQ = q; finish(reason.startsWith("QUALITY") ? "quality" : "terminated", reason); return; }
+  if (q.quotaCheck && server) {
+    const btn = $("next-btn"); btn.disabled = true; btn.textContent = "Checking…";
+    try {
+      const r = await (await fetch(server.api.replace("/responses", "/quota"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ cells: quotaCells(A) }) })).json();
+      if (r.quotaFull || (r.full && r.full.length)) { finish("overquota", r.quotaFull ? "Quota full" : "Quota cell full: " + r.full.join(", ")); return; }
+    } catch (e) { /* if the check fails, carry on; the server re-checks at submission */ }
+  }
+  go(S.idx + 1, 1);
+}
+
+/* ---------------- data record ---------------- */
+const labelIn = (list, c) => { const o = (list || []).find(x => x.c === c); return o ? o.l : ""; };
+function flagsFor(status, dur) {
+  const f = [];
+  if (status === "complete" && dur < 300) f.push(`Speeder: ${dur}s`);
+  for (const q of QUESTIONS) {
+    if (!visible(q)) continue;
+    if (q.flag) { const r = q.flag(A); if (r) f.push(r); }
+    if (q.straight) { const v = qRows(q).map(r => A[`${q.id}_${r.c}`]).filter(x => x != null); if (v.length >= q.straight && new Set(v).size === 1) f.push(`Straight-lined ${q.id.toUpperCase()}`); }
+  }
+  for (const id of ["a6", "d1_w3", "s19"]) { const t = (A[id] || "").trim(); if (t && (/(.)\1{4,}/.test(t) || !/[aeiouy]/i.test(t))) f.push(`${id.toUpperCase()} low-quality open end`); }
+  return f;
+}
+function buildRecord(status, reason) {
+  const now = new Date(), dur = Math.round((now - (S.startedAt || now)) / 1000);
+  const st = zipState(A.s3 || "");
+  const r = { status, terminate_reason: reason, flags: "", started_at: (S.startedAt || now).toISOString(), completed_at: now.toISOString(), duration_sec: dur, lang: "en",
+    wave: WAVE, h_s5: A.s5 === 1 ? "Agency" : A.s5 === 2 ? "Consumer/Business-facing" : "", h_age_band: ageBand(A.s1), h_generation: generation(A.s1),
+    h_state: st, h_region: stateRegion(st), h_industry: hIndustry(A) || "", h_clo_user: A.s16 ? (cloUser(A) ? 1 : 0) : "",
+    h_b_brands: (S.bbrands || []).join(";"), quota_cells: quotaCells(A).join(";") };
+  for (const q of QUESTIONS) {
+    if (q.type === "info") continue;
+    const shown = visible(q);
+    const uni = q.universe || (typeof q.opts === "function" ? [] : q.opts);
+    if (q.type === "single") {
+      let v = shown ? A[q.id] : (q.auto ? q.auto(A) : null);
+      r[q.id] = v ?? ""; r[q.id + "_label"] = v != null ? (labelIn(shown ? qOpts(q) : uni, v) || labelIn(uni, v)) : "";
+    } else if (q.type === "multi") {
+      const v = shown ? sel(A, q.id) : [];
+      r[q.id] = v.join(";"); r[q.id + "_label"] = v.map(c => labelIn(qOpts(q), c) || labelIn(uni, c)).join("; ");
+    } else if (q.type === "grid") {
+      const rows = q.universe || q.rows;
+      for (const row of (Array.isArray(rows) ? rows : [])) r[`${q.id}_${row.c}`] = shown ? (A[`${q.id}_${row.c}`] ?? "") : "";
+    } else if (q.type === "number") { r[q.id] = A[q.id] ?? ""; r[q.id + "_pna"] = A[q.id + "_pna"] ? 1 : ""; }
+    else if (q.type === "zip") r[q.id] = A[q.id] || "";
+    else if (q.type === "sum") {
+      const auto = !shown && q.auto ? q.auto(A) : null;
+      for (const row of q.universe) r[`${q.id}_${row.c}`] = shown ? (A[`${q.id}_${row.c}`] ?? 0) : (auto ? (auto[row.c] ?? 0) : "");
+    } else if (q.type === "boxes") { for (let i = 1; i <= q.n; i++) r[`${q.id}_${i}`] = shown ? (A[`${q.id}_${i}`] || "").trim() : ""; r[q.id + "_none"] = shown && A[q.id + "_none"] ? 1 : ""; }
+    else if (q.type === "text") { r[q.id] = shown ? (A[q.id] || "").trim() : ""; if (q.optOuts) r[q.id + "_optout"] = shown ? (A[q.id + "_optout"] ?? "") : ""; }
+    if (["single", "multi"].includes(q.type) && (uni.some(o => o.other) || (typeof q.opts === "function"))) r[q.id + "_other"] = shown ? (S.other[q.id] || "").trim() : "";
+  }
+  if (S.order.a1) r.h_a1_order = S.order.a1.join(";");
+  r.flags = flagsFor(status, dur).join(" | ");
+  return r;
+}
+
+const MSG = {
+  complete: ["Thank you!", "Your responses have been recorded. We appreciate your time and thoughtful feedback."],
+  terminated: ["Thank you for your interest", "Unfortunately, based on your answers you don’t qualify for this survey. Thank you for your time."],
+  quality: ["Thank you", "Unfortunately we can’t accept this response. Thank you for your time."],
+  overquota: ["Thank you for your interest", "We have already received all the responses we need from people like you. Thank you for your time."],
+};
+function answerText(q) {
+  if (q.type === "single") return labelIn(qOpts(q), A[q.id]);
+  if (q.type === "multi") return sel(A, q.id).map(c => labelIn(qOpts(q), c)).join("; ");
+  if (q.type === "number") return A[q.id + "_pna"] ? q.pna : String(A[q.id] ?? "");
+  if (q.type === "text") return (A[q.id] || "").trim();
+  return "";
+}
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  if (server) {
+    rec.rid = server.rid || "";
+    try {
+      const r = await fetch(server.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      if (!r.ok && r.status !== 409) throw new Error(String(r.status));
+      res = await r.json().catch(() => ({}));
+    } catch (e) {
+      if (btn) { btn.disabled = false; btn.textContent = "Try again"; }
+      const e2 = $("err"); if (e2) e2.textContent = "Your answers couldn’t be saved. Check your connection and try again.";
+      return;
+    }
+  } else console.log("Preview record (not saved):", rec);
+  S.done = true;
+  const st = res.status || status;
+  const [h, p] = MSG[st] || MSG.terminated;
+  const parts = [el("div", { class: "endmark" }), el("h1", { text: h }), el("p", { class: "lead", text: p })];
+  if (SHOW_REASON && S.termQ && (st === "terminated" || st === "quality") && S.termQ.req) {
+    const q = S.termQ;
+    parts.push(el("div", { class: "reason", id: "term-reason" }, el("div", { class: "rk", text: "Why the survey ended" }),
+      el("p", {}, el("b", { text: q.id.toUpperCase() + " " }), document.createTextNode(val(q.text))),
+      answerText(q) ? el("p", {}, el("span", { class: "rl", text: "Your answer: " }), document.createTextNode(answerText(q))) : null,
+      el("p", {}, el("span", { class: "rl", text: "Requirement: " }), document.createTextNode(q.req))));
+  }
+  $("survey").replaceChildren(...parts);
+  if (res.redirect) setTimeout(() => { location.href = res.redirect; }, $("term-reason") ? 8000 : 2000);
+}
+
+if (!server) { $("banner").textContent = "Preview: answers are not saved."; $("banner").hidden = false; }
+if (server && server.closed) { $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: MSG.overquota[0] }), el("p", { class: "lead", text: MSG.overquota[1] })); if (server.redirect) setTimeout(() => { location.href = server.redirect; }, 2000); }
+else go(0, 1);
+window.__S = S;
+})();
+</script>

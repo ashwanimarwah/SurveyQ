@@ -274,6 +274,16 @@ app.register_blueprint(make_survey(slug="men", title="US men 18+ general survey"
 app.register_blueprint(make_survey(slug="resto", title="Independent Industry Research – Canada", page="resto.html", default_quota=300))
 # USA: H&R Block DIY customers on Free or Deluxe plans, GenPop 18+ (n=200) at /hrb
 app.register_blueprint(make_survey(slug="hrb", title="H&R Block DIY Customer Survey (Free/Deluxe)", page="hrb.html", default_quota=200))
+# Chase Media Solutions A&U Tracker, Wave 3: US merchant/agency digital marketing decision makers (n=500) at /chase
+_CHASE_IND = {11: "Big Box Retail", 12: "E-commerce & Subscription", 13: "Specialty Retail", 3: "Fashion / Clothing / Apparel", 6: "Grocery",
+              16: "Food & Beverage", 4: "Gas / Convenience", 7: "Health & Wellness", 18: "Travel & Leisure", 17: "Tech / Telco / B2B",
+              8: "Media & Entertainment", 14: "Luxury Retail", 19: "Financial Services (monitor)"}
+app.register_blueprint(make_survey(
+    slug="chase", title="Chase Media Solutions A&U Tracker – Wave 3", page="chase.html", default_quota=500,
+    cell_caps={**{f"ind_{k}": 50 for k in _CHASE_IND if k != 19}, "agency": 125, "b2b": 50},
+    cell_labels={**{f"ind_{k}": f"Industry: {v}" for k, v in _CHASE_IND.items()}, "agency": "Agency (S5=1)", "company": "Consumer/Business-facing (S5=2)",
+                 "b2b": "B2B end user (S14=2) – min 25", "clo_nonuser": "Non-users of CLOs (monitor)",
+                 "exp1to5_manager": "1–5 yrs experience, Manager (monitor)", "exp1to5_analyst": "1–5 yrs experience, Analyst (monitor)"}))
 
 
 if __name__ == "__main__":

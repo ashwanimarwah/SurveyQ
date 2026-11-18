@@ -219,3 +219,20 @@ Q9 upgrade prompts · Q10 reaction to prompts · Q11 extras paid for · Q12 tota
 Q14 likelihood to use again · Q15 consideration next year · **Q16 open end: one thing to change** · D1–D8 filing status,
 refund/owed, income types, household income, employment, education, Hispanic origin, race.
 Flags: speeder < 280 s, straight-lining Q5/Q13, low-quality or identical open ends, desktop users, Free plan paying $50+ with no extras.
+
+---
+
+# Chase Media Solutions A&U Tracker – Wave 3 (`/chase`)
+Programmed from *Chase_Media_Solutions_AU_Tracker_W3_v3_11.9.26_For_Programming.docx*. n=500 US digital-marketing decision
+makers (merchant or agency), 15 min. Option, row and column codes follow the questionnaire; struck-through items are excluded.
+Hosted on the main SurveyQ service (the Railway project is at its volume limit).
+
+- Hidden variables: `wave`=3, `h_s5` (Agency / Consumer-Business-facing), `h_age_band` (S1 bands 1–7), `h_generation`,
+  `h_state`/`h_region` (from S3 ZIP prefix; Census regions), `h_industry` (S7 or S8), `h_clo_user` (S16=6), `h_b_brands`
+  (brands assigned to the B loop: Chase first if aware, then random, up to 3), `h_a1_order`.
+- Quotas (server-enforced, checked after S14 and again at submission): each of the 12 industries max 50, Agency max 125,
+  B2B (S14=2) max 50, total 500. Monitored on the dashboard: Financial Services, Consumer/Business-facing, CLO non-users,
+  1–5 yrs experience × Manager/Analyst. Override any cap with `CHASE_CAP_<CELL>` (e.g. `CHASE_CAP_IND_11=60`).
+- Quality terms (`quality` status): A10 red herring, S17=4 without S16 CLO, S12 >10 departments (S11≠1), S9A employees vs revenue.
+- Flags: speeder <300 s, straight-lining A1/A2/A3, S12 >7 departments, S9A 11–20 employees with $2B+, A4A consistency checks, low-quality open ends.
+- S18 = not likely → S19 open end is captured, then terminated.

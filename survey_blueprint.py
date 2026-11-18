@@ -53,7 +53,9 @@ def _clean(v, limit=1000):
     return "'" + s if s[:1] in ("=", "+", "-", "@") else s
 
 
-def make_survey(slug, title, page, default_quota):
+def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=None):
+    cell_caps = dict(cell_caps or {})
+    cell_labels = dict(cell_labels or {})
     env = lambda k, d="": os.environ.get(f"{slug.upper()}_{k}", d)
     path = env("RESPONSES_FILE") or os.path.join(DATA_DIR, f"{slug}_responses.csv")
     lock_path = path + ".lock"
@@ -89,6 +91,28 @@ def make_survey(slug, title, page, default_quota):
     def completes(rs):
         return sum(1 for r in rs if r.get("status") == "complete")
 
+    def cell_counts(rs):
+        counts = {}
+        for r in rs:
+            if r.get("status") == "complete":
+                for c in str(r.get("quota_cells", "")).split(";"):
+                    if c:
+                        counts[c] = counts.get(c, 0) + 1
+        return counts
+
+    def cap_for(cell):
+        override = env("CAP_" + re.sub(r"[^A-Za-z0-9]", "_", cell).upper())
+        if override:
+            try:
+                return int(override)
+            except ValueError:
+                pass
+        return cell_caps.get(cell)
+
+    def full_cells(rs, cells):
+        counts = cell_counts(rs)
+        return [c for c in cells if cap_for(c) is not None and counts.get(c, 0) >= cap_for(c)]
+
     def redirect_for(status, rid):
         key = {"complete": "REDIRECT_COMPLETE", "terminated": "REDIRECT_TERMINATE",
                "overquota": "REDIRECT_OVERQUOTA", "quality": "REDIRECT_QUALITY"}[status]
@@ -116,6 +140,12 @@ def make_survey(slug, title, page, default_quota):
             cfg.update(closed=True, redirect=redirect_for("overquota", rid))
         return Response(wrap(cfg), mimetype="text/html")
 
+    @bp.post(f"/api/{slug}/quota")
+    def quota_check():
+        cells = [str(c)[:40] for c in ((request.get_json(silent=True) or {}).get("cells") or [])][:20]
+        rs = rows()
+        return jsonify({"quotaFull": completes(rs) >= quota(), "full": full_cells(rs, cells)})
+
     @bp.post(f"/api/{slug}/responses")
     def save():
         data = request.get_json(silent=True) or {}
@@ -134,6 +164,11 @@ def make_survey(slug, title, page, default_quota):
             if status == "complete" and completes(rs) >= quota():
                 status = rec["status"] = "overquota"
                 rec["terminate_reason"] = "Quota full at submission"
+            elif status == "complete" and cell_caps:
+                fc = full_cells(rs, [c for c in str(rec.get("quota_cells", "")).split(";") if c])
+                if fc:
+                    status = rec["status"] = "overquota"
+                    rec["terminate_reason"] = "Quota cell full at submission: " + ", ".join(fc)
             new = not os.path.exists(path) or os.path.getsize(path) == 0
             if new:
                 header = HEAD + [k for k in rec if k not in HEAD and k not in TAIL] + TAIL
@@ -176,6 +211,13 @@ def make_survey(slug, title, page, default_quota):
                 k = r.get("terminate_reason", "")
                 reasons[k] = reasons.get(k, 0) + 1
         rtxt = "".join(f"<li>{escape(k)}: {v}</li>" for k, v in sorted(reasons.items(), key=lambda x: -x[1])) or "<li>None yet</li>"
+        qtxt = ""
+        if cell_caps or cell_labels:
+            cc = cell_counts(rs)
+            names = list(dict.fromkeys(list(cell_labels) + list(cell_caps) + sorted(cc)))
+            qtxt = "<h3>Quota cells (completes)</h3><div style='overflow-x:auto'><table><tr><th>Cell</th><th>Completes</th><th>Cap</th><th>Status</th></tr>" + "".join(
+                f"<tr><td>{escape(cell_labels.get(c, c))}</td><td>{cc.get(c, 0)}</td><td>{cap_for(c) if cap_for(c) is not None else 'monitor'}</td>"
+                f"<td>{'FULL' if cap_for(c) is not None and cc.get(c, 0) >= cap_for(c) else ''}</td></tr>" for c in names) + "</table></div>"
         trs = "".join(
             "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
                 escape(r.get("received_at", "")), escape(r.get("respondent_id", "")), escape(r.get("status", "")),
@@ -192,7 +234,7 @@ td,th{{border-bottom:1px solid #d9dde3;padding:7px 9px;text-align:left;vertical-
 <span class=t>Quality terms<b>{by('quality')}</b></span><span class=t>Over quota<b>{by('overquota')}</b></span>
 <span class=t>Incidence<b>{ir:.0%}</b></span><span class=t>Median LOI<b>{med // 60}m {med % 60:02d}s</b></span><span class=t>Total records<b>{len(rs)}</b></span></div>
 <a class=btn href="/admin/{slug}/export.csv">Download {slug}_responses.csv</a>
-<h3>Screen-out reasons</h3><ul>{rtxt}</ul>
+{qtxt}<h3>Screen-out reasons</h3><ul>{rtxt}</ul>
 <div style="overflow-x:auto"><table><tr><th>Received (UTC)</th><th>Respondent</th><th>Status</th><th>Reason</th><th>Lang</th><th>LOI (s)</th><th>Flags</th></tr>{trs}</table></div>"""
         return Response(html, mimetype="text/html")
 
