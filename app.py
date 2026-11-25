@@ -86,19 +86,23 @@ def _disabled_surveys():
 
 @app.before_request
 def _only_one_survey():
+    # ONLY_SURVEY may list several slugs ("chase,opt"); "/" and "/admin" go to the first one.
     if not ONLY_SURVEY:
         return None
+    allowed = [x.strip() for x in ONLY_SURVEY.split(",") if x.strip()]
     p = request.path.rstrip("/") or "/"
-    s = ONLY_SURVEY
+    from flask import redirect
     if p == "/":
-        from flask import redirect
         qs = request.query_string.decode()
-        return redirect(f"/{s}" + (f"?{qs}" if qs else ""), 302)
-    if p == "/healthz" or p == f"/{s}" or p.startswith(f"/api/{s}/") or p == f"/admin/{s}" or p.startswith(f"/admin/{s}/"):
-        return None
+        return redirect(f"/{allowed[0]}" + (f"?{qs}" if qs else ""), 302)
     if p == "/admin":
-        from flask import redirect
-        return redirect(f"/admin/{s}", 302)
+        return redirect(f"/admin/{allowed[0]}", 302)
+    if p == "/healthz":
+        return None
+    for s in allowed:
+        if (p == f"/{s}" or p.startswith(f"/api/{s}/") or p == f"/admin/{s}" or p.startswith(f"/admin/{s}/")
+                or p.startswith(f"/static/{s}/")):
+            return None
     return Response("Not found", 404)
 _thread_lock = threading.Lock()
 
@@ -284,6 +288,42 @@ app.register_blueprint(make_survey(
     cell_labels={**{f"ind_{k}": f"Industry: {v}" for k, v in _CHASE_IND.items()}, "agency": "Agency (S5=1)", "company": "Consumer/Business-facing (S5=2)",
                  "b2b": "B2B end user (S14=2) – min 25", "clo_nonuser": "Non-users of CLOs (monitor)",
                  "exp1to5_manager": "1–5 yrs experience, Manager (monitor)", "exp1to5_analyst": "1–5 yrs experience, Analyst (monitor)"}))
+
+# Questionlab x Optivate: Peligroso microgame vs. sweepstakes, two monadic cells (n=400) at /opt
+_OPT_REG = {"South": 76, "West": 48, "Midwest": 42, "Northeast": 34}
+_opt_caps = {}
+_opt_labels = {}
+for _arm, _nm in ((1, "Cell A (Microgame)"), (2, "Cell B (Sweepstakes)")):
+    _opt_caps[f"cell{_arm}"] = 200
+    _opt_labels[f"cell{_arm}"] = _nm
+    for _g in ("male", "female"):
+        _opt_caps[f"c{_arm}_{_g}"] = 100
+        _opt_labels[f"c{_arm}_{_g}"] = f"{_nm} – {_g.title()}"
+    for _r, _n in _OPT_REG.items():
+        _opt_caps[f"c{_arm}_{_r}"] = _n
+        _opt_labels[f"c{_arm}_{_r}"] = f"{_nm} – {_r}"
+app.register_blueprint(make_survey(
+    slug="opt", title="Optivate Peligroso microgame test", page="opt.html", default_quota=400,
+    cell_caps=_opt_caps, cell_labels=_opt_labels, public_env=("GAME_URL", "FORM_URL", "RETURN_MODE")))
+
+
+@app.get("/api/opt/mock")
+def opt_mock():
+    """Stand-in for the Optivate game / sweepstakes until OPT_GAME_URL and OPT_FORM_URL are set (QA only)."""
+    from html import escape as _esc
+    cell = request.args.get("cell", "1")
+    ret = request.args.get("return", "")
+    if not ret.startswith(("/", "http://localhost", "https://localhost")) and request.host not in ret:
+        ret = ""
+    kind = "game" if cell == "1" else "sweepstakes entry"
+    back = (ret + ("&" if "?" in ret else "?") + "status=complete&score=1234") if ret else ""
+    return Response(f"""<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Test stand-in</title><body style="font-family:system-ui,sans-serif;padding:24px;max-width:520px">
+<p style="color:#666">TEST STAND-IN – replaced by Optivate's real {_esc(kind)} once its link is set</p>
+<h1>Peligroso {_esc(kind)}</h1><p>This placeholder simulates the {_esc(kind)} so the survey flow can be tested.</p>
+<p><a id=done href="{_esc(back)}" style="display:inline-block;background:#2f4f4a;color:#fff;padding:12px 20px;border-radius:999px;text-decoration:none">Finish</a></p>""",
+                    mimetype="text/html")
+
 
 
 if __name__ == "__main__":

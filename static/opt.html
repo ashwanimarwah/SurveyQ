@@ -1,0 +1,663 @@
+<title>Brand and Lifestyle Survey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a reading column; grids stack row by row for phones. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --ink: #16191d;
+  --muted: #5b6370;
+  --line: #d9dde3;
+  --accent: #2f4f4a;        /* agave */
+  --accent-soft: #e2ebe5;
+  --focus: #d08c1c;
+  --bad: #b23a32;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+    --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+  --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+.wrap { max-width: 720px; margin: 0 auto; }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; }
+.brandname { font-family: var(--font-display); font-weight: 600; font-size: 19px; display: block; }
+.lang { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.lang button { font: 500 13px var(--font-mono); padding: 3px 10px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 20px; }
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4.6vw, 33px); line-height: 1.2; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(20px, 3.5vw, 24px); line-height: 1.32; margin: 0 0 18px; hyphens: auto; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -8px 0 16px; }
+.options { display: grid; gap: 8px; }
+.opt { position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.opt:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.opt input[type=radio], .opt input[type=checkbox], .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key { width: 22px; height: 22px; border: 1.5px solid var(--line); border-radius: 5px; margin-top: 2px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .key { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.opt.dis { opacity: .45; }
+.opt:focus-within, .chip:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+input[type=text], textarea { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+textarea { min-height: 130px; resize: vertical; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+.dk { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--muted); cursor: pointer; margin-top: 10px; }
+.counter { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; text-align: right; }
+.grid { display: grid; gap: 14px; }
+.grow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.grow.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.grow .rl { font-weight: 600; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; font-size: 14.5px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; background: var(--bg); line-height: 1.3; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.btn { font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible, .lang button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
+.scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 4px; }
+.scale .chip { text-align: center; padding: 10px 0; font-family: var(--font-mono); border-radius: 8px; }
+.ends { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+@media (max-width: 520px) { .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.info p { max-width: 64ch; margin: 0 0 14px; }
+.info ul { max-width: 64ch; margin: 0 0 14px; padding-left: 22px; }
+details.def { margin: -6px 0 16px; font-size: 15px; color: var(--muted); }
+details.def summary { cursor: pointer; color: var(--accent); }
+details.def p { margin: 6px 0 0; max-width: 64ch; }
+.numin { max-width: 140px; font-family: var(--font-mono); font-size: 20px; }
+.sumtab { display: grid; gap: 8px; }
+.sumrow { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; }
+.sumrow input { text-align: right; font-family: var(--font-mono); }
+.sumtotal { display: flex; justify-content: space-between; font-family: var(--font-mono); padding: 8px 12px; font-weight: 600; }
+.sumtotal.bad { color: var(--bad); }
+.boxes { display: grid; gap: 8px; margin-bottom: 10px; }
+.boxes label { display: grid; grid-template-columns: 24px 1fr; align-items: center; gap: 10px; font: 500 13px var(--font-mono); color: var(--muted); }
+.gridtable { overflow-x: auto; }
+.grid .rl b { font-weight: 700; }
+
+.brandopt { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brandopt > span:last-child { min-width: 0; font-weight: 600; }
+.opt.brand { grid-template-columns: 24px 1fr; }
+.bimg { display: flex; gap: 6px; align-items: center; flex: none; }
+.bimg img.b { width: 44px; height: 53px; object-fit: contain; }
+.bimg img.l { width: 104px; height: 45px; object-fit: contain; }
+.rowimg { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.rowimg img.b { width: 40px; height: 48px; object-fit: contain; }
+.rowimg img.l { width: 96px; height: 42px; object-fit: contain; }
+.stim { display: flex; gap: 10px; align-items: center; justify-content: center; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; margin-bottom: 16px; }
+.stim img.b { width: 90px; height: 108px; object-fit: contain; }
+.stim img.l { width: 180px; height: 78px; object-fit: contain; }
+.shelf { background: #fff; border: 1px solid var(--line); border-bottom: 12px solid #c9b48f; border-radius: var(--radius) var(--radius) 4px 4px; padding: 12px 6px 4px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; align-items: end; }
+.shelf img { width: 100%; max-width: 100%; aspect-ratio: 600 / 720; object-fit: contain; display: block; }
+select.drop { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.expo { display: grid; gap: 14px; }
+.expo .go { justify-self: start; }
+.note { font-size: 14.5px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><span class="eyebrow">Questionlab · Online survey</span><span class="brandname">Brand and Lifestyle Survey</span></div>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* =====================================================================
+   Questionlab x Optivate — Peligroso microgame vs. sweepstakes (v5)
+   Two randomized monadic cells (hCELL 1 = Microgame, 2 = Sweepstakes).
+   Codes follow Questionlab_Optivate_Microgame_Questionnaire_v5.docx.
+   ===================================================================== */
+const server = window.SURVEY_SERVER;
+const PUB = (server && server.public) || {};
+const SHOW_REASON = !server || server.showReason !== false;
+const params = new URLSearchParams(location.search);
+const QA = params.get("qa") === "1";
+const RID = (server && server.rid) || params.get("rid") || ("anon-" + Math.random().toString(36).slice(2, 12));
+const STORE_KEY = "opt_state_" + RID;
+const IMG = n => `static/opt/${n}.jpg`;
+
+let S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {}, termQ: null, t: {}, cell: null, brandOrder: null, decoyPos: null, a6First: null, shelfVer: null, expo: {} };
+const A = () => S.a;
+
+/* ---------------- brands ---------------- */
+const BRANDS = {
+  1: { l: "Peligroso", f: "peligroso" }, 2: { l: "Patrón", f: "patron" }, 3: { l: "Don Julio", f: "don-julio" },
+  4: { l: "Cimarrón", f: "cimarron" }, 5: { l: "El Mayor", f: "el-mayor" }, 6: { l: "Loma Serena", f: "loma-serena" } };
+const shuf = x => { const y = x.slice(); for (let i = y.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [y[i], y[j]] = [y[j], y[i]]; } return y; };
+function initRandom() {
+  if (!S.brandOrder) S.brandOrder = shuf([1, 2, 3, 4, 5]);
+  if (S.decoyPos == null) S.decoyPos = Math.floor(Math.random() * 6);
+  if (S.a6First == null) S.a6First = Math.random() < 0.5 ? "pel" : "cim";
+  if (S.shelfVer == null) S.shelfVer = 1 + Math.floor(Math.random() * 3);
+}
+const real5 = () => S.brandOrder;
+const six = () => { const x = S.brandOrder.slice(); x.splice(S.decoyPos, 0, 6); return x; };
+const bOpt = c => ({ c, l: BRANDS[c].l, brand: c });
+const isGame = () => S.cell === 1;
+const EXP = () => isGame() ? "game" : "sweepstakes";
+
+/* ---------------- states → Census region ---------------- */
+const STATES = [["Alabama","S"],["Alaska","W"],["Arizona","W"],["Arkansas","S"],["California","W"],["Colorado","W"],["Connecticut","NE"],["Delaware","S"],
+  ["District of Columbia","S"],["Florida","S"],["Georgia","S"],["Hawaii","W"],["Idaho","W"],["Illinois","MW"],["Indiana","MW"],["Iowa","MW"],["Kansas","MW"],
+  ["Kentucky","S"],["Louisiana","S"],["Maine","NE"],["Maryland","S"],["Massachusetts","NE"],["Michigan","MW"],["Minnesota","MW"],["Mississippi","S"],
+  ["Missouri","MW"],["Montana","W"],["Nebraska","MW"],["Nevada","W"],["New Hampshire","NE"],["New Jersey","NE"],["New Mexico","W"],["New York","NE"],
+  ["North Carolina","S"],["North Dakota","MW"],["Ohio","MW"],["Oklahoma","S"],["Oregon","W"],["Pennsylvania","NE"],["Rhode Island","NE"],["South Carolina","S"],
+  ["South Dakota","MW"],["Tennessee","S"],["Texas","S"],["Utah","W"],["Vermont","NE"],["Virginia","S"],["Washington","W"],["West Virginia","S"],
+  ["Wisconsin","MW"],["Wyoming","W"]];
+const REGION_NAME = { NE: "Northeast", MW: "Midwest", S: "South", W: "West" };
+const stateOpts = [...STATES.map(([n], i) => ({ c: i + 1, l: n })), { c: 99, l: "I do not live in the US" }];
+const region = a => a.s3 && a.s3 !== 99 ? REGION_NAME[STATES[a.s3 - 1][1]] : "";
+const gender = a => a.s2 === 1 ? "male" : a.s2 === 2 ? "female" : "";
+
+/* ---------------- helpers ---------------- */
+const O = (c, l, x = {}) => ({ c, l, ...x });
+const L = (arr) => arr.map((l, i) => O(i + 1, l));
+const sel = (a, id) => a[id] || [];
+const AGREE5 = L(["Strongly disagree", "Somewhat disagree", "Neither", "Somewhat agree", "Strongly agree"]);
+const LIKELY5 = L(["Definitely would not", "Probably would not", "Might or might not", "Probably would", "Definitely would"]);
+const A6_ROWS = [O("r1", "Is a fun brand"), O("r2", "Is a modern brand"), O("r3", "Is a high-quality brand"), O("r4", "Is a brand for people like me"),
+  O("r5", "Is worth paying more for"), O("r6", "Stands out from other tequila brands")];
+const norm = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z ]/g, " ");
+function lev(a, b) { const d = Array.from({ length: a.length + 1 }, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; }
+const saysPeligroso = s => { const t = norm(s); return /pelig|peligros|pelegros/.test(t.replace(/ /g, "")) || t.split(/\s+/).some(w => w.length >= 6 && lev(w, "peligroso") <= 2); };
+const words = s => ((s || "").trim().match(/[A-Za-zÀ-ɏ'’-]+/g) || []).length;
+
+/* ---------------- questionnaire ---------------- */
+const QUESTIONS = [
+  { id: "intro", sec: "S", type: "info", paras: ["Thank you for taking part. This survey takes about 12 minutes on your smartphone and includes a short interactive activity from a brand. Please complete it in one sitting."] },
+  { id: "s1", sec: "S", type: "number", text: "What is your age?", sub: "Please enter your age.", min: 18, max: 99,
+    term: a => (a.s1 < 25 || a.s1 > 45) ? "S1: age outside 25–45" : null, req: "This survey is for people aged 25 to 45." },
+  { id: "s2", sec: "S", type: "single", text: "Which of the following best describes your gender?", opts: L(["Male", "Female", "Another gender", "Prefer not to say"]),
+    term: a => [3, 4].includes(a.s2) ? "S2: gender not male/female" : null, req: "This survey has quotas for men and women." },
+  { id: "s3", sec: "S", type: "select", text: "In which state do you live?", opts: stateOpts,
+    term: a => a.s3 === 99 ? "S3: does not live in the US" : null, req: "This survey is for people living in the US." },
+  { id: "s4", sec: "S", type: "multi", rand: true, text: "Do you or anyone in your household work in any of the following?", sub: "Select all that apply.",
+    opts: [...L(["Advertising, marketing or public relations", "Market research", "Alcohol or beverage production, distribution or retail",
+      "Promotions, sweepstakes or contest management", "Digital game or app development"]), O(6, "None of these", { ex: 1, anchor: 1 })],
+    term: a => sel(a, "s4").some(c => c <= 5) ? "S4: sensitive industry" : null,
+    req: "People who work, or live with someone who works, in these industries can’t take part." },
+  { id: "s5", sec: "S", type: "multi", rand: true, text: "Which of these, if any, have you had in the past 30 days?", sub: "Select all that apply.",
+    opts: [...L(["Tequila", "Beer", "Wine", "Vodka", "Whiskey or bourbon", "Hard seltzer or ready-to-drink cocktails", "Sparkling water"]), O(8, "None of these", { ex: 1, anchor: 1 })] },
+  { id: "s6", sec: "S", type: "single", text: "How often, if ever, do you buy tequila, for yourself or for others?",
+    opts: L(["Once a month or more", "Every 2–3 months", "A few times a year", "Once a year or less", "Never"]) },
+  { id: "s7", sec: "S", type: "single", assign: true,
+    text: "You will now see a short brand activity and answer questions about brands and other topics. Please do not use the back button or leave the survey until you finish. Do you agree to continue?",
+    opts: L(["Yes, I agree", "No"]), term: a => a.s7 === 2 ? "S7: did not agree to continue" : null, req: "You need to agree to continue to take part." },
+
+  /* ---------------- Section A ---------------- */
+  { id: "a1", sec: "A", type: "boxes", n: 5, minChars: 2, none: "I can’t think of any",
+    pre: ["Now we would like to ask about some tequila brands. Please answer even if you do not drink tequila."],
+    text: "When you think of tequila brands, which ones come to mind?", sub: "Please list as many as you can." },
+  { id: "a2", sec: "A", type: "multi", text: "Which of these tequila brands have you heard of before today?", sub: "Select all that apply.",
+    opts: () => [...six().map(bOpt), O(7, "None of these", { ex: 1 })], universe: [...[1, 2, 3, 4, 5, 6].map(bOpt), O(7, "None of these")] },
+  { id: "a3", sec: "A", type: "grid", show: a => sel(a, "a2").some(c => c <= 5), text: "How familiar are you with each of these brands?",
+    rows: a => real5().filter(c => sel(a, "a2").includes(c)).map(bOpt), universe: [1, 2, 3, 4, 5].map(bOpt), imgRows: true,
+    cols: L(["Not at all familiar", "Slightly familiar", "Moderately familiar", "Very familiar", "Extremely familiar"]),
+    autoRow: (a, c) => sel(a, "a2").includes(c) ? null : 1 },
+  { id: "a4", sec: "A", type: "grid", text: "If you were buying tequila, for yourself or for others, how likely would you be to choose each of these brands?",
+    rows: () => real5().map(bOpt), universe: [1, 2, 3, 4, 5].map(bOpt), imgRows: true, cols: LIKELY5, straight: 5 },
+  { id: "a5", sec: "A", type: "multi", text: "Which of these brands would you seriously consider buying?", sub: "Select all that apply.",
+    opts: () => [...real5().map(bOpt), O(6, "None of these", { ex: 1 })], universe: [...[1, 2, 3, 4, 5].map(bOpt), O(6, "None of these")] },
+  { id: "a6_pel", sec: "A", type: "grid", stim: 1, rowFrom: "a6rows", rowRand: true, rows: A6_ROWS, cols: AGREE5, straight: 6,
+    text: "How much do you agree or disagree that each statement describes the brand shown?", sub: "Peligroso" },
+  { id: "a6_cim", sec: "A", type: "grid", stim: 4, rowFrom: "a6rows", rowRand: true, rows: A6_ROWS, cols: AGREE5, straight: 6,
+    text: "How much do you agree or disagree that each statement describes the brand shown?", sub: "Cimarrón" },
+
+  /* ---------------- Section E ---------------- */
+  { id: "e_intro", sec: "E", type: "exposure", noBack: true },
+  { id: "e1", sec: "E", type: "single", noBack: true, text: () => `Did you finish the ${isGame() ? "game" : "sweepstakes entry"}?`,
+    opts: L(["Yes, I finished it", "I started it but did not finish", "It did not load or work for me"]),
+    term: a => a.e1 === 2 ? "OVERQUOTA: E1 started but did not finish" : a.e1 === 3 ? "OVERQUOTA: E1 experience did not load or work" : null },
+
+  /* ---------------- Section P ---------------- */
+  { id: "p1", sec: "P", type: "text", noBack: true, minChars: 2, optOuts: [O(1, "I don’t remember")], text: () => `Which brand was the ${EXP()} from?` },
+  { id: "p2", sec: "P", type: "single", noBack: true, text: "And which of these brands was it from?",
+    opts: () => [...real5().map(bOpt), O(6, "I don’t remember")], universe: [...[1, 2, 3, 4, 5].map(bOpt), O(6, "I don’t remember")] },
+  { id: "p3", sec: "P", type: "single", noBack: true, text: () => `How much did you enjoy the ${EXP()}?`, opts: L(["Not at all", "A little", "Somewhat", "Quite a bit", "A great deal"]) },
+  { id: "p3a", sec: "P", type: "single", noBack: true, show: () => isGame(), text: "How well do you feel you did in the game?",
+    opts: L(["Very well", "Somewhat well", "Not very well", "Not at all well"]) },
+  { id: "p4", sec: "P", type: "grid", noBack: true, text: () => `If you came across this ${EXP()} on your phone or in a store, how likely would you be to…`,
+    rows: [O("r1", "Do it again"), O("r2", "Share it with a friend"), O("r3", "Visit Peligroso’s website or social media"), O("r4", "Look for Peligroso the next time you shop for tequila")],
+    cols: L(["Very unlikely", "Somewhat unlikely", "Neither", "Somewhat likely", "Very likely"]), straight: 4 },
+  { id: "p5", sec: "P", type: "multi", noBack: true, rand: true, text: () => `Which of these words describe the ${EXP()}?`, sub: "Select all that apply.",
+    opts: [...L(["Fun", "Easy", "Memorable", "Worth my time", "Different from other brand promotions", "Boring", "Confusing", "Too long"]), O(9, "None of these", { ex: 1, anchor: 1 })] },
+  { id: "p6", sec: "P", type: "single", noBack: true, text: "Compared with other brand promotions you have seen, how would you rate this one?",
+    opts: L(["Much worse", "Somewhat worse", "About the same", "Somewhat better", "Much better"]) },
+  { id: "p7", sec: "P", type: "single", noBack: true, stim: 1, opts: LIKELY5,
+    text: "If you were buying tequila, for yourself or for others, how likely would you be to choose Peligroso?" },
+  { id: "p8", sec: "P", type: "grid", noBack: true, stim: 1, rowFrom: "a6rows", rowRand: true, rows: A6_ROWS, cols: AGREE5, straight: 6,
+    text: "How much do you agree or disagree that each statement describes Peligroso?" },
+
+  /* ---------------- Section F (filler) ---------------- */
+  { id: "f_intro", sec: "F", type: "info", noBack: true, paras: ["Next, a few questions about your free time and media habits."] },
+  { id: "f1", sec: "F", type: "grid", noBack: true, text: "In a typical week, about how many hours do you spend on each of the following?",
+    rows: [O("r1", "Watching TV, movies or streaming video"), O("r2", "Using social media"), O("r3", "Listening to music or podcasts"), O("r4", "Playing video or mobile games"), O("r5", "Reading or watching the news")],
+    cols: L(["None", "Under 1 hour", "1–3", "4–7", "8–14", "15 or more"]), straight: 5 },
+  { id: "f2", sec: "F", type: "multi", noBack: true, rand: true, text: "Which of these streaming services have you used in the past month?", sub: "Select all that apply.",
+    opts: [...L(["Netflix", "Hulu", "Disney+", "Max", "Prime Video", "Peacock", "YouTube", "Apple TV+", "Another service"]), O(10, "None of these", { ex: 1, anchor: 1 })] },
+  { id: "f3", sec: "F", type: "multi", noBack: true, rand: true, text: "Which of these social platforms do you use at least once a week?", sub: "Select all that apply.",
+    opts: [...L(["Instagram", "TikTok", "Facebook", "YouTube", "Snapchat", "X", "Reddit", "Pinterest"]), O(9, "None of these", { ex: 1, anchor: 1 })] },
+  { id: "f4", sec: "F", type: "multi", noBack: true, rand: true, text: "Which of these have you done in the past month?", sub: "Select all that apply.",
+    opts: [...L(["Eaten at a restaurant", "Traveled overnight", "Attended a concert or live event", "Worked out at a gym or class", "Cooked a new recipe", "Hosted friends or family", "Attended a sports event"]), O(8, "None of these", { ex: 1, anchor: 1 })] },
+  { id: "f5", sec: "F", type: "grid", noBack: true, text: "How much do you agree or disagree with each statement?", cols: AGREE5,
+    rows: [O("r1", "I like to try new things"), O("r2", "I plan my weekends ahead of time"), O("r3", "I prefer to shop online when I can"),
+      O("r4", "To show you are reading carefully, please select “Somewhat agree” for this row"), O("r5", "I enjoy spending time with friends"), O("r6", "I usually look for deals before I buy")],
+    customOrder: () => { const x = shuf(["r1", "r2", "r3", "r5", "r6"]); x.splice(3, 0, "r4"); return x; } },
+  { id: "f6", sec: "F", type: "single", noBack: true, text: "Who does most of the grocery shopping in your household?",
+    opts: L(["I do all or most of it", "I share it equally", "Someone else does all or most of it"]) },
+  { id: "f7", sec: "F", type: "text", noBack: true, minChars: 10, text: "In a sentence or two, please describe something you enjoyed doing in the past month." },
+
+  /* ---------------- Section D ---------------- */
+  { id: "d1", sec: "D", type: "text", noBack: true, minChars: 2, optOuts: [O(1, "I don’t remember")],
+    text: "Earlier in this survey, you tried an activity from a brand. Which brand was it?", sub: "Please type your best guess." },
+  { id: "d2", sec: "D", type: "single", noBack: true, text: "Which of these brands was the activity from?",
+    opts: () => [...six().map(bOpt), O(7, "I don’t remember")], universe: [...[1, 2, 3, 4, 5, 6].map(bOpt), O(7, "I don’t remember")] },
+  { id: "d3", sec: "D", type: "text", noBack: true, optional: true, text: "What do you remember about the activity? Please describe anything that comes to mind.", sub: "Optional." },
+  { id: "d4", sec: "D", type: "single", noBack: true, shelf: true,
+    text: "Imagine you are buying a bottle of tequila for a get-together, even if you do not usually buy it. You see these options on the shelf. Which one would you choose?",
+    opts: () => [...shelfOrder().map(bOpt), O(6, "I would not choose any of these")], universe: [...[1, 2, 3, 4, 5].map(bOpt), O(6, "I would not choose any of these")] },
+  { id: "d5", sec: "D", type: "grid", noBack: true, text: "If you were buying tequila, for yourself or for others, how likely would you be to choose each of these brands?",
+    rows: () => real5().map(bOpt), universe: [1, 2, 3, 4, 5].map(bOpt), imgRows: true, cols: LIKELY5, straight: 5 },
+  { id: "d6", sec: "D", type: "multi", noBack: true, text: "Which of these brands would you seriously consider buying?", sub: "Select all that apply.",
+    opts: () => [...real5().map(bOpt), O(6, "None of these", { ex: 1 })], universe: [...[1, 2, 3, 4, 5].map(bOpt), O(6, "None of these")] },
+  { id: "d7", sec: "D", type: "single", noBack: true, text: "How much do you agree or disagree: “I would choose Peligroso over the tequila brand I usually buy.”",
+    opts: [...AGREE5, O(6, "I don’t usually buy tequila")] },
+
+  /* ---------------- Section Z ---------------- */
+  { id: "z1", sec: "Z", type: "single", noBack: true, text: "Before today, had you ever played a game or entered a sweepstakes from an alcohol brand?", opts: L(["Yes", "No", "Not sure"]) },
+  { id: "z2", sec: "Z", type: "single", noBack: true, text: "What is the highest level of education you have completed?",
+    opts: L(["High school or less", "Some college or associate degree", "Bachelor’s degree", "Graduate degree", "Prefer not to say"]) },
+  { id: "z3", sec: "Z", type: "single", noBack: true, text: "Which best describes your total household income before taxes last year?",
+    opts: L(["Under $50,000", "$50,000–$99,999", "$100,000–$149,999", "$150,000 or more", "Prefer not to say"]) },
+  { id: "z4", sec: "Z", type: "single", noBack: true, text: "Are you of Hispanic, Latino or Spanish origin?", opts: L(["Yes", "No", "Prefer not to say"]) },
+  { id: "z5", sec: "Z", type: "multi", noBack: true, text: "Which best describes your race?", sub: "Select all that apply.",
+    opts: [...L(["White", "Black or African American", "Asian", "American Indian or Alaska Native", "Native Hawaiian or Pacific Islander", "Another race"]), O(7, "Prefer not to say", { ex: 1 })] },
+  { id: "z6", sec: "Z", type: "single", noBack: true, text: "How often do you play games on your phone?", opts: L(["Daily", "A few times a week", "A few times a month", "Rarely", "Never"]) },
+];
+// A6: Peligroso and Cimarrón grids in random order per respondent (same row order in both, and in P8)
+function shelfOrder() { const others = real5().filter(c => c !== 1); const pos = [0, 2, 4][S.shelfVer - 1]; const x = others.slice(); x.splice(pos, 0, 1); return x; }
+function a6Order() { const i = QUESTIONS.findIndex(q => q.id === "a6_pel"), j = QUESTIONS.findIndex(q => q.id === "a6_cim");
+  if ((S.a6First === "cim") !== (j < i)) [QUESTIONS[i], QUESTIONS[j]] = [QUESTIONS[j], QUESTIONS[i]]; }
+
+/* ---------------- quota cells / assignment ---------------- */
+const cellsFor = (arm, a) => [`cell${arm}`, `c${arm}_${gender(a)}`, `c${arm}_${region(a)}`];
+function quotaCells(a) { return S.cell ? cellsFor(S.cell, a) : []; }
+
+/* ================= engine ================= */
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const val = x => typeof x === "function" ? x(S.a) : x;
+const visible = q => !q.show || q.show(S.a);
+const qOpts = q => val(q.opts) || [];
+const qRows = q => val(q.rows) || [];
+const qCols = q => val(q.cols) || [];
+const brandImgs = (c, cls = "bimg") => el("span", { class: cls }, el("img", { class: "b", src: IMG(BRANDS[c].f + "-750ml"), alt: "" }), el("img", { class: "l", src: IMG(BRANDS[c].f + "-logo"), alt: "" }));
+
+function persist() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} }
+function restore() { try { const x = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); if (x && !x.done) { S = x; return true; } } catch (e) {} return false; }
+
+function ordered(q, list, key = q.id) {
+  if (!S.order[key]) {
+    let codes;
+    if (q.customOrder) codes = q.customOrder();
+    else if (q.rand || q.rowRand) codes = [...shuf(list.filter(o => !o.anchor)).map(o => o.c), ...list.filter(o => o.anchor).map(o => o.c)];
+    else codes = list.map(o => o.c);
+    S.order[key] = codes;
+  }
+  const known = S.order[key];
+  return [...known.map(c => list.find(o => o.c === c)).filter(Boolean), ...list.filter(o => !known.includes(o.c))];
+}
+
+function stamp(sec) { if (!S.t[sec]) S.t[sec] = new Date().toISOString(); }
+function go(i, dir) {
+  while (i >= 0 && i < QUESTIONS.length && !visible(QUESTIONS[i])) i += dir;
+  if (i < 0) i = 0;
+  if (i >= QUESTIONS.length) { finish("complete", ""); return; }
+  if (!S.startedAt) S.startedAt = new Date().toISOString();
+  S.idx = i; stamp(QUESTIONS[i].sec); persist(); render(); window.scrollTo({ top: 0 });
+}
+
+function render() {
+  const q = QUESTIONS[S.idx];
+  const pct = Math.round((S.idx / QUESTIONS.length) * 100);
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  const parts = [el("div", { class: "progress" }, el("div", { class: "meta" }, el("span", { text: "" }), el("span", { text: pct + "%" })), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` })))];
+  if (q.type === "info") parts.push(el("div", { class: "info" }, ...val(q.paras).map(p => el("p", { text: p }))));
+  else if (q.type === "exposure") parts.push(renderExposure(q, err));
+  else {
+    parts.push(el("div", { class: "qhead" }, el("span", { class: "qcode", text: q.id.toUpperCase().replace(/_(PEL|CIM)$/, "") })));
+    if (q.pre) parts.push(el("div", { class: "info" }, ...q.pre.map(p => el("p", { text: p }))));
+    parts.push(el("h2", { class: "qtext", id: "qtext", text: val(q.text) }));
+    if (q.stim) parts.push(el("div", { class: "stim" }, el("img", { class: "b", src: IMG(BRANDS[q.stim].f + "-750ml"), alt: BRANDS[q.stim].l }), el("img", { class: "l", src: IMG(BRANDS[q.stim].f + "-logo"), alt: "" })));
+    if (q.shelf) parts.push(el("div", { class: "shelf", "aria-label": "Shelf" }, ...shelfOrder().map(c => el("img", { src: IMG(BRANDS[c].f + "-750ml"), alt: BRANDS[c].l }))));
+    if (q.sub && !q.stim) parts.push(el("p", { class: "hint", text: val(q.sub) }));
+    parts.push(({ single: renderOptions, multi: renderOptions, select: renderSelect, grid: renderGrid, number: renderNumber, boxes: renderBoxes, text: renderText })[q.type](q, err));
+  }
+  const canBack = S.idx > 0 && !q.noBack && q.type !== "exposure";
+  const next = q.type === "exposure" ? null : el("button", { class: "btn", type: "button", id: "next-btn", text: "Next", onclick: () => advance(err) });
+  parts.push(err, el("div", { class: "actions" }, canBack ? el("button", { class: "btn ghost", type: "button", text: "Back", onclick: () => go(S.idx - 1, -1) }) : el("span"), next));
+  $("survey").replaceChildren(...parts);
+}
+
+function renderOptions(q, err) {
+  const multi = q.type === "multi";
+  const list = q.opts && typeof q.opts === "function" ? qOpts(q) : ordered(q, qOpts(q));
+  const box = el("div", { class: "options", role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => multi ? (S.a[q.id] || []) : S.a[q.id];
+  const exCodes = list.filter(o => o.ex).map(o => o.c);
+  const paint = () => { const v = cur(); box.querySelectorAll(".opt").forEach(row => { const on = multi ? v.includes(row._code) : v === row._code; row.classList.toggle("sel", on); row.querySelector("input").checked = on; }); };
+  list.forEach((o, i) => {
+    const id = `${q.id}-${i}`;
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id, value: String(o.c) });
+    const content = o.brand ? el("span", { class: "brandopt" }, brandImgs(o.brand), el("span", { text: o.l })) : el("span", { text: o.l });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}`, for: id, "data-code": String(o.c) }, input, el("span", { class: "key" }), content);
+    label._code = o.c;
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) S.a[q.id] = o.c;
+      else { let v = cur().slice(); if (input.checked) { if (exCodes.includes(o.c)) v = [o.c]; else { v = v.filter(c => !exCodes.includes(c)); v.push(o.c); } } else v = v.filter(c => c !== o.c); S.a[q.id] = v; }
+      paint();
+    });
+    box.append(label);
+  });
+  paint();
+  return box;
+}
+function renderSelect(q, err) {
+  const s = el("select", { class: "drop", id: `${q.id}-sel`, "aria-labelledby": "qtext" }, el("option", { value: "", text: "Select…" }), ...qOpts(q).map(o => el("option", { value: String(o.c), text: o.l })));
+  s.value = S.a[q.id] ? String(S.a[q.id]) : "";
+  s.addEventListener("change", () => { S.a[q.id] = s.value ? parseInt(s.value, 10) : null; err.textContent = ""; });
+  return s;
+}
+function renderGrid(q, err) {
+  const g = el("div", { class: "grid" });
+  const cols = qCols(q);
+  const rows = q.customOrder ? ordered(q, qRows(q)) : (q.rowRand ? ordered(q, qRows(q), q.rowFrom || q.id) : qRows(q));
+  for (const r of rows) {
+    const key = `${q.id}_${r.c}`;
+    const row = el("div", { class: "grow", role: "radiogroup", "aria-label": r.l, "data-row": String(r.c) });
+    const chips = el("div", { class: "chips" });
+    const paint = () => { row.classList.toggle("done", S.a[key] != null); chips.querySelectorAll(".chip").forEach(c => { const on = S.a[key] === c._code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; }); };
+    cols.forEach((c, i) => {
+      const id = `${key}-${i}`;
+      const input = el("input", { type: "radio", name: key, id, value: String(c.c) });
+      input.addEventListener("change", () => { S.a[key] = c.c; err.textContent = ""; paint(); });
+      const lab = el("label", { class: "chip", for: id, "data-code": String(c.c) }, input, c.l); lab._code = c.c;
+      chips.append(lab);
+    });
+    row.append(q.imgRows && r.brand ? el("div", { class: "rowimg" }, brandImgs(r.brand, "rowimg"), el("b", { text: r.l })) : el("div", { class: "rl", text: r.l }), chips);
+    paint(); g.append(row);
+  }
+  return g;
+}
+function renderNumber(q, err) {
+  const inp = el("input", { type: "text", inputmode: "numeric", class: "numin", id: `${q.id}-num`, maxlength: "2", value: S.a[q.id] ?? "", "aria-labelledby": "qtext" });
+  inp.addEventListener("input", () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 2); S.a[q.id] = inp.value === "" ? null : parseInt(inp.value, 10); err.textContent = ""; });
+  return inp;
+}
+function renderBoxes(q) {
+  const w = el("div"), boxes = el("div", { class: "boxes" }), ins = [];
+  const none = el("input", { type: "checkbox", id: `${q.id}-none` }); none.checked = !!S.a[q.id + "_none"];
+  for (let i = 1; i <= q.n; i++) {
+    const t = el("input", { type: "text", id: `${q.id}-${i}`, maxlength: "60", value: S.a[`${q.id}_${i}`] || "", "aria-label": `Brand ${i}` });
+    t.addEventListener("input", () => { S.a[`${q.id}_${i}`] = t.value; if (t.value.trim()) { none.checked = false; S.a[q.id + "_none"] = false; } });
+    ins.push(t); boxes.append(el("label", {}, String(i), t));
+  }
+  none.addEventListener("change", () => { S.a[q.id + "_none"] = none.checked; if (none.checked) ins.forEach((t, i) => { t.value = ""; S.a[`${q.id}_${i + 1}`] = ""; }); });
+  w.append(boxes, el("label", { class: "dk", for: none.id }, none, q.none));
+  return w;
+}
+function renderText(q) {
+  const w = el("div");
+  const ta = el("textarea", { id: `${q.id}-text`, maxlength: "1200", "aria-labelledby": "qtext" }); ta.value = S.a[q.id] || "";
+  const oos = (q.optOuts || []).map(o => { const cb = el("input", { type: "checkbox", id: `${q.id}-oo${o.c}` }); cb.checked = S.a[q.id + "_optout"] === o.c; return [o, cb]; });
+  ta.addEventListener("input", () => { S.a[q.id] = ta.value; if (ta.value.trim()) { S.a[q.id + "_optout"] = null; oos.forEach(([, cb]) => cb.checked = false); } });
+  oos.forEach(([o, cb]) => cb.addEventListener("change", () => { if (cb.checked) { S.a[q.id + "_optout"] = o.c; ta.value = ""; S.a[q.id] = ""; } else S.a[q.id + "_optout"] = null; }));
+  w.append(ta, ...oos.map(([o, cb]) => el("label", { class: "dk", for: cb.id }, cb, o.l)));
+  return w;
+}
+
+/* ---------------- exposure (link-out and return) ---------------- */
+function experienceUrl() {
+  const tpl = isGame() ? PUB.GAME_URL : PUB.FORM_URL;
+  const ret = `${location.origin}${location.pathname}?rid=${encodeURIComponent(RID)}`;
+  if (!tpl) return QA || !server ? `api/opt/mock?rid=${encodeURIComponent(RID)}&cell=${S.cell}&return=${encodeURIComponent(ret)}` : "";
+  const fill = tpl.replace("{rid}", encodeURIComponent(RID)).replace("{cell}", String(S.cell)).replace("{return}", encodeURIComponent(ret));
+  return fill.includes("rid=") ? fill : fill + (fill.includes("?") ? "&" : "?") + `rid=${encodeURIComponent(RID)}&cell=${S.cell}`;
+}
+const sameTab = () => (PUB.RETURN_MODE || "").toLowerCase() === "redirect";
+function renderExposure(q, err) {
+  const name = isGame() ? "a short game" : "a sweepstakes entry";
+  const btnLabel = isGame() ? "Play the game" : "Enter the sweepstakes";
+  const url = experienceUrl();
+  const intro = el("p", { text: `Next, you will ${isGame() ? "try" : "see"} ${name} from Peligroso Tequila. This is a test version of a brand promotion for research. Please ${isGame() ? "play it" : "go through it"} as if you came across it on your phone. No real entry is made and no prize is awarded. When you finish, you will return here automatically.` });
+  const cont = el("button", { class: "btn", type: "button", id: "next-btn", text: "Continue", disabled: !S.expo.exit, onclick: () => {
+    if (!S.expo.exit) return;
+    try { const r = JSON.parse(localStorage.getItem("opt_ret_" + RID) || "null"); if (r) { S.expo.status = r.status; S.expo.score = r.score; S.expo.returnFromLink = r.t; } } catch (e) {}
+    S.expo.ret = S.expo.ret || new Date().toISOString(); go(S.idx + 1, 1);
+  } });
+  const back = el("p", { class: "note", id: "expo-note", text: S.expo.exit ? "When you have finished, come back to this tab and tap Continue." : "" });
+  const goBtn = el("button", { class: "btn go", type: "button", id: "expo-btn", text: btnLabel, disabled: !url, onclick: () => {
+    S.expo.exit = S.expo.exit || new Date().toISOString(); persist();
+    if (sameTab()) { location.href = url; return; }
+    window.open(url, "_blank", "noopener");
+    cont.disabled = false; back.textContent = "When you have finished, come back to this tab and tap Continue.";
+  } });
+  return el("div", { class: "expo info" }, intro, goBtn, url ? null : el("p", { class: "note", text: "The activity link isn’t configured yet." }), back, el("div", { class: "actions" }, el("span"), cont));
+}
+/* Arriving back from the experience: ?rid=..&status=..(&score=..) */
+function handleReturn() {
+  const status = params.get("status");
+  if (status == null) return false;
+  const rec = { status, score: params.get("score") || "", t: new Date().toISOString() };
+  try { localStorage.setItem("opt_ret_" + RID, JSON.stringify(rec)); } catch (e) {}
+  const had = restore();
+  if (had && S.expo && S.expo.exit && sameTab()) {          // same-tab mode: carry on to E1
+    S.expo.ret = rec.t; S.expo.status = rec.status; S.expo.score = rec.score;
+    const e1 = QUESTIONS.findIndex(q => q.id === "e1"); go(e1, 1); return true;
+  }
+  $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: "Thanks!" }),
+    el("p", { class: "lead", text: "Please go back to the survey tab and tap Continue to finish the survey. You can close this tab." }));
+  return true;
+}
+
+/* ---------------- validation / routing ---------------- */
+function validate(q) {
+  const a = S.a;
+  switch (q.type) {
+    case "info": return "";
+    case "single": case "select": return (a[q.id] == null || !qOpts(q).some(o => o.c === a[q.id])) ? "Please select an answer." : "";
+    case "multi": { const valid = qOpts(q).map(o => o.c); a[q.id] = sel(a, q.id).filter(c => valid.includes(c)); return a[q.id].length ? "" : "Please select at least one answer."; }
+    case "grid": { const m = qRows(q).filter(r => a[`${q.id}_${r.c}`] == null).length; return m ? `Please answer every row (${m} left).` : ""; }
+    case "number": return (a[q.id] == null || a[q.id] < q.min || a[q.id] > q.max) ? `Please enter your age as a number between ${q.min} and ${q.max}.` : "";
+    case "boxes": { if (a[q.id + "_none"]) return ""; const f = Array.from({ length: q.n }, (_, i) => (a[`${q.id}_${i + 1}`] || "").trim()).filter(Boolean);
+      if (!f.length) return `Please type at least one brand, or tick “${q.none}”.`; return f.some(t => t.length < q.minChars) ? "Each answer needs at least 2 letters." : ""; }
+    case "text": { if (q.optional || a[q.id + "_optout"]) return ""; const t = (a[q.id] || "").trim(); return t.length < (q.minChars || 1) ? (q.minChars >= 10 ? "Please write at least a sentence (10 characters or more)." : "Please type an answer.") : ""; }
+  }
+  return "";
+}
+async function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  const reason = q.term && q.term(S.a);
+  if (reason) { S.termQ = q.id; const st = reason.startsWith("OVERQUOTA") ? "overquota" : reason.startsWith("QUALITY") ? "quality" : "terminated"; finish(st, reason.replace(/^OVERQUOTA: /, "")); return; }
+  if (q.assign) {
+    const btn = $("next-btn"); btn.disabled = true; btn.textContent = "Please wait…";
+    let arm = null;
+    if (server) {
+      try {
+        const r = await (await fetch(server.api.replace("/responses", "/assign"), { method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ arms: { "1": cellsFor(1, S.a), "2": cellsFor(2, S.a) } }) })).json();
+        if (r.full) { finish("overquota", "Quota full (cell × gender × region)"); return; }
+        arm = parseInt(r.arm, 10);
+      } catch (e) { btn.disabled = false; btn.textContent = "Next"; err.textContent = "We couldn’t continue. Please check your connection and try again."; return; }
+    } else arm = Math.random() < 0.5 ? 1 : 2;
+    S.cell = arm; S.assignedAt = new Date().toISOString();
+  }
+  go(S.idx + 1, 1);
+}
+
+/* ---------------- record ---------------- */
+const labelIn = (list, c) => { const o = (list || []).find(x => x.c === c); return o ? o.l : ""; };
+const secs = (a, b) => (a && b) ? Math.round((new Date(b) - new Date(a)) / 1000) : "";
+function buildRecord(status, reason) {
+  const a = S.a, now = new Date().toISOString();
+  const dur = secs(S.startedAt || now, now), expo = secs(S.expo.exit, S.expo.ret);
+  const r = { status, terminate_reason: reason, flags: "", started_at: S.startedAt || now, completed_at: now, duration_sec: dur, lang: "en",
+    hCELL: S.cell || "", hCELL_label: S.cell === 1 ? "Microgame" : S.cell === 2 ? "Sweepstakes" : "",
+    hBRANDORDER: (S.brandOrder || []).join(";"), hDECOYPOS: S.decoyPos != null ? S.decoyPos + 1 : "", hA6ORDER: S.a6First === "cim" ? "Cimarron first" : "Peligroso first",
+    hSHELFVER: S.shelfVer || "", hAGEBAND: a.s1 ? (a.s1 <= 34 ? "25–34" : "35–45") : "", hGENDER: gender(a), hREGION: region(a),
+    hTEQUILA30: a.s5 ? (sel(a, "s5").includes(1) ? 1 : 0) : "", hALC30: a.s5 ? (sel(a, "s5").some(c => c >= 1 && c <= 6) ? 1 : 0) : "",
+    hA1_PELIGROSO: a.a1_none !== undefined || a.a1_1 !== undefined ? ([1, 2, 3, 4, 5].some(i => saysPeligroso(a[`a1_${i}`])) ? 1 : 0) : "",
+    hP1_CORRECT: a.p1 !== undefined || a.p1_optout ? (saysPeligroso(a.p1) ? 1 : 0) : "",
+    hD1_CORRECT: a.d1 !== undefined || a.d1_optout ? (saysPeligroso(a.d1) ? 1 : 0) : "",
+    hD2_CORRECT: a.d2 != null ? (a.d2 === 1 ? 1 : 0) : "",
+    hT_EXIT: S.expo.exit || "", hT_RETURN: S.expo.ret || "", hEXPOSURE_SEC: expo, hRETURN_STATUS: S.expo.status || "", hGAME_SCORE: S.expo.score || "",
+    hDEVICE: deviceType(), quota_cells: quotaCells(a).join(";") };
+  for (const k of ["S", "A", "E", "P", "F", "D", "Z"]) r["hT_" + k] = S.t[k] || "";
+  r.hT_F_START = S.t.F || ""; r.hT_F_END = S.t.D || "";
+  r.duration_ex_exposure_sec = (typeof dur === "number" && typeof expo === "number") ? dur - expo : dur;
+  for (const q of QUESTIONS) {
+    if (["info", "exposure"].includes(q.type)) continue;
+    const shown = visible(q);
+    const uni = q.universe || (typeof q.opts === "function" ? [] : q.opts);
+    if (q.type === "single" || q.type === "select") { const v = shown ? a[q.id] : null; r[q.id] = v ?? ""; r[q.id + "_label"] = v != null ? labelIn(uni, v) : ""; }
+    else if (q.type === "multi") { const v = shown ? sel(a, q.id) : []; r[q.id] = v.join(";"); r[q.id + "_label"] = v.map(c => labelIn(uni, c)).join("; "); }
+    else if (q.type === "grid") { for (const row of (q.universe || q.rows)) { let v = shown ? a[`${q.id}_${row.c}`] : null; if ((v == null) && q.autoRow) v = q.autoRow(a, row.c); r[`${q.id}_${row.c}`] = v ?? ""; } }
+    else if (q.type === "number") r[q.id] = a[q.id] ?? "";
+    else if (q.type === "boxes") { for (let i = 1; i <= q.n; i++) r[`${q.id}_${i}`] = (a[`${q.id}_${i}`] || "").trim(); r[q.id + "_none"] = a[q.id + "_none"] ? 1 : ""; }
+    else if (q.type === "text") { r[q.id] = (a[q.id] || "").trim(); if (q.optOuts) r[q.id + "_optout"] = a[q.id + "_optout"] ?? ""; }
+  }
+  r.flags = flags(status, r).join(" | ");
+  return r;
+}
+function flags(status, r) {
+  const a = S.a, f = [];
+  if (status === "complete" && typeof r.duration_ex_exposure_sec === "number" && r.duration_ex_exposure_sec < 210) f.push(`Speeder: ${r.duration_ex_exposure_sec}s excl. exposure`);
+  for (const q of QUESTIONS) if (q.straight && visible(q) && a[`${q.id}_${qRows(q)[0]?.c}`] != null) {
+    const v = qRows(q).map(row => a[`${q.id}_${row.c}`]).filter(x => x != null); if (v.length >= q.straight && new Set(v).size === 1) f.push(`Straight-lined ${q.id.toUpperCase()}`);
+  }
+  if (a.f5_r4 != null && a.f5_r4 !== 4) f.push("Failed attention check (F5)");
+  if (sel(a, "a2").includes(6)) f.push("Decoy selected at A2 (Loma Serena)");
+  if (a.d2 === 6) f.push("Decoy selected at D2 (Loma Serena)");
+  const gib = t => t && (/(.)\1{4,}/.test(t) || !/[aeiouy]/i.test(t) || (t.length > 20 && words(t) < 2));
+  if ([1, 2, 3, 4, 5].some(i => gib((a[`a1_${i}`] || "").trim()))) f.push("A1 possible gibberish");
+  if (gib((a.f7 || "").trim())) f.push("F7 possible gibberish");
+  if (gib((a.d1 || "").trim())) f.push("D1 possible gibberish");
+  if (status === "complete" && S.expo.exit && typeof r.hEXPOSURE_SEC === "number" && r.hEXPOSURE_SEC < 15) f.push(`Very short exposure: ${r.hEXPOSURE_SEC}s`);
+  return f;
+}
+
+const MSG = {
+  complete: ["Thank you!", "Thank you for completing this survey. The brand activity you saw was a test version shown for research purposes only. No entries were recorded and no prizes were awarded."],
+  terminated: ["Thank you for your interest", "Unfortunately, based on your answers you don’t qualify for this survey. Thank you for your time."],
+  quality: ["Thank you", "Unfortunately we can’t accept this response. Thank you for your time."],
+  overquota: ["Thank you for your interest", "We have already received all the responses we need from people like you. Thank you for your time."],
+};
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  if (server) {
+    rec.rid = server.rid || "";
+    try {
+      const r = await fetch(server.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      if (!r.ok && r.status !== 409) throw new Error(String(r.status));
+      res = await r.json().catch(() => ({}));
+    } catch (e) { if (btn) { btn.disabled = false; btn.textContent = "Try again"; } const e2 = $("err"); if (e2) e2.textContent = "Your answers couldn’t be saved. Check your connection and try again."; return; }
+  } else console.log("Preview record (not saved):", rec);
+  S.done = true; persist();
+  try { localStorage.removeItem(STORE_KEY); localStorage.removeItem("opt_ret_" + RID); } catch (e) {}
+  const st = res.status || status;
+  const [h, p] = MSG[st] || MSG.terminated;
+  const parts = [el("div", { class: "endmark" }), el("h1", { text: h }), el("p", { class: "lead", text: p })];
+  const tq = QUESTIONS.find(x => x.id === S.termQ);
+  if (SHOW_REASON && tq && tq.req && (st === "terminated" || st === "quality")) {
+    const ans = tq.type === "multi" ? sel(S.a, tq.id).map(c => labelIn(qOpts(tq), c)).join("; ") : tq.type === "number" ? String(S.a[tq.id]) : labelIn(qOpts(tq), S.a[tq.id]);
+    parts.push(el("div", { class: "reason", id: "term-reason" }, el("div", { class: "rk", text: "Why the survey ended" }),
+      el("p", {}, el("b", { text: tq.id.toUpperCase() + " " }), document.createTextNode(val(tq.text))),
+      ans ? el("p", {}, el("span", { class: "rl", text: "Your answer: " }), document.createTextNode(ans)) : null,
+      el("p", {}, el("span", { class: "rl", text: "Requirement: " }), document.createTextNode(tq.req))));
+  }
+  $("survey").replaceChildren(...parts);
+  if (res.redirect) setTimeout(() => { location.href = res.redirect; }, $("term-reason") ? 8000 : 2000);
+}
+
+/* ---------------- device gate + boot ---------------- */
+function deviceType() {
+  const ua = navigator.userAgent || "";
+  if (/iPad|Tablet|PlayBook|Silk|(Android(?!.*Mobile))/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "tablet";
+  if ((navigator.userAgentData && navigator.userAgentData.mobile) || /iPhone|iPod|Android.*Mobile|Windows Phone|IEMobile|Opera Mini/i.test(ua)) return "smartphone";
+  return "desktop";
+}
+function boot() {
+  if (!server) { $("banner").textContent = "Preview: answers are not saved."; $("banner").hidden = false; }
+  else if (QA) { $("banner").textContent = "QA mode: desktop allowed" + (PUB.GAME_URL || PUB.FORM_URL ? "." : "; a stand-in replaces the game and form until their links are set."); $("banner").hidden = false; }
+  if (handleReturn()) return;
+  if (server && server.closed) { $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: MSG.overquota[0] }), el("p", { class: "lead", text: MSG.overquota[1] })); if (server.redirect) setTimeout(() => { location.href = server.redirect; }, 2000); return; }
+  if (server && !QA && deviceType() !== "smartphone") {
+    $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: "Please reopen on your smartphone" }),
+      el("p", { class: "lead", text: "This survey can only be taken on a smartphone. Please open the same survey link on your phone to continue." }));
+    return;
+  }
+  if (restore() && S.idx >= 0 && !S.done) { a6Order(); render(); return; }
+  initRandom(); a6Order(); go(0, 1);
+}
+boot();
+window.__S = () => S;
+})();
+</script>

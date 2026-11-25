@@ -236,3 +236,23 @@ Hosted on the main SurveyQ service (the Railway project is at its volume limit).
 - Quality terms (`quality` status): A10 red herring, S17=4 without S16 CLO, S12 >10 departments (S11≠1), S9A employees vs revenue.
 - Flags: speeder <300 s, straight-lining A1/A2/A3, S12 >7 departments, S9A 11–20 employees with $2B+, A4A consistency checks, low-quality open ends.
 - S18 = not likely → S19 open end is captured, then terminated.
+
+---
+
+# Questionlab × Optivate: Peligroso microgame vs. sweepstakes (`/opt`)
+Programmed from *Questionlab_Optivate_Microgame_Questionnaire_v5.docx*. US adults 25–45, mobile only, n=400 (200 per cell).
+Runs on the main service alongside Chase (`ONLY_SURVEY=chase,opt`).
+
+- **Cells:** `hCELL` 1 = Microgame, 2 = Sweepstakes, assigned at S7 by least-fill within gender (100 per cell) and Census-region
+  quotas per cell (South 76, West 48, Midwest 42, Northeast 34). Caps can be changed with `OPT_CAP_<CELL>` (e.g. `OPT_CAP_C1_NORTHEAST=40`).
+- **Experience links:** set `OPT_GAME_URL` and `OPT_FORM_URL` in Railway. Placeholders `{rid}`, `{cell}` and `{return}` are filled in;
+  if `{rid}` is absent, `rid` and `cell` are appended. Default mode opens the experience in a new tab and times exit → Continue
+  (the documented fallback). With `OPT_RETURN_MODE=redirect` the experience opens in the same tab and must send people back to
+  `{return}` adding `&status=complete` (and optionally `&score=`), which fills `hRETURN_STATUS` / `hGAME_SCORE`.
+- **Testing:** add `?qa=1` to allow desktop; with no links set, QA mode uses a stand-in at `/api/opt/mock`.
+- **Stimuli:** `static/opt/*.jpg` are interim crops from the questionnaire's preview; replace with Optivate's PNGs (same names).
+- **Hidden variables:** hCELL, hBRANDORDER, hDECOYPOS, hA6ORDER, hSHELFVER (Peligroso in position 1/3/5), hAGEBAND, hGENDER, hREGION,
+  hTEQUILA30, hALC30, hA1_PELIGROSO, hP1_CORRECT, hD1_CORRECT (fuzzy match), hD2_CORRECT, hT_S/A/E/P/F/D/Z, hT_F_START/END, hT_EXIT,
+  hT_RETURN, hEXPOSURE_SEC, hRETURN_STATUS, hGAME_SCORE, hDEVICE, duration_ex_exposure_sec.
+- **Flags:** speeder (<210 s excluding exposure; recompute vs. one third of median LOI after soft launch), straight-lining A4/A6/P4/P8/F1/D5,
+  failed F5 attention row, Loma Serena at A2 or D2, gibberish A1/F7/D1, very short exposure. E1 "did not finish / did not load" → over-quota (replace).

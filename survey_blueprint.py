@@ -39,7 +39,7 @@ DATA_DIR = os.environ.get("RAILWAY_VOLUME_MOUNT_PATH") or os.path.join(BASE, "da
 STATUSES = {"complete", "terminated", "quality", "overquota"}
 HEAD = ["respondent_id", "status", "terminate_reason", "flags", "started_at", "completed_at", "duration_sec", "lang"]
 TAIL = ["source", "received_at", "user_agent"]
-KEY_RE = re.compile(r"^[a-z0-9_]{1,40}$")
+KEY_RE = re.compile(r"^[A-Za-z0-9_]{1,40}$")
 
 
 def _clean(v, limit=1000):
@@ -53,7 +53,7 @@ def _clean(v, limit=1000):
     return "'" + s if s[:1] in ("=", "+", "-", "@") else s
 
 
-def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=None):
+def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=None, public_env=()):
     cell_caps = dict(cell_caps or {})
     cell_labels = dict(cell_labels or {})
     env = lambda k, d="": os.environ.get(f"{slug.upper()}_{k}", d)
@@ -135,7 +135,8 @@ def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=No
         rs = rows()
         if rid and any(r.get("respondent_id") == rid for r in rs):
             return Response("<p style='font-family:sans-serif;padding:24px'>Sie haben bereits an dieser Umfrage teilgenommen. Vielen Dank! / You have already taken part. Thank you.</p>")
-        cfg = {"rid": rid, "api": f"api/{slug}/responses", "showReason": env("SHOW_REASON", "1") != "0"}
+        cfg = {"rid": rid, "api": f"api/{slug}/responses", "showReason": env("SHOW_REASON", "1") != "0",
+               "public": {k: env(k) for k in public_env}}
         if completes(rs) >= quota():
             cfg.update(closed=True, redirect=redirect_for("overquota", rid))
         return Response(wrap(cfg), mimetype="text/html")
@@ -145,6 +146,25 @@ def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=No
         cells = [str(c)[:40] for c in ((request.get_json(silent=True) or {}).get("cells") or [])][:20]
         rs = rows()
         return jsonify({"quotaFull": completes(rs) >= quota(), "full": full_cells(rs, cells)})
+
+    @bp.post(f"/api/{slug}/assign")
+    def assign():
+        """Least-fill arm assignment: arms = {"1": [cells...], "2": [cells...]}. Picks the arm whose first
+        cell has the fewest completes among arms with no full cell; ties are random."""
+        import random
+        arms = (request.get_json(silent=True) or {}).get("arms") or {}
+        rs = rows()
+        if completes(rs) >= quota():
+            return jsonify({"full": True})
+        counts = cell_counts(rs)
+        ok = []
+        for arm, cells in list(arms.items())[:10]:
+            cells = [str(c)[:40] for c in (cells or [])][:10]
+            if cells and not full_cells(rs, cells):
+                ok.append((counts.get(cells[0], 0), random.random(), str(arm)))
+        if not ok:
+            return jsonify({"full": True})
+        return jsonify({"arm": min(ok)[2]})
 
     @bp.post(f"/api/{slug}/responses")
     def save():
