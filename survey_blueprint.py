@@ -53,7 +53,7 @@ def _clean(v, limit=1000):
     return "'" + s if s[:1] in ("=", "+", "-", "@") else s
 
 
-def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=None, public_env=()):
+def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=None, public_env=(), extra_config=None):
     cell_caps = dict(cell_caps or {})
     cell_labels = dict(cell_labels or {})
     env = lambda k, d="": os.environ.get(f"{slug.upper()}_{k}", d)
@@ -137,6 +137,8 @@ def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=No
             return Response("<p style='font-family:sans-serif;padding:24px'>Sie haben bereits an dieser Umfrage teilgenommen. Vielen Dank! / You have already taken part. Thank you.</p>")
         cfg = {"rid": rid, "api": f"api/{slug}/responses", "showReason": env("SHOW_REASON", "1") != "0",
                "public": {k: env(k) for k in public_env}}
+        if extra_config:
+            cfg.update(extra_config(cell_counts(rs), cap_for, env))
         if completes(rs) >= quota():
             cfg.update(closed=True, redirect=redirect_for("overquota", rid))
         return Response(wrap(cfg), mimetype="text/html")
@@ -149,22 +151,30 @@ def make_survey(slug, title, page, default_quota, cell_caps=None, cell_labels=No
 
     @bp.post(f"/api/{slug}/assign")
     def assign():
-        """Least-fill arm assignment: arms = {"1": [cells...], "2": [cells...]}. Picks the arm whose first
-        cell has the fewest completes among arms with no full cell; ties are random."""
+        """Arm assignment. arms = {"1": [cells...] or {"cells": [...], "gate": "<cell>"}, ...}.
+        An arm is eligible when none of its cells is full and, if it has a gate, the gate cell IS full
+        (used to open a second sample only after the first is complete).
+        mode "least" (default): eligible arm whose first cell has the fewest completes, ties random.
+        mode "first": the first eligible arm in the order given."""
         import random
-        arms = (request.get_json(silent=True) or {}).get("arms") or {}
+        body = request.get_json(silent=True) or {}
+        arms = body.get("arms") or {}
         rs = rows()
         if completes(rs) >= quota():
             return jsonify({"full": True})
         counts = cell_counts(rs)
         ok = []
-        for arm, cells in list(arms.items())[:10]:
-            cells = [str(c)[:40] for c in (cells or [])][:10]
+        for arm, spec in list(arms.items())[:10]:
+            spec = spec if isinstance(spec, dict) else {"cells": spec}
+            cells = [str(c)[:40] for c in (spec.get("cells") or [])][:10]
+            gate = str(spec.get("gate") or "")[:40]
+            if gate and not full_cells(rs, [gate]):
+                continue
             if cells and not full_cells(rs, cells):
                 ok.append((counts.get(cells[0], 0), random.random(), str(arm)))
         if not ok:
             return jsonify({"full": True})
-        return jsonify({"arm": min(ok)[2]})
+        return jsonify({"arm": (ok[0] if body.get("mode") == "first" else min(ok))[2]})
 
     @bp.post(f"/api/{slug}/responses")
     def save():

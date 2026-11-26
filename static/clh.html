@@ -1,0 +1,609 @@
+<title>Pet Products Survey</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script id="server-config">window.SURVEY_SERVER = null;</script>
+<style>
+/* Layout: one question per screen in a reading column; grids stack row by row for phones. */
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --ink: #16191d;
+  --muted: #5b6370;
+  --line: #d9dde3;
+  --accent: #245a73;
+  --accent-soft: #e2ebe5;
+  --focus: #d08c1c;
+  --bad: #b23a32;
+  --font-display: "IBM Plex Serif", Georgia, serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+    --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151a; --surface: #1b1f26; --ink: #e8ebef; --muted: #9aa3ae; --line: #2f3540;
+  --accent: #8cc7a5; --accent-soft: #1d2e25; --focus: #e8b25a; --bad: #ec7d74; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px; }
+.wrap { max-width: 720px; margin: 0 auto; }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 18px 14px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: block; }
+.brandname { font-family: var(--font-display); font-weight: 600; font-size: 19px; display: block; }
+.lang { display: flex; gap: 2px; border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.lang button { font: 500 13px var(--font-mono); padding: 3px 10px; border: 0; border-radius: 999px; background: none; color: var(--muted); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.banner { font-size: 15px; padding: 10px 14px; border-radius: var(--radius); background: var(--accent-soft); margin-bottom: 20px; }
+.progress { display: grid; gap: 6px; margin-bottom: 26px; }
+.progress .meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .3s ease; }
+.qhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; }
+.qcode { font-family: var(--font-mono); font-weight: 500; font-size: 13px; color: var(--accent); background: var(--accent-soft); padding: 1px 8px; border-radius: 6px; }
+.qtype { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+h1, h2 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+h1 { font-size: clamp(26px, 4.6vw, 33px); line-height: 1.2; margin: 0 0 14px; }
+h2.qtext { font-size: clamp(20px, 3.5vw, 24px); line-height: 1.32; margin: 0 0 18px; hyphens: auto; }
+.lead { color: var(--muted); max-width: 62ch; margin: 0 0 18px; }
+.hint { color: var(--muted); font-size: 15px; margin: -8px 0 16px; }
+.options { display: grid; gap: 8px; }
+.opt { position: relative; display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; padding: 11px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.opt:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.opt input[type=radio], .opt input[type=checkbox], .chip input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .key { width: 22px; height: 22px; border: 1.5px solid var(--line); border-radius: 5px; margin-top: 2px; }
+.opt.single .key { border-radius: 50%; }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .key { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.opt.dis { opacity: .45; }
+.opt:focus-within, .chip:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.other-in { margin-top: 8px; grid-column: 2; }
+input[type=text], textarea { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+textarea { min-height: 130px; resize: vertical; }
+input[type=text]:focus, textarea:focus { outline: 2px solid var(--focus); outline-offset: 1px; border-color: var(--accent); }
+.dk { display: flex; gap: 8px; align-items: center; font-size: 15px; color: var(--muted); cursor: pointer; margin-top: 10px; }
+.counter { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 6px; text-align: right; }
+.grid { display: grid; gap: 14px; }
+.grow { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+.grow.done { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.grow .rl { font-weight: 600; margin-bottom: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { position: relative; font-size: 14.5px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; background: var(--bg); line-height: 1.3; }
+.chip.sel { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.err { color: var(--bad); font-size: 15px; margin-top: 12px; min-height: 1.4em; }
+.actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+.btn { font: 600 16px var(--font-body); padding: 10px 22px; border-radius: 999px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn:focus-visible, .lang button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); overflow: hidden; margin: 6px 0 22px; }
+.facts div { padding: 12px 16px; background: var(--surface); }
+.facts dt { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 2px 0 0; font-weight: 600; }
+.small { font-size: 14.5px; color: var(--muted); max-width: 62ch; }
+.endmark { width: 44px; height: 4px; background: var(--focus); border-radius: 2px; margin-bottom: 18px; }
+.reason { margin-top: 22px; padding: 14px 16px; border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: var(--radius); background: var(--surface); display: grid; gap: 6px; max-width: 62ch; }
+.reason .rk { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.reason p { margin: 0; }
+.reason .rl { color: var(--muted); }
+.scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 4px; }
+.scale .chip { text-align: center; padding: 10px 0; font-family: var(--font-mono); border-radius: 8px; }
+.ends { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin-top: 6px; }
+@media (max-width: 520px) { .scale { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.info p { max-width: 64ch; margin: 0 0 14px; }
+.info ul { max-width: 64ch; margin: 0 0 14px; padding-left: 22px; }
+details.def { margin: -6px 0 16px; font-size: 15px; color: var(--muted); }
+details.def summary { cursor: pointer; color: var(--accent); }
+details.def p { margin: 6px 0 0; max-width: 64ch; }
+.numin { max-width: 140px; font-family: var(--font-mono); font-size: 20px; }
+.sumtab { display: grid; gap: 8px; }
+.sumrow { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 12px; }
+.sumrow input { text-align: right; font-family: var(--font-mono); }
+.sumtotal { display: flex; justify-content: space-between; font-family: var(--font-mono); padding: 8px 12px; font-weight: 600; }
+.sumtotal.bad { color: var(--bad); }
+.boxes { display: grid; gap: 8px; margin-bottom: 10px; }
+.boxes label { display: grid; grid-template-columns: 24px 1fr; align-items: center; gap: 10px; font: 500 13px var(--font-mono); color: var(--muted); }
+.gridtable { overflow-x: auto; }
+.grid .rl b { font-weight: 700; }
+
+
+/* Color stimulus: full screen width on phones, generous on desktop */
+.colorimg { display: block; width: calc(100vw - 24px); max-width: 1100px; position: relative; left: 50%; transform: translateX(-50%); margin: 0 0 18px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.colorimg img { display: block; width: 100%; height: auto; }
+.cardgrid { display: grid; gap: 10px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .cardgrid { grid-template-columns: 1fr 1fr; } }
+.opt.card { grid-template-columns: 24px 1fr; align-items: center; }
+.opt.card img { width: 100%; height: auto; display: block; border-radius: 6px; background: #fff; }
+.rank { display: grid; gap: 8px; }
+.rk-item { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; text-align: left; font: 400 17px var(--font-body); color: var(--ink); padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; }
+.rk-item .badge { width: 30px; height: 30px; border-radius: 50%; border: 1.5px dashed var(--line); display: grid; place-items: center; font: 600 15px var(--font-mono); color: var(--muted); }
+.rk-item.on { border-color: var(--accent); background: var(--accent-soft); }
+.rk-item.on .badge { border: 0; background: var(--accent); color: var(--surface); }
+.rk-item.dis { opacity: .5; }
+.rk-item:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.rk-status { font-family: var(--font-mono); font-size: 13px; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; gap: 10px; }
+.rk-status button { font: 500 13px var(--font-mono); background: none; border: 0; color: var(--accent); cursor: pointer; text-decoration: underline; padding: 0; }
+.filter { margin-bottom: 10px; }
+.sep { font-family: var(--font-mono); font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin: 10px 0 2px; }
+.blockno { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.info p { max-width: 64ch; margin: 0 0 14px; }
+select.drop { width: 100%; font: 400 17px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><span class="eyebrow">Questionlab · Online survey</span><span class="brandname">Pet Products Survey</span></div>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <main id="survey"></main>
+</div>
+
+<script>
+(() => {
+"use strict";
+/* =====================================================================
+   Dog Owners | Chuckit! Color Assortment Research (SURVEY-CLH_Color-7.17.26)
+   TARGET 1 Gen pop n=400 first, then TARGET 2 Chuckit! buyers n=400.
+   Six color blocks C1–C6 in random order; column names keep the
+   questionnaire codes (C1 = Gray … C6 = Black) whatever the order shown.
+   ===================================================================== */
+const server = window.SURVEY_SERVER;
+const SHOW_REASON = !server || server.showReason !== false;
+const PHASE = (server && server.phase) || "sequential";
+const STAGE = (server && server.stage) || "genpop";
+const params = new URLSearchParams(location.search);
+const RID = (server && server.rid) || params.get("rid") || ("anon-" + Math.random().toString(36).slice(2, 12));
+const STORE_KEY = "clh_state_" + RID;
+
+let S = { a: {}, other: {}, idx: -1, startedAt: null, done: false, order: {}, termQ: null, colorOrder: null, sample: null };
+
+const O = (c, l, x = {}) => ({ c, l, ...x });
+const L = arr => arr.map((l, i) => O(i + 1, l));
+const sel = (a, id) => { const v = a[id]; return Array.isArray(v) ? v : v == null ? [] : [v]; };
+const shuf = x => { const y = x.slice(); for (let i = y.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [y[i], y[j]] = [y[j], y[i]]; } return y; };
+const words = s => ((s || "").trim().match(/[A-Za-z'’-]+/g) || []).length;
+
+/* ---------------- reference lists ---------------- */
+const STATES = [["Alabama","S"],["Alaska","W"],["Arizona","W"],["Arkansas","S"],["California","W"],["Colorado","W"],["Connecticut","NE"],["Delaware","S"],
+  ["District of Columbia","S"],["Florida","S"],["Georgia","S"],["Hawaii","W"],["Idaho","W"],["Illinois","MW"],["Indiana","MW"],["Iowa","MW"],["Kansas","MW"],
+  ["Kentucky","S"],["Louisiana","S"],["Maine","NE"],["Maryland","S"],["Massachusetts","NE"],["Michigan","MW"],["Minnesota","MW"],["Mississippi","S"],
+  ["Missouri","MW"],["Montana","W"],["Nebraska","MW"],["Nevada","W"],["New Hampshire","NE"],["New Jersey","NE"],["New Mexico","W"],["New York","NE"],
+  ["North Carolina","S"],["North Dakota","MW"],["Ohio","MW"],["Oklahoma","S"],["Oregon","W"],["Pennsylvania","NE"],["Rhode Island","NE"],["South Carolina","S"],
+  ["South Dakota","MW"],["Tennessee","S"],["Texas","S"],["Utah","W"],["Vermont","NE"],["Virginia","S"],["Washington","W"],["West Virginia","S"],
+  ["Wisconsin","MW"],["Wyoming","W"]];
+const REGION = { W: [1, "West"], S: [2, "South"], MW: [3, "Midwest"], NE: [4, "Northeast"] };
+const regionOf = a => a.d1a ? REGION[STATES[a.d1a - 1][1]] : null;
+const ageGender = a => (a.d3 === 2 ? "y" : a.d3 === 3 ? "o" : "") + (a.d2 === 1 ? "m" : a.d2 === 2 ? "f" : "");
+const isBuyer = a => sel(a, "s5a").includes(1);
+const awareChuckit = a => sel(a, "s4").includes(1);
+const multiDog = a => (a.s2 || 1) > 1;
+
+const BRANDS = ["Chuckit!", "KONG", "Ruffwear", "Wilderdog", "The Foggy Dog", "PetSafe", "Harry Barker", "Kurgo"];
+const brandOpts = [...L(BRANDS), O(99, "None of the above", { anchor: 1, ex: 1 })];
+const RETAILERS = ["Amazon", "Blain’s Farm & Fleet", "Chewy", "Costco", "Fleet Farm", "Petco", "PetSmart", "Target", "Tractor Supply", "Walmart"];
+const retOpts = [...L(RETAILERS), O(11, "Other", { anchor: 1 }), O(99, "None of the above", { anchor: 1, ex: 1 })];
+const COLORS = [O(1, "Gray", { k: "gray" }), O(2, "Cream", { k: "cream" }), O(3, "Navy", { k: "navy" }), O(4, "Pink", { k: "pink" }), O(5, "Burgundy", { k: "burgundy" }), O(6, "Black", { k: "black" })];
+const IMG = n => `static/clh/${COLORS[n - 1].k}.jpg`;
+const AGREE = [O(5, "Strongly agree"), O(4, "Somewhat agree"), O(3, "Neutral"), O(2, "Somewhat disagree"), O(1, "Strongly disagree"), O(99, "Not sure")];
+const CROWS = [O("a", "This color looks on trend"), O("b", "This color is something new in a dog collar, harness, leash"), O("c", "This color fits my style"),
+  O("d", "This color would look great on my dog"), O("e", "This color fits with the Chuckit! brand")];
+const H1 = [...L(["Comfort/Fit", "Strap width", "Durability", "Color", "Price", "Brand", "Theme, on trend, stylish", "Safety features (e.g. reflective, breakaway, etc.)",
+  "How it buckles or fastens", "Adjustability", "Material", "Easy to use", "Escape proof, can’t slip out", "Won’t show dirt", "How it looks with my dog’s coloring"]),
+  O(16, "Other (please specify)", { anchor: 1, other: 1 })];
+const BREEDS = ["Australian Cattle Dog", "Australian Shepherd", "Beagle", "Bernese Mountain Dog", "Bichon Frise", "Border Collie", "Boston Terrier", "Boxer", "Brittany",
+  "Bulldog", "Cane Corso", "Cavalier King Charles Spaniel", "Chihuahua", "Cocker Spaniel", "Corgi", "Dachshund", "Doberman Pinscher", "English Springer Spaniel",
+  "French Bulldog", "German Shepherd", "German Shorthaired Pointer", "Golden Retriever", "Goldendoodle", "Great Dane", "Great Pyrenees", "Havanese",
+  "Labrador Retriever", "Maltese", "Pit Bull / American Pit Bull Terrier", "Pointer", "Pomeranian", "Poodle (Standard)", "Poodle (Miniature/Toy)", "Pug",
+  "Rhodesian Ridgeback", "Rottweiler", "Schnauzer", "Shetland Sheepdog", "Shiba Inu", "Shih Tzu", "Siberian Husky", "Vizsla", "Weimaraner",
+  "Welsh Corgi (Cardigan)", "West Highland White Terrier", "Whippet", "Yorkshire Terrier"];
+const breedOpts = [...L(BREEDS), O(48, "Small Mixed Breed", { anchor: 1, group: "Mixed breed / other" }), O(49, "Medium Mixed Breed", { anchor: 1, group: "Mixed breed / other" }),
+  O(50, "Large Mixed Breed", { anchor: 1, group: "Mixed breed / other" }), O(51, "Other", { anchor: 1, group: "Mixed breed / other" }),
+  O(99, "Not sure", { anchor: 1, ex: 1, group: "Mixed breed / other" })];
+const BREED_GROUP = { 1: [9, 14, 18, 21, 22, 27, 30, 42, 43], 2: [1, 2, 6, 20, 15, 38, 44], 3: [4, 8, 11, 17, 24, 25, 36, 41], 4: [3, 16, 35, 46], 5: [29, 45],
+  6: [12, 13, 26, 28, 31, 34, 40, 47], 7: [5, 7, 10, 19, 37, 32, 33, 39], 8: [48, 49, 50, 23, 51, 99] };
+const GROUP_NAME = { 1: "Sporting", 2: "Herding", 3: "Working", 4: "Hound", 5: "Terrier", 6: "Toy", 7: "Non-Sporting", 8: "Mixed Breed/Other" };
+const breedGroups = a => Object.keys(BREED_GROUP).map(Number).filter(g => sel(a, "dd3a").some(b => BREED_GROUP[g].includes(b)));
+const yesColors = a => COLORS.filter(c => a[`c${c.c}a`] === 1).map(c => c.c);
+
+/* ---------------- questionnaire ---------------- */
+function colorBlock(n, pos) {
+  const blk = { color: n, pos };
+  return [
+    { id: `c${n}a`, sec: "C", type: "single", ...blk, text: "Would you purchase this color in a collar, harness or leash by Chuckit!?",
+      opts: [O(1, "Yes, I would purchase"), O(2, "No, I would not purchase"), O(99, "Not sure")] },
+    { id: `c${n}b`, sec: "C", type: "text", ...blk, show: a => a[`c${n}a`] === 2, minChars: 3, text: "Why would you not purchase this color?" },
+    { id: `c${n}c`, sec: "C", type: "grid", ...blk, rowRand: true, straight: 4, text: "How much do you agree or disagree with the following statements about this color?",
+      rows: a => CROWS.filter(r => r.c !== "e" || awareChuckit(a)), universe: CROWS, cols: AGREE },
+  ];
+}
+function buildQuestions() {
+  return [
+    { id: "intro", sec: "S", type: "info", paras: ["Thank you for agreeing to participate in our survey about pet products."] },
+    { id: "s1", sec: "S", type: "multi", rand: true, text: "Do you own any of the following types of pets?", sub: "Select all that apply.",
+      opts: [O(1, "Dog"), O(2, "Cat"), O(3, "Fish"), O(4, "Bird"), O(5, "Other", { anchor: 1 }), O(99, "None of the above", { anchor: 1, ex: 1 })],
+      term: a => !sel(a, "s1").includes(1) && "No dog owned", req: "Must currently own a dog." },
+    { id: "s2", sec: "S", type: "single", text: "How many dogs do you currently own?", opts: [O(1, "1"), O(2, "2"), O(3, "3"), O(4, "4 or more")] },
+    { id: "s3", sec: "S", type: "single", text: "Which of the following best describes your role in pet product decisions for your household?",
+      opts: [O(1, "Primary decision maker"), O(2, "Contribute"), O(3, "Not involved in most pet product decisions")],
+      term: a => a.s3 === 3 && "Not involved in pet product decisions", req: "Must make or contribute to pet product decisions for the household." },
+    { id: "s4", sec: "S", type: "multi", rand: true, text: "Which, if any, of the following pet brands have you heard of prior to this survey?", sub: "Select all that apply.", opts: brandOpts },
+    { id: "s5a", sec: "S", type: "multi", rand: true, text: "Which, if any, of the following pet brands have you personally purchased products from within the past 12 months?",
+      sub: "Select all that apply.", opts: brandOpts,
+      term: a => (PHASE === "buyers" || (PHASE === "sequential" && STAGE === "buyers")) && !isBuyer(a) && "Not a Chuckit! purchaser (P12M) – buyer sample",
+      req: "This part of the study is open only to people who bought a Chuckit! product in the past 12 months." },
+    { id: "s6a", sec: "S", type: "multi", rand: true, text: "Which, if any, of the following retailers have you shopped at, in-person or online, in the last 12 months?",
+      sub: "Select all that apply.", opts: retOpts,
+      term: a => sel(a, "s6a").includes(99) && "No retailer shopped P12M", req: "Must have shopped at least one retailer in the last 12 months." },
+    { id: "s6b", sec: "S", type: "multi", rand: true, text: "At which of the following have you purchased something for your dog in the last 12 months?", sub: "Select all that apply.",
+      universe: retOpts, opts: a => retOpts.filter(o => o.c === 99 || sel(a, "s6a").includes(o.c)) },
+    { id: "d1a", sec: "D", type: "select", text: "What state is your primary residence in?", opts: STATES.map(([n], i) => O(i + 1, n)) },
+    { id: "d2", sec: "D", type: "single", text: "Which of the following best describes your gender?", opts: [O(1, "Male"), O(2, "Female"), O(3, "Other, non-binary")] },
+    { id: "d3", sec: "D", type: "single", text: "Which of the following best describes your age?", opts: [O(1, "Under 18"), O(2, "18-44"), O(3, "45 and older")],
+      term: a => a.d3 === 1 && "Under 18", req: "Must be 18 or older." },
+    { id: "d4", sec: "D", type: "single", text: "Which of the following best describes your household income?",
+      opts: [O(1, "Under $55,000"), O(2, "$55,000 - $99,999"), O(3, "$100,000 or more")],
+      term: a => a.d4 === 1 && "Household income under $55,000", req: "Household income must be $55,000 or more." },
+    { id: "qc1", sec: "D", type: "single", assign: true, pre: ["To help us ensure the quality of our research, please read this question carefully."],
+      text: "For this question only, ignore the question being asked and select “Somewhat disagree.”\nI have owned a dog continuously for the past 100 years.",
+      opts: [O(1, "Strongly agree"), O(2, "Somewhat agree"), O(3, "Neither agree nor disagree"), O(4, "Somewhat disagree"), O(5, "Strongly disagree")],
+      term: a => a.qc1 !== 4 && "QUALITY: Failed attention check (QC1)", req: "The instruction asked for “Somewhat disagree”." },
+    { id: "h1", sec: "H", type: "rank", n: 5, rand: true, text: "When purchasing a collar, harness or leash, which of the following factors are MOST important to you?",
+      sub: "Please rank your top 5 factors, with #1 being the most important. Tap the factors in order of importance.", opts: H1 },
+    { id: "cintro", sec: "C", type: "info", noBack: true, paras: ["The next several questions are about potential future colors for Chuckit! collars, harnesses and leashes.",
+      "We’ll ask you to evaluate 6 colors in all.", "Throughout this section, please assume the products are identical in every way except for their color.",
+      "If you are on a mobile device, you may want to rotate your screen to landscape for the best viewing experience."] },
+    ...S.colorOrder.flatMap((n, i) => colorBlock(n, i + 1)),
+    { id: "p1", sec: "P", type: "single", rand: true, cards: true, show: a => yesColors(a).length > 1,
+      text: "Of the colors you just saw, which ONE would you be most likely to purchase?", sub: "Select only one.",
+      universe: [...COLORS, O(99, "None of these", { anchor: 1 })],
+      opts: a => [...COLORS.filter(c => yesColors(a).includes(c.c)), O(99, "None of these", { anchor: 1 })] },
+    { id: "p2a", sec: "P", type: "text", minChars: 3, show: a => yesColors(a).length > 1 && a.p1 >= 1 && a.p1 <= 6, stimulus: a => a.p1,
+      text: "Why would you be most likely to purchase this color?" },
+    { id: "p2b", sec: "P", type: "text", minChars: 3, show: a => yesColors(a).length === 1, stimulus: a => yesColors(a)[0], text: "Why would you purchase this color?" },
+    { id: "p3", sec: "P", type: "text", minChars: 3, show: a => yesColors(a).length === 0 || (yesColors(a).length > 1 && a.p1 === 99),
+      text: "If you would not purchase any of these colors, please explain why." },
+    { id: "dd1", sec: "DD", type: "multi", multiIf: multiDog, text: "Do you have a small, medium, or large dog?", sub: a => multiDog(a) ? "Select all that apply." : "Select one response.",
+      opts: [O(1, "Small (under 20 pounds)"), O(2, "Medium (20-39 pounds)"), O(3, "Large (40+ pounds)"), O(99, "Not sure", { ex: 1 })] },
+    { id: "dd2", sec: "DD", type: "multi", multiIf: multiDog, text: "Is your dog male or female?", sub: a => multiDog(a) ? "Select all that apply." : "Select one response.",
+      opts: [O(1, "Male"), O(2, "Female"), O(3, "Not sure", { ex: 1 })] },
+    { id: "dd3a", sec: "DD", type: "multi", multiIf: multiDog, singleAs: "select", filter: true, text: "What breed is your dog?",
+      sub: a => multiDog(a) ? "Select all that apply. Type to search the list." : "Select one response.", opts: breedOpts },
+    { id: "dd4a", sec: "DD", type: "multi", multiIf: multiDog, rand: true, text: "Which best describes the main color of your dog’s coat?",
+      sub: a => multiDog(a) ? "Select all that apply." : "Select one response.",
+      opts: [...L(["Black or dark gray", "Gray or silver", "White or cream", "Tan, gold or yellow", "Brown or chocolate", "Red or reddish brown", "Multicolored, spotted or patterned"]),
+        O(8, "Other", { anchor: 1 }), O(99, "Not sure", { anchor: 1, ex: 1 })] },
+    { id: "dd4b", sec: "DD", type: "multi", multiIf: multiDog, text: "Would you say the main color of your dog’s coat is a dark or light color?",
+      sub: a => multiDog(a) ? "Select all that apply." : "Select one response.", opts: [O(1, "Dark color"), O(2, "Light color"), O(3, "Not sure", { ex: 1 })] },
+    { id: "l1a", sec: "L", type: "multi", rand: true, text: "Which, if any, of the following outdoor activities do you do regularly with your dog in season?", sub: "Select all that apply.",
+      opts: [...L(["Walking", "Hiking, or rugged trail walking", "Camping", "Swimming, or other water activities", "Hunting", "Dog park", "Organized activities like Agility, Dock Dog, etc.",
+        "Fetch (outdoors)", "Country, woods, farm living"]), O(10, "Other", { anchor: 1 }), O(99, "None of the above", { anchor: 1, ex: 1 })] },
+    { id: "l2", sec: "L", type: "multi", rand: true, text: "Do you currently use any of the following for your dog(s)?", sub: "Select all that apply.",
+      opts: [O(1, "Collar"), O(2, "Standard Leash"), O(3, "Hands-free or waist leash"), O(4, "Harness"), O(99, "None of the above", { anchor: 1, ex: 1 })] },
+    { id: "l3", sec: "L", type: "multi", multiIf: multiDog, text: "Thinking about the collar your dog wears currently, is it a dark or light color?",
+      sub: a => multiDog(a) ? "Select all that apply." : "Select one response.",
+      opts: [O(1, "Dark color"), O(2, "Light color"), O(3, "My dog switches between a dark and a light collar based on activity"), O(4, "Not sure", { ex: 1 }),
+        O(99, "My dog does not currently wear a collar", { ex: 1 })] },
+    { id: "l4", sec: "L", type: "single", text: "How frequently do you change your dog’s collar?",
+      opts: [...L(["Daily", "Weekly", "Monthly", "Seasonally, every few months", "Once or twice a year", "Less than once a year"]), O(99, "Never")] },
+    { id: "l5a", sec: "K", type: "single", show: isBuyer, text: "Approximately how many times have you purchased a Chuckit! product within the past 12 months?",
+      sub: "Please include any balls, launchers, fetch or other toys.", opts: [O(1, "Once"), O(2, "Twice"), O(3, "Three or more times"), O(99, "Not sure")] },
+    { id: "l6a", sec: "K", type: "single", show: isBuyer, text: "Overall, how do you feel about the Chuckit! brand?",
+      opts: [O(1, "Love it / One of my favorite pet brands"), O(2, "Like it a lot"), O(3, "Like it somewhat"), O(4, "Neither like nor dislike"), O(5, "Dislike it somewhat"),
+        O(6, "Dislike it a lot"), O(7, "Hate it / One of my least favorite pet brands"), O(99, "Not familiar enough to say")] },
+    { id: "l7", sec: "K", type: "multi", rand: true, show: isBuyer, text: "Which types of Chuckit! products have you purchased within the past 12 months?", sub: "Select all that apply.",
+      opts: [...L(["Balls", "Ball Launchers", "Flying or disc toys", "Indoor fetch toys", "Water toys", "Other Chuckit! product"]), O(99, "Not sure", { anchor: 1, ex: 1 })] },
+  ];
+}
+let QUESTIONS = [];
+
+/* ---------------- quota cells ---------------- */
+function cellsFor(prefix, a) {
+  const r = regionOf(a), ag = ageGender(a);
+  if (!r) return [prefix];
+  return [prefix, `${prefix}_${r[1]}`, ...(ag.length === 2 ? [`${prefix}_${r[1]}_${ag}`] : [])];
+}
+const quotaCells = a => S.sample === 1 ? cellsFor("gp", a) : S.sample === 2 ? cellsFor("by", a) : [];
+
+/* ================= engine ================= */
+const $ = id => document.getElementById(id);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v; else if (k === "text") n.textContent = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c);
+  return n;
+};
+const val = x => typeof x === "function" ? x(S.a) : x;
+const visible = q => !q.show || q.show(S.a);
+const qType = q => q.multiIf ? (q.multiIf(S.a) ? "multi" : (q.singleAs || "single")) : q.type;
+const qOpts = q => val(q.opts) || [];
+const qRows = q => val(q.rows) || [];
+
+function persist() { try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch (e) {} }
+function restore() { try { const x = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); if (x && !x.done && x.colorOrder) { S = x; return true; } } catch (e) {} return false; }
+
+function ordered(q, list, key = q.id) {
+  if (!S.order[key]) {
+    const uni = q.universe || list;
+    S.order[key] = (q.rand || q.rowRand) ? [...shuf(uni.filter(o => !o.anchor)).map(o => o.c), ...uni.filter(o => o.anchor).map(o => o.c)] : uni.map(o => o.c);
+  }
+  const known = S.order[key];
+  return [...known.map(c => list.find(o => o.c === c)).filter(Boolean), ...list.filter(o => !known.includes(o.c))];
+}
+
+function go(i, dir) {
+  while (i >= 0 && i < QUESTIONS.length && !visible(QUESTIONS[i])) i += dir;
+  if (i < 0) i = 0;
+  if (i >= QUESTIONS.length) { finish("complete", ""); return; }
+  if (!S.startedAt) S.startedAt = new Date().toISOString();
+  S.idx = i; persist(); render(); window.scrollTo({ top: 0 });
+}
+
+function render() {
+  const q = QUESTIONS[S.idx];
+  const pct = Math.round((S.idx / QUESTIONS.length) * 100);
+  const err = el("div", { class: "err", id: "err", role: "alert" });
+  const parts = [el("div", { class: "progress" }, el("div", { class: "meta" }, el("span", { text: "" }), el("span", { text: pct + "%" })), el("div", { class: "bar" }, el("i", { style: `width:${pct}%` })))];
+  if (q.type === "info") parts.push(el("div", { class: "info" }, ...val(q.paras).map(p => el("p", { text: p }))));
+  else {
+    parts.push(el("div", { class: "qhead" }, q.color ? el("span", { class: "blockno", id: "blockno", text: `Color ${q.pos} of 6` }) : el("span", { class: "qcode", text: q.id.toUpperCase() })));
+    const stimN = q.color || (q.stimulus && q.stimulus(S.a));
+    if (stimN) parts.push(el("div", { class: "colorimg" }, el("img", { src: IMG(stimN), alt: "Collar, harness and leash shown in one color", "data-color": String(stimN) })));
+    if (q.pre) parts.push(el("div", { class: "info" }, ...q.pre.map(p => el("p", { text: p }))));
+    const lines = String(val(q.text)).split("\n");
+    parts.push(el("h2", { class: "qtext", id: "qtext" }, ...lines.map((t, i) => i ? [el("br"), t] : t)));
+    if (q.sub) parts.push(el("p", { class: "hint", text: val(q.sub) }));
+    const t = qType(q);
+    parts.push(({ single: renderOptions, multi: renderOptions, select: renderSelect, grid: renderGrid, text: renderText, rank: renderRank })[t](q, err));
+  }
+  const canBack = S.idx > 0 && !q.noBack;
+  parts.push(err, el("div", { class: "actions" }, canBack ? el("button", { class: "btn ghost", type: "button", text: "Back", onclick: () => go(S.idx - 1, -1) }) : el("span"),
+    el("button", { class: "btn", type: "button", id: "next-btn", text: "Next", onclick: () => advance(err) })));
+  $("survey").replaceChildren(...parts);
+}
+
+function renderOptions(q, err) {
+  const multi = qType(q) === "multi";
+  if (multi && S.a[q.id] != null && !Array.isArray(S.a[q.id])) S.a[q.id] = [S.a[q.id]];
+  if (!multi && Array.isArray(S.a[q.id])) S.a[q.id] = S.a[q.id].length === 1 ? S.a[q.id][0] : null;
+  const list = ordered(q, qOpts(q));
+  const box = el("div", { class: "options" + (q.cards ? " cardgrid" : ""), role: multi ? "group" : "radiogroup", "aria-labelledby": "qtext" });
+  const cur = () => multi ? (S.a[q.id] || []) : S.a[q.id];
+  const exCodes = list.filter(o => o.ex).map(o => o.c);
+  const paint = () => { const v = cur(); box.querySelectorAll(".opt").forEach(row => { const on = multi ? v.includes(row._code) : v === row._code; row.classList.toggle("sel", on); row.querySelector("input").checked = on; }); };
+  let lastGroup = null;
+  list.forEach((o, i) => {
+    if (q.filter && o.group && o.group !== lastGroup) { box.append(el("div", { class: "sep", text: o.group })); lastGroup = o.group; }
+    const id = `${q.id}-${i}`;
+    const input = el("input", { type: multi ? "checkbox" : "radio", name: q.id, id, value: String(o.c) });
+    const card = q.cards && o.c !== 99;
+    const content = card ? el("img", { src: IMG(o.c), alt: `Color option ${i + 1}`, "data-color": String(o.c) }) : el("span", { text: o.l });
+    const label = el("label", { class: `opt ${multi ? "multi" : "single"}${card ? " card" : ""}`, for: id, "data-code": String(o.c), "data-label": o.l.toLowerCase() }, input, el("span", { class: "key" }), content);
+    label._code = o.c;
+    input.addEventListener("change", () => {
+      err.textContent = "";
+      if (!multi) S.a[q.id] = o.c;
+      else { let v = cur().slice(); if (input.checked) { if (exCodes.includes(o.c)) v = [o.c]; else { v = v.filter(c => !exCodes.includes(c)); v.push(o.c); } } else v = v.filter(c => c !== o.c); S.a[q.id] = v; }
+      paint();
+    });
+    box.append(label);
+  });
+  paint();
+  if (!q.filter) return box;
+  const f = el("input", { type: "text", class: "filter", id: `${q.id}-filter`, placeholder: "Type to search breeds…", "aria-label": "Search breeds", autocomplete: "off" });
+  f.addEventListener("input", () => { const s = f.value.trim().toLowerCase(); box.querySelectorAll(".opt").forEach(row => { row.hidden = !!s && !list.find(o => o.c === row._code).anchor && !row.dataset.label.includes(s); }); });
+  return el("div", {}, f, box);
+}
+function renderSelect(q, err) {
+  const s = el("select", { class: "drop", id: `${q.id}-sel`, "aria-labelledby": "qtext" }, el("option", { value: "", text: "Select…" }));
+  const groups = {};
+  for (const o of qOpts(q)) {
+    const opt = el("option", { value: String(o.c), text: o.l });
+    if (o.group) { if (!groups[o.group]) { groups[o.group] = el("optgroup", { label: o.group }); } groups[o.group].append(opt); }
+    else s.append(opt);
+  }
+  Object.values(groups).forEach(g => s.append(g));
+  const cur = Array.isArray(S.a[q.id]) ? S.a[q.id][0] : S.a[q.id];
+  s.value = cur != null ? String(cur) : "";
+  s.addEventListener("change", () => { S.a[q.id] = s.value ? parseInt(s.value, 10) : null; err.textContent = ""; });
+  return s;
+}
+function renderGrid(q, err) {
+  const g = el("div", { class: "grid" });
+  for (const r of ordered(q, qRows(q))) {
+    const key = `${q.id}_${r.c}`;
+    const row = el("div", { class: "grow", role: "radiogroup", "aria-label": r.l, "data-row": String(r.c) });
+    const chips = el("div", { class: "chips" });
+    const paint = () => { row.classList.toggle("done", S.a[key] != null); chips.querySelectorAll(".chip").forEach(c => { const on = S.a[key] === c._code; c.classList.toggle("sel", on); c.querySelector("input").checked = on; }); };
+    q.cols.forEach((c, i) => {
+      const id = `${key}-${i}`;
+      const input = el("input", { type: "radio", name: key, id, value: String(c.c) });
+      input.addEventListener("change", () => { S.a[key] = c.c; err.textContent = ""; paint(); });
+      const lab = el("label", { class: "chip", for: id, "data-code": String(c.c) }, input, c.l); lab._code = c.c;
+      chips.append(lab);
+    });
+    row.append(el("div", { class: "rl", text: r.l }), chips);
+    paint(); g.append(row);
+  }
+  return g;
+}
+function renderText(q) {
+  const ta = el("textarea", { id: `${q.id}-text`, maxlength: "1500", "aria-labelledby": "qtext" }); ta.value = S.a[q.id] || "";
+  ta.addEventListener("input", () => { S.a[q.id] = ta.value; });
+  return ta;
+}
+function renderRank(q, err) {
+  const list = ordered(q, qOpts(q));
+  const w = el("div"), box = el("div", { class: "rank", role: "group", "aria-labelledby": "qtext" });
+  const status = el("div", { class: "rk-status" });
+  const other = el("input", { type: "text", id: `${q.id}-other`, maxlength: "200", placeholder: "Please specify", "aria-label": "Other, please specify", value: S.a[q.id + "_other"] || "" });
+  other.addEventListener("input", () => { S.a[q.id + "_other"] = other.value; });
+  const otherWrap = el("div", { class: "other-in" }, other);
+  const paint = () => {
+    const v = S.a[q.id] || [];
+    box.querySelectorAll(".rk-item").forEach(b => { const r = v.indexOf(b._code); b.classList.toggle("on", r >= 0); b.classList.toggle("dis", r < 0 && v.length >= q.n);
+      b.querySelector(".badge").textContent = r >= 0 ? String(r + 1) : ""; b.setAttribute("aria-pressed", r >= 0 ? "true" : "false");
+      b.setAttribute("aria-label", (r >= 0 ? `Ranked ${r + 1}: ` : "") + b._label); });
+    otherWrap.hidden = !v.includes(16);
+    status.replaceChildren(el("span", { text: `${v.length} of ${q.n} ranked` }), v.length ? el("button", { type: "button", text: "Clear", onclick: () => { S.a[q.id] = []; err.textContent = ""; paint(); } }) : el("span"));
+  };
+  list.forEach(o => {
+    const b = el("button", { type: "button", class: "rk-item", "data-code": String(o.c) }, el("span", { class: "badge" }), el("span", { text: o.l }));
+    b._code = o.c; b._label = o.l;
+    b.addEventListener("click", () => {
+      let v = (S.a[q.id] || []).slice(); const r = v.indexOf(o.c);
+      if (r >= 0) v.splice(r, 1); else if (v.length < q.n) v.push(o.c); else { err.textContent = `You have already ranked ${q.n}. Tap a ranked factor to remove it.`; return; }
+      S.a[q.id] = v; err.textContent = ""; paint();
+    });
+    box.append(b);
+    if (o.other) box.append(otherWrap);
+  });
+  w.append(status, box); paint();
+  return w;
+}
+
+/* ---------------- validation / routing ---------------- */
+function validate(q) {
+  const a = S.a, t = qType(q);
+  switch (t) {
+    case "info": return "";
+    case "single": case "select": return (a[q.id] == null || !qOpts(q).some(o => o.c === a[q.id])) ? "Please select an answer." : "";
+    case "multi": { const valid = qOpts(q).map(o => o.c); a[q.id] = sel(a, q.id).filter(c => valid.includes(c)); return a[q.id].length ? "" : "Please select at least one answer."; }
+    case "grid": { const m = qRows(q).filter(r => a[`${q.id}_${r.c}`] == null).length; return m ? `Please answer every statement (${m} left).` : ""; }
+    case "text": { const s = (a[q.id] || "").trim(); return s.length < (q.minChars || 1) ? "Please type your answer." : ""; }
+    case "rank": { const v = a[q.id] || []; if (v.length !== q.n) return `Please rank exactly ${q.n} factors (${v.length} ranked so far).`;
+      return v.includes(16) && !(a[q.id + "_other"] || "").trim() ? "Please specify your “Other” factor." : ""; }
+  }
+  return "";
+}
+async function advance(err) {
+  const q = QUESTIONS[S.idx];
+  const msg = validate(q);
+  if (msg) { err.textContent = msg; return; }
+  const reason = q.term && q.term(S.a);
+  if (reason) { S.termQ = q.id; const st = reason.startsWith("QUALITY") ? "quality" : "terminated"; finish(st, reason.replace(/^QUALITY: /, "")); return; }
+  if (q.assign) {
+    const btn = $("next-btn"); btn.disabled = true; btn.textContent = "Please wait…";
+    const arms = {};
+    if (PHASE !== "buyers") arms["1"] = { cells: cellsFor("gp", S.a) };
+    if (PHASE !== "genpop" && isBuyer(S.a)) arms["2"] = PHASE === "sequential" ? { cells: cellsFor("by", S.a), gate: "gp" } : { cells: cellsFor("by", S.a) };
+    let arm = null;
+    if (server) {
+      try {
+        const r = await (await fetch(server.api.replace("/responses", "/assign"), { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ arms, mode: "first" }) })).json();
+        if (r.full) { finish("overquota", "Quota full (sample × region × age/gender)"); return; }
+        arm = parseInt(r.arm, 10);
+      } catch (e) { btn.disabled = false; btn.textContent = "Next"; err.textContent = "We couldn’t continue. Please check your connection and try again."; return; }
+    } else arm = arms["1"] ? 1 : arms["2"] ? 2 : null;
+    if (!arm) { finish("overquota", "No open sample"); return; }
+    S.sample = arm;
+  }
+  go(S.idx + 1, 1);
+}
+
+/* ---------------- record ---------------- */
+const labelIn = (list, c) => { const o = (list || []).find(x => x.c === c); return o ? o.l : ""; };
+function buildRecord(status, reason) {
+  const a = S.a, now = new Date().toISOString();
+  const dur = Math.round((new Date(now) - new Date(S.startedAt || now)) / 1000);
+  const reg = regionOf(a), yes = yesColors(a), groups = breedGroups(a);
+  const answered = id => a[id] != null;
+  const r = { status, terminate_reason: reason, flags: "", started_at: S.startedAt || now, completed_at: now, duration_sec: dur, lang: "en",
+    hSAMPLE: S.sample || "", hSAMPLE_label: S.sample === 1 ? "Gen pop" : S.sample === 2 ? "Chuckit! buyers" : "", hPHASE: PHASE, hSTAGE_AT_START: STAGE,
+    s0: S.sample || "",
+    s5b: answered("s5a") ? (isBuyer(a) ? 1 : 2) : "", s5b_label: answered("s5a") ? (isBuyer(a) ? "Chuckit! Purchase P12M" : "No Chuckit! Purchase P12M") : "",
+    d1b: reg ? reg[0] : "", d1b_label: reg ? reg[1] : "",
+    hAGEGENDER: ageGender(a), hCOLORORDER: S.colorOrder.join(";"), hCOLORORDER_label: S.colorOrder.map(n => COLORS[n - 1].l).join(";"),
+    p0: COLORS.some(c => answered(`c${c.c}a`)) ? yes.length : "",
+    dd3b: groups.join(";"), dd3b_label: groups.map(g => GROUP_NAME[g]).join("; "),
+    l1b: answered("l1a") ? (sel(a, "l1a").some(c => [2, 3, 4, 5, 6, 8, 9].includes(c)) ? 1 : 2) : "",
+    l5b: answered("l5a") ? (a.l5a === 3 ? 1 : 2) : "",
+    l6b: answered("l6a") ? ([1, 2].includes(a.l6a) ? 1 : 2) : "",
+    quota_cells: quotaCells(a).join(";") };
+  for (const c of COLORS) r[`hPOS_C${c.c}`] = S.colorOrder.indexOf(c.c) + 1;
+  for (const q of QUESTIONS) {
+    if (q.type === "info") continue;
+    const shown = visible(q), t = q.type;
+    const uni = q.universe || (typeof q.opts === "function" ? [] : q.opts);
+    if (t === "single" || t === "select") { const v = shown ? a[q.id] : null; r[q.id] = v ?? ""; r[q.id + "_label"] = v != null ? labelIn(uni, v) : ""; }
+    else if (t === "multi") { const v = shown ? sel(a, q.id) : []; r[q.id] = v.join(";"); r[q.id + "_label"] = v.map(c => labelIn(uni, c)).join("; "); }
+    else if (t === "grid") { for (const row of q.universe) { const v = shown && qRows(q).some(x => x.c === row.c) ? a[`${q.id}_${row.c}`] : null; r[`${q.id}_${row.c}`] = v ?? ""; } }
+    else if (t === "text") r[q.id] = shown ? (a[q.id] || "").trim() : "";
+    else if (t === "rank") { const v = shown ? (a[q.id] || []) : [];
+      for (const o of q.opts) r[`${q.id}_${o.c}`] = v.includes(o.c) ? v.indexOf(o.c) + 1 : "";
+      for (let i = 0; i < q.n; i++) r[`${q.id}_rank${i + 1}`] = v[i] ?? "";
+      r[q.id + "_other"] = v.includes(16) ? (a[q.id + "_other"] || "").trim() : ""; }
+  }
+  r.flags = flags(status, r).join(" | ");
+  return r;
+}
+function flags(status, r) {
+  const a = S.a, f = [];
+  if (status === "complete" && r.duration_sec < 180) f.push(`Speeder: ${r.duration_sec}s`);
+  const gridAns = COLORS.flatMap(c => CROWS.map(row => a[`c${c.c}c_${row.c}`]).filter(x => x != null));
+  if (status === "complete" && gridAns.length >= 24 && new Set(gridAns).size === 1) f.push("Straight-lined all six C grids");
+  if (isBuyer(a) && a.s4 != null && !awareChuckit(a)) f.push("Bought Chuckit! (S5a) but not aware (S4)");
+  if (sel(a, "s4").includes(99) && sel(a, "s5a").some(c => c !== 99)) f.push("No brands heard of (S4) but purchased (S5a)");
+  const gib = t => t && (/(.)\1{4,}/.test(t) || !/[aeiouy]/i.test(t) || (t.length > 20 && words(t) < 2));
+  for (const q of QUESTIONS) if (q.type === "text" && visible(q) && gib((a[q.id] || "").trim())) f.push(`${q.id.toUpperCase()} possible gibberish`);
+  return f;
+}
+
+const MSG = {
+  complete: ["Thank you for your feedback today!", "Your answers have been recorded."],
+  terminated: ["Thank you for your interest", "Unfortunately, based on your answers you don’t qualify for this survey. Thank you for your time."],
+  quality: ["Thank you", "Unfortunately we can’t accept this response. Thank you for your time."],
+  overquota: ["Thank you for your interest", "We have already received all the responses we need from people like you. Thank you for your time."],
+};
+async function finish(status, reason) {
+  if (S.done) return;
+  const btn = $("next-btn"); if (btn) { btn.disabled = true; btn.textContent = "Saving…"; }
+  const rec = buildRecord(status, reason);
+  let res = {};
+  if (server) {
+    rec.rid = server.rid || "";
+    try {
+      const r = await fetch(server.api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) });
+      if (!r.ok && r.status !== 409) throw new Error(String(r.status));
+      res = await r.json().catch(() => ({}));
+    } catch (e) { if (btn) { btn.disabled = false; btn.textContent = "Try again"; } const e2 = $("err"); if (e2) e2.textContent = "Your answers couldn’t be saved. Check your connection and try again."; return; }
+  } else console.log("Preview record (not saved):", rec);
+  S.done = true;
+  try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  const st = res.status || status;
+  const [h, p] = MSG[st] || MSG.terminated;
+  const parts = [el("div", { class: "endmark" }), el("h1", { text: h }), el("p", { class: "lead", text: p })];
+  const tq = QUESTIONS.find(x => x.id === S.termQ);
+  if (SHOW_REASON && tq && tq.req && (st === "terminated" || st === "quality")) {
+    const ans = qType(tq) === "multi" ? sel(S.a, tq.id).map(c => labelIn(qOpts(tq), c)).join("; ") : labelIn(qOpts(tq), S.a[tq.id]);
+    parts.push(el("div", { class: "reason", id: "term-reason" }, el("div", { class: "rk", text: "Why the survey ended" }),
+      el("p", {}, el("b", { text: tq.id.toUpperCase() + " " }), document.createTextNode(String(val(tq.text)).replace("\n", " "))),
+      ans ? el("p", {}, el("span", { class: "rl", text: "Your answer: " }), document.createTextNode(ans)) : null,
+      el("p", {}, el("span", { class: "rl", text: "Requirement: " }), document.createTextNode(tq.req))));
+  }
+  $("survey").replaceChildren(...parts);
+  if (res.redirect) setTimeout(() => { location.href = res.redirect; }, $("term-reason") ? 8000 : 2000);
+}
+
+function boot() {
+  if (!server) { $("banner").textContent = "Preview: answers are not saved."; $("banner").hidden = false; }
+  if (server && server.closed) { $("survey").replaceChildren(el("div", { class: "endmark" }), el("h1", { text: MSG.overquota[0] }), el("p", { class: "lead", text: MSG.overquota[1] })); if (server.redirect) setTimeout(() => { location.href = server.redirect; }, 2000); return; }
+  COLORS.forEach(c => { const i = new Image(); i.src = IMG(c.c); });   // preload stimuli
+  if (restore() && S.idx >= 0) { QUESTIONS = buildQuestions(); render(); return; }
+  S.colorOrder = shuf([1, 2, 3, 4, 5, 6]);
+  QUESTIONS = buildQuestions(); go(0, 1);
+}
+boot();
+window.__S = () => S;
+})();
+</script>

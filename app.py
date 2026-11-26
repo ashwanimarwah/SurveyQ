@@ -307,6 +307,37 @@ app.register_blueprint(make_survey(
     cell_caps=_opt_caps, cell_labels=_opt_labels, public_env=("GAME_URL", "FORM_URL", "RETURN_MODE")))
 
 
+# Chuckit! color assortment (Dog owners): Gen pop n=400 first, then Chuckit! buyers n=400, at /clh
+_CLH_REG = ("West", "South", "Midwest", "Northeast")
+_CLH_AG = {"ym": ("Age 18-44 Male", 24), "yf": ("Age 18-44 Female", 36), "om": ("Age 45+ Male", 16), "of": ("Age 45+ Female", 24)}
+_clh_caps = {"gp": 400, "by": 400}
+_clh_labels = {"gp": "TARGET 1 – Gen pop (total)", "by": "TARGET 2 – Chuckit! buyers (total)"}
+for _r in _CLH_REG:
+    _clh_caps[f"gp_{_r}"] = 100
+    _clh_labels[f"gp_{_r}"] = f"Gen pop – {_r}"
+    for _k, (_nm, _n) in _CLH_AG.items():
+        _clh_caps[f"gp_{_r}_{_k}"] = _n
+        _clh_labels[f"gp_{_r}_{_k}"] = f"Gen pop – {_r} – {_nm}"
+for _r in _CLH_REG:
+    _clh_caps[f"by_{_r}"] = 100
+    _clh_labels[f"by_{_r}"] = f"Buyers – {_r}"
+    for _k, (_nm, _n) in _CLH_AG.items():
+        _clh_caps[f"by_{_r}_{_k}"] = 55   # leaves room for the min 15 in each of the other three cells
+        _clh_labels[f"by_{_r}_{_k}"] = f"Buyers – {_r} – {_nm} (min 15)"
+
+
+def _clh_phase(counts, cap_for, env):
+    phase = (env("PHASE") or "sequential").lower()
+    stage = phase
+    if phase == "sequential":
+        stage = "buyers" if counts.get("gp", 0) >= (cap_for("gp") or 400) else "genpop"
+    return {"phase": phase, "stage": stage}
+
+
+app.register_blueprint(make_survey(
+    slug="clh", title="Chuckit! Color Assortment – Dog Owners", page="clh.html", default_quota=800,
+    cell_caps=_clh_caps, cell_labels=_clh_labels, extra_config=_clh_phase))
+
 @app.get("/api/opt/mock")
 def opt_mock():
     """Stand-in for the Optivate game / sweepstakes until OPT_GAME_URL and OPT_FORM_URL are set (QA only)."""

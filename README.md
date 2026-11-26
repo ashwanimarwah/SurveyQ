@@ -256,3 +256,15 @@ Runs on the main service alongside Chase (`ONLY_SURVEY=chase,opt`).
   hT_RETURN, hEXPOSURE_SEC, hRETURN_STATUS, hGAME_SCORE, hDEVICE, duration_ex_exposure_sec.
 - **Flags:** speeder (<210 s excluding exposure; recompute vs. one third of median LOI after soft launch), straight-lining A4/A6/P4/P8/F1/D5,
   failed F5 attention row, Loma Serena at A2 or D2, gibberish A1/F7/D1, very short exposure. E1 "did not finish / did not load" → over-quota (replace).
+
+# Dog Owners | Chuckit! Color Assortment (`/clh`)
+
+From `SURVEY-CLH_Color-7.17.26.docx`. US dog owners, n=800, any device.
+
+- **Samples (S0 / `hSAMPLE`):** TARGET 1 Gen pop n=400 (1), TARGET 2 Chuckit! buyers n=400 (2). Assigned after QC1.
+- **Order (`CLH_PHASE`):** `sequential` (default): Gen pop first; the buyer sample opens automatically once Gen pop reaches 400, and from then on non-buyers end at S5a. `genpop` = Gen pop only, `buyers` = buyers only, `parallel` = both open (Gen pop preferred).
+- **Quotas:** Gen pop 100 per Census region with 18-44 M 24 / F 36 and 45+ M 16 / F 24. Buyers 100 per region, at least 15 per age × gender cell (each cell capped at 55 so the other three can reach 15). "Other, non-binary" counts only toward the region. Override any cap with `CLH_CAP_<CELL>` (e.g. `CLH_CAP_GP_WEST_YF=30`).
+- **Terminates:** S1 no dog, S3 not involved, S6a none, D3 under 18, D4 under $55k, QC1 not "Somewhat disagree" (quality).
+- **Colors:** blocks C1 Gray, C2 Cream, C3 Navy, C4 Pink, C5 Burgundy, C6 Black in random order (`hCOLORORDER`, `hPOS_C1..6`); data columns always use the questionnaire codes. Images in `static/clh/` come from the questionnaire.
+- **Autocodes:** S5b, D1b, P0, DD3b (multi-dog: all groups), L1b, L5b, L6b (Non-fans include codes 6 and 7).
+- **Flags:** speeder (<180 s), all six C grids straight-lined, bought Chuckit! but not aware, gibberish open ends.
